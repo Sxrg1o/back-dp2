@@ -1,0 +1,1 @@
+"""Contracts and DTOs for external integrations."""

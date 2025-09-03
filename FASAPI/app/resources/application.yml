@@ -1,0 +1,86 @@
+# Application configuration
+application:
+  name: "Restaurant Platform API"
+  version: "1.0.0"
+  description: "Backend archetype for restaurant platform"
+
+# Server configuration
+server:
+  host: "0.0.0.0"
+  port: 8000
+  reload: false
+
+# Database configuration
+database:
+  url: "${DATABASE_URL:postgresql+asyncpg://postgres:password@localhost:5432/restaurant_db}"
+  echo: false
+  pool_size: 10
+  max_overflow: 20
+
+# Redis configuration
+redis:
+  url: "${REDIS_URL:redis://localhost:6379/0}"
+  encoding: "utf-8"
+  decode_responses: true
+
+# Security configuration
+security:
+  secret_key: "${SECRET_KEY:your-secret-key-here}"
+  algorithm: "HS256"
+  access_token_expire_minutes: 30
+
+# CORS configuration
+cors:
+  allow_origins:
+    - "http://localhost:3000"
+    - "http://localhost:8080"
+  allow_credentials: true
+  allow_methods:
+    - "GET"
+    - "POST"
+    - "PUT"
+    - "PATCH"
+    - "DELETE"
+    - "OPTIONS"
+  allow_headers:
+    - "*"
+
+# External integrations
+integrations:
+  scraping:
+    user_agent: "RestaurantPlatform/1.0"
+    delay_min: 1
+    delay_max: 3
+    timeout: 30
+  
+  rpa:
+    headless: true
+    timeout: 30
+    
+  cache:
+    ttl_seconds: 3600
+
+# Logging configuration
+logging:
+  level: "${LOG_LEVEL:INFO}"
+  format: "${LOG_FORMAT:json}"
+  
+# Scheduler configuration
+scheduler:
+  enabled: "${SCHEDULER_ENABLED:true}"
+  timezone: "UTC"
+
+# Rate limiting
+rate_limiting:
+  default:
+    max_requests: 100
+    window_seconds: 60
+  
+  scraping:
+    max_requests: 10
+    window_seconds: 60
+
+# Circuit breaker
+circuit_breaker:
+  failure_threshold: 5
+  recovery_timeout: 60
