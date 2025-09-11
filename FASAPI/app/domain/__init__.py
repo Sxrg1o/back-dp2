@@ -1,0 +1,1 @@
+"""Domain layer for the menu management system."""
