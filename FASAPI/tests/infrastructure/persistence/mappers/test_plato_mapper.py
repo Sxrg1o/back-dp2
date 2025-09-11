@@ -54,6 +54,7 @@ class TestPlatoMapper:
             receta={uuid4(): Decimal("200.0"), uuid4(): Decimal("100.0")},
             tipo_plato=EtiquetaPlato.FONDO,
             instrucciones="Cook pasta, add sauce",
+            porciones=1,
             dificultad="medio",
             chef_recomendado="Chef Mario"
         )
@@ -66,13 +67,15 @@ class TestPlatoMapper:
         model.nombre = sample_entity.nombre
         model.descripcion = sample_entity.descripcion
         model.precio = float(sample_entity.precio.value)
-        model.calorias = sample_entity.informacion_nutricional.calorias
-        model.proteinas = float(sample_entity.informacion_nutricional.proteinas)
-        model.azucares = float(sample_entity.informacion_nutricional.azucares)
-        model.grasas = float(sample_entity.informacion_nutricional.grasas)
-        model.carbohidratos = float(sample_entity.informacion_nutricional.carbohidratos)
-        model.fibra = float(sample_entity.informacion_nutricional.fibra)
-        model.sodio = float(sample_entity.informacion_nutricional.sodio)
+        model.informacion_nutricional = {
+            'calorias': sample_entity.informacion_nutricional.calorias,
+            'proteinas': float(sample_entity.informacion_nutricional.proteinas),
+            'azucares': float(sample_entity.informacion_nutricional.azucares),
+            'grasas': float(sample_entity.informacion_nutricional.grasas),
+            'carbohidratos': float(sample_entity.informacion_nutricional.carbohidratos),
+            'fibra': float(sample_entity.informacion_nutricional.fibra),
+            'sodio': float(sample_entity.informacion_nutricional.sodio)
+        }
         model.tiempo_preparacion = sample_entity.tiempo_preparacion
         model.stock_actual = sample_entity.stock_actual
         model.stock_minimo = sample_entity.stock_minimo
@@ -84,6 +87,7 @@ class TestPlatoMapper:
         model.receta = {str(k): float(v) for k, v in sample_entity.receta.items()}
         model.tipo_plato = sample_entity.tipo_plato.value
         model.instrucciones = sample_entity.instrucciones
+        model.porciones = sample_entity.porciones
         model.dificultad = sample_entity.dificultad
         model.chef_recomendado = sample_entity.chef_recomendado
         return model
@@ -97,8 +101,8 @@ class TestPlatoMapper:
         assert entity.nombre == sample_model.nombre
         assert entity.descripcion == sample_model.descripcion
         assert entity.precio.value == Decimal(str(sample_model.precio))
-        assert entity.informacion_nutricional.calorias == sample_model.calorias
-        assert entity.informacion_nutricional.proteinas == Decimal(str(sample_model.proteinas))
+        assert entity.informacion_nutricional.calorias == sample_model.informacion_nutricional['calorias']
+        assert entity.informacion_nutricional.proteinas == Decimal(str(sample_model.informacion_nutricional['proteinas']))
         assert entity.tiempo_preparacion == sample_model.tiempo_preparacion
         assert entity.stock_actual == sample_model.stock_actual
         assert entity.stock_minimo == sample_model.stock_minimo
@@ -120,8 +124,8 @@ class TestPlatoMapper:
         assert model.nombre == sample_entity.nombre
         assert model.descripcion == sample_entity.descripcion
         assert Decimal(str(model.precio)) == sample_entity.precio.value
-        assert model.calorias == sample_entity.informacion_nutricional.calorias
-        assert Decimal(str(model.proteinas)) == sample_entity.informacion_nutricional.proteinas
+        assert model.informacion_nutricional['calorias'] == sample_entity.informacion_nutricional.calorias
+        assert Decimal(str(model.informacion_nutricional['proteinas'])) == sample_entity.informacion_nutricional.proteinas
         assert model.tiempo_preparacion == sample_entity.tiempo_preparacion
         assert model.stock_actual == sample_entity.stock_actual
         assert model.stock_minimo == sample_entity.stock_minimo

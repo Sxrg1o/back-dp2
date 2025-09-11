@@ -2,6 +2,7 @@
 
 from dataclasses import dataclass
 from typing import Optional
+from decimal import Decimal
 
 
 @dataclass(frozen=True)
@@ -43,9 +44,10 @@ class InformacionNutricional:
         # Business rule: Basic calorie validation
         # Rough estimate: 4 cal/g protein, 4 cal/g carbs, 9 cal/g fat
         if self.grasas is not None and self.carbohidratos is not None:
-            estimated_calories = (self.proteinas * 4) + (self.carbohidratos * 4) + (self.grasas * 9)
+            estimated_calories = (Decimal(str(self.proteinas)) * Decimal("4")) + (Decimal(str(self.carbohidratos)) * Decimal("4")) + (Decimal(str(self.grasas)) * Decimal("9"))
             # Allow 20% variance for estimation errors
-            if abs(self.calorias - estimated_calories) > (estimated_calories * 0.2):
+            variance = estimated_calories * Decimal("0.2")
+            if abs(Decimal(str(self.calorias)) - estimated_calories) > variance:
                 raise ValueError("Calorie count doesn't match macronutrient breakdown")
     
     def es_alto_en_proteinas(self) -> bool:

@@ -424,7 +424,7 @@ class PlatoApplicationService:
         
         # Calculate cost
         costo_precio = plato.calcular_costo_ingredientes(ingredientes_disponibles)
-        return float(costo_precio.value)
+        return float(costo_precio)
     
     async def get_platos_by_difficulty(self, dificultad: str) -> List[PlatoResponseDTO]:
         """Get dishes by difficulty level.

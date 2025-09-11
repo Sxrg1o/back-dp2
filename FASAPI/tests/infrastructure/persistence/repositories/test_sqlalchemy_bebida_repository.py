@@ -30,9 +30,9 @@ class TestSqlAlchemyBebidaRepository:
         return BebidaMapper()
 
     @pytest.fixture
-    def repository(self, mock_session, mapper):
+    def repository(self, mock_session):
         """Create repository instance."""
-        return SqlAlchemyBebidaRepository(mock_session, mapper)
+        return SqlAlchemyBebidaRepository(mock_session)
 
     @pytest.fixture
     def sample_bebida(self):

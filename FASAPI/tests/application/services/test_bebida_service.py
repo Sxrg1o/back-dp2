@@ -75,7 +75,7 @@ def sample_alcoholic_bebida():
         descripcion="Mexican lager beer",
         precio=Precio(Decimal("4.50")),
         informacion_nutricional=InformacionNutricional(
-            calorias=148,
+            calorias=60,  # (1.2*4) + (13.9*4) + (0*9) = 60.4 ≈ 60
             proteinas=1.2,
             azucares=0.0,
             grasas=0.0,
@@ -519,7 +519,7 @@ class TestBebidaApplicationService:
         result = await bebida_service.calculate_alcohol_content(bebida_id)
         
         # Assert
-        expected_alcohol = (355.0 * 4.5) / 100  # volume * percentage / 100
+        expected_alcohol = (Decimal("355.0") * Decimal("4.5")) / Decimal("100")  # volume * percentage / 100
         assert result == expected_alcohol
         mock_bebida_repository.get_by_id.assert_called_once_with(bebida_id)
     
@@ -539,7 +539,7 @@ class TestBebidaApplicationService:
         result = await bebida_service.calculate_price_per_ml(bebida_id)
         
         # Assert
-        expected_price_per_ml = float(sample_bebida.precio.value) / sample_bebida.volumen
+        expected_price_per_ml = sample_bebida.precio.value / Decimal(str(sample_bebida.volumen))
         assert result == expected_price_per_ml
         mock_bebida_repository.get_by_id.assert_called_once_with(bebida_id)
     

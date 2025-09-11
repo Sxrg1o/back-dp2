@@ -2,12 +2,13 @@
 Tests for menu controller.
 """
 import pytest
-from unittest.mock import AsyncMock, MagicMock
+from unittest.mock import AsyncMock, MagicMock, patch
 from fastapi.testclient import TestClient
 from fastapi import FastAPI
 
 from app.infrastructure.web.controllers.menu_controller import router
 from app.application.services.menu_service import MenuApplicationService
+from app.infrastructure.web.dependencies.menu_dependencies import get_menu_service
 
 
 @pytest.fixture
@@ -21,12 +22,10 @@ def mock_menu_service():
 def app(mock_menu_service):
     """Create test FastAPI app."""
     app = FastAPI()
-    app.include_router(router)
+    app.include_router(router, prefix="/api/v1")
     
     # Override dependency
-    app.dependency_overrides = {
-        "get_menu_service": lambda: mock_menu_service
-    }
+    app.dependency_overrides[get_menu_service] = lambda: mock_menu_service
     
     return app
 
@@ -34,7 +33,8 @@ def app(mock_menu_service):
 @pytest.fixture
 def client(app):
     """Create test client."""
-    return TestClient(app)
+    with patch('app.core.config.settings.SCHEDULER_ENABLED', False):
+        return TestClient(app)
 
 
 class TestMenuController:
@@ -52,7 +52,7 @@ class TestMenuController:
         mock_menu_service.get_full_menu.return_value = expected_menu
         
         # Act
-        response = client.get("/menu/")
+        response = client.get("/api/v1/")
         
         # Assert
         assert response.status_code == 200
@@ -71,7 +71,7 @@ class TestMenuController:
         mock_menu_service.get_menu_by_categories.return_value = expected_menu
         
         # Act
-        response = client.get("/menu/categories")
+        response = client.get("/api/v1/categories")
         
         # Assert
         assert response.status_code == 200
@@ -91,7 +91,7 @@ class TestMenuController:
         mock_menu_service.search_menu_items.return_value = expected_results
         
         # Act
-        response = client.get(f"/menu/search?query={query}")
+        response = client.get(f"/api/v1/search?query={query}")
         
         # Assert
         assert response.status_code == 200
@@ -101,7 +101,7 @@ class TestMenuController:
     def test_search_menu_items_empty_query(self, client, mock_menu_service):
         """Test menu search with empty query."""
         # Act
-        response = client.get("/menu/search?query=")
+        response = client.get("/api/v1/search?query=")
         
         # Assert
         assert response.status_code == 422  # Validation error
@@ -112,15 +112,15 @@ class TestMenuController:
         expected_stats = {
             "total_items": 100,
             "available_items": 85,
-            "ingredients": {"total": 50},
-            "dishes": {"total": 30},
-            "beverages": {"total": 20},
-            "low_stock": {"total": 5}
+            "ingredients": 50,
+            "dishes": 30,
+            "beverages": 20,
+            "low_stock": 5
         }
         mock_menu_service.get_menu_statistics.return_value = expected_stats
         
         # Act
-        response = client.get("/menu/statistics")
+        response = client.get("/api/v1/statistics")
         
         # Assert
         assert response.status_code == 200
@@ -142,7 +142,7 @@ class TestMenuController:
         mock_menu_service.get_nutritional_summary.return_value = expected_summary
         
         # Act
-        response = client.get("/menu/nutrition")
+        response = client.get("/api/v1/nutrition")
         
         # Assert
         assert response.status_code == 200
@@ -155,7 +155,7 @@ class TestMenuController:
         mock_menu_service.get_full_menu.side_effect = Exception("Service error")
         
         # Act
-        response = client.get("/menu/")
+        response = client.get("/api/v1/")
         
         # Assert
         assert response.status_code == 500

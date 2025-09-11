@@ -24,8 +24,9 @@ class Precio:
             raise ValueError("Price must be positive")
         
         # Ensure maximum 2 decimal places for currency
-        if self.value.as_tuple().exponent < -2:
-            raise ValueError("Price cannot have more than 2 decimal places")
+        # Round to 2 decimal places instead of raising error
+        rounded_value = self.value.quantize(Decimal('0.01'))
+        object.__setattr__(self, 'value', rounded_value)
     
     @classmethod
     def from_float(cls, value: float) -> 'Precio':

@@ -120,7 +120,7 @@ class TestCreatePlatoDTO:
                 dificultad="imposible"
             )
         
-        assert "Difficulty must be 'facil', 'medio', or 'dificil'" in str(exc_info.value) or "string does not match regex" in str(exc_info.value)
+        assert "String should match pattern" in str(exc_info.value)
     
     def test_negative_recipe_quantity_raises_error(self):
         """Test that negative recipe quantities raise validation error."""
@@ -228,7 +228,7 @@ class TestUpdatePlatoDTO:
         with pytest.raises(ValidationError) as exc_info:
             UpdatePlatoDTO(dificultad="extremo")
         
-        assert "Difficulty must be 'facil', 'medio', or 'dificil'" in str(exc_info.value) or "string does not match regex" in str(exc_info.value)
+        assert "String should match pattern" in str(exc_info.value)
 
 
 class TestAgregarIngredienteRecetaDTO:

@@ -1,7 +1,7 @@
 """Item base domain entity for menu management."""
 
 from dataclasses import dataclass
-from datetime import datetime
+from datetime import datetime, UTC
 from typing import List, Optional, Set
 from uuid import UUID
 
@@ -42,8 +42,11 @@ class Item:
         if self.stock_minimo < 0:
             raise ValueError("Minimum stock cannot be negative")
         
-        if not isinstance(self.etiquetas, set):
-            raise ValueError("Etiquetas must be a set")
+        # Convert etiquetas to set if it's a list
+        if isinstance(self.etiquetas, list):
+            self.etiquetas = set(self.etiquetas)
+        elif not isinstance(self.etiquetas, set):
+            raise ValueError("Etiquetas must be a set or list")
     
     def verificar_stock(self) -> bool:
         """Check if item has sufficient stock."""
@@ -70,7 +73,7 @@ class Item:
             raise ValueError("Insufficient stock available")
         
         self.stock_actual -= cantidad
-        self.updated_at = datetime.utcnow()
+        self.updated_at = datetime.now(UTC)
     
     def aumentar_stock(self, cantidad: int) -> None:
         """Increase stock by specified amount."""
@@ -78,22 +81,22 @@ class Item:
             raise ValueError("Quantity must be positive")
         
         self.stock_actual += cantidad
-        self.updated_at = datetime.utcnow()
+        self.updated_at = datetime.now(UTC)
     
     def actualizar_precio(self, nuevo_precio: Precio) -> None:
         """Update item price."""
         self.precio = nuevo_precio
-        self.updated_at = datetime.utcnow()
+        self.updated_at = datetime.now(UTC)
     
     def agregar_etiqueta(self, etiqueta: EtiquetaItem) -> None:
         """Add a label to the item."""
         self.etiquetas.add(etiqueta)
-        self.updated_at = datetime.utcnow()
+        self.updated_at = datetime.now(UTC)
     
     def remover_etiqueta(self, etiqueta: EtiquetaItem) -> None:
         """Remove a label from the item."""
         self.etiquetas.discard(etiqueta)
-        self.updated_at = datetime.utcnow()
+        self.updated_at = datetime.now(UTC)
     
     def tiene_etiqueta(self, etiqueta: EtiquetaItem) -> bool:
         """Check if item has specific label."""
@@ -102,12 +105,12 @@ class Item:
     def activar(self) -> None:
         """Activate the item."""
         self.activo = True
-        self.updated_at = datetime.utcnow()
+        self.updated_at = datetime.now(UTC)
     
     def desactivar(self) -> None:
         """Deactivate the item."""
         self.activo = False
-        self.updated_at = datetime.utcnow()
+        self.updated_at = datetime.now(UTC)
     
     def necesita_restock(self) -> bool:
         """Check if item needs restocking."""

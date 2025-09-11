@@ -31,9 +31,9 @@ class TestSqlAlchemyIngredienteRepository:
         return IngredienteMapper()
 
     @pytest.fixture
-    def repository(self, mock_session, mapper):
+    def repository(self, mock_session):
         """Create repository instance."""
-        return SqlAlchemyIngredienteRepository(mock_session, mapper)
+        return SqlAlchemyIngredienteRepository(mock_session)
 
     @pytest.fixture
     def sample_ingrediente(self):

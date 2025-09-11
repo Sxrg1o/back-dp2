@@ -1,7 +1,7 @@
 """Ingrediente domain entity for menu management."""
 
 from dataclasses import dataclass
-from datetime import datetime
+from datetime import datetime, UTC
 from typing import Optional, Set
 from uuid import UUID
 
@@ -24,6 +24,10 @@ class Ingrediente(Item):
     
     def __post_init__(self):
         """Validate ingredient data after initialization."""
+        # Convert etiquetas to set if it's a list (before calling parent validation)
+        if isinstance(self.etiquetas, list):
+            self.etiquetas = set(self.etiquetas)
+        
         super().__post_init__()
         
         if self.peso_unitario <= 0:
@@ -32,21 +36,38 @@ class Ingrediente(Item):
         if not self.unidad_medida or not self.unidad_medida.strip():
             raise ValueError("Unit of measure cannot be empty")
         
-        if self.fecha_vencimiento and self.fecha_vencimiento <= datetime.utcnow():
-            raise ValueError("Expiration date must be in the future")
+        if self.fecha_vencimiento:
+            # Handle both naive and aware datetimes
+            now = datetime.now(UTC)
+            if self.fecha_vencimiento.tzinfo is None:
+                # If fecha_vencimiento is naive, compare with naive datetime
+                if self.fecha_vencimiento <= datetime.now():
+                    raise ValueError("Expiration date must be in the future")
+            else:
+                # If fecha_vencimiento is aware, compare with aware datetime
+                if self.fecha_vencimiento <= now:
+                    raise ValueError("Expiration date must be in the future")
     
     def esta_vencido(self) -> bool:
         """Check if ingredient is expired."""
         if not self.fecha_vencimiento:
             return False
-        return datetime.utcnow() > self.fecha_vencimiento
+        # Handle both naive and aware datetimes
+        if self.fecha_vencimiento.tzinfo is None:
+            return datetime.now() > self.fecha_vencimiento
+        else:
+            return datetime.now(UTC) > self.fecha_vencimiento
     
     def dias_hasta_vencimiento(self) -> Optional[int]:
         """Calculate days until expiration."""
         if not self.fecha_vencimiento:
             return None
         
-        delta = self.fecha_vencimiento - datetime.utcnow()
+        # Handle both naive and aware datetimes
+        if self.fecha_vencimiento.tzinfo is None:
+            delta = self.fecha_vencimiento - datetime.now()
+        else:
+            delta = self.fecha_vencimiento - datetime.now(UTC)
         return max(0, delta.days)
     
     def esta_proximo_a_vencer(self, dias_limite: int = 3) -> bool:
@@ -77,11 +98,16 @@ class Ingrediente(Item):
     
     def actualizar_fecha_vencimiento(self, nueva_fecha: datetime) -> None:
         """Update expiration date."""
-        if nueva_fecha <= datetime.utcnow():
-            raise ValueError("New expiration date must be in the future")
+        # Handle both naive and aware datetimes
+        if nueva_fecha.tzinfo is None:
+            if nueva_fecha <= datetime.now():
+                raise ValueError("New expiration date must be in the future")
+        else:
+            if nueva_fecha <= datetime.now(UTC):
+                raise ValueError("New expiration date must be in the future")
         
         self.fecha_vencimiento = nueva_fecha
-        self.updated_at = datetime.utcnow()
+        self.updated_at = datetime.now(UTC)
     
     def cambiar_proveedor(self, nuevo_proveedor: str) -> None:
         """Change ingredient supplier."""
@@ -89,7 +115,7 @@ class Ingrediente(Item):
             raise ValueError("Supplier name cannot be empty")
         
         self.proveedor = nuevo_proveedor.strip()
-        self.updated_at = datetime.utcnow()
+        self.updated_at = datetime.now(UTC)
     
     def __str__(self) -> str:
         return f"{self.nombre} ({self.tipo.value}) - {self.peso_unitario}g - {self.precio}"

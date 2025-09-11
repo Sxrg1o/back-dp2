@@ -1,9 +1,10 @@
 """Plato domain entity for menu management."""
 
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import datetime, UTC
 from typing import Dict, List, Optional, Set
 from uuid import UUID
+from decimal import Decimal
 
 from app.domain.entities.item import Item
 from app.domain.entities.ingrediente import Ingrediente
@@ -18,7 +19,7 @@ class Plato(Item):
     """Domain entity for dishes."""
     
     tipo_plato: EtiquetaPlato
-    receta: Dict[UUID, float] = field(default_factory=dict)  # ingrediente_id -> cantidad_necesaria
+    receta: Dict[UUID, Decimal] = field(default_factory=dict)  # ingrediente_id -> cantidad_necesaria
     instrucciones: Optional[str] = None
     porciones: int = 1
     dificultad: Optional[str] = None  # "facil", "medio", "dificil"
@@ -26,6 +27,10 @@ class Plato(Item):
     
     def __post_init__(self):
         """Validate dish data after initialization."""
+        # Convert etiquetas to set if it's a list (before calling parent validation)
+        if isinstance(self.etiquetas, list):
+            self.etiquetas = set(self.etiquetas)
+        
         super().__post_init__()
         
         if self.porciones <= 0:
@@ -33,40 +38,61 @@ class Plato(Item):
         
         if self.dificultad and self.dificultad not in ["facil", "medio", "dificil"]:
             raise ValueError("Difficulty must be 'facil', 'medio', or 'dificil'")
+            
+        if self.instrucciones is not None and (not self.instrucciones or not self.instrucciones.strip()):
+            raise ValueError("Instructions cannot be empty")
         
         # Validate recipe quantities
         for ingrediente_id, cantidad in self.receta.items():
-            if cantidad <= 0:
+            if cantidad <= Decimal("0"):
                 raise ValueError("Recipe quantities must be positive")
     
-    def agregar_ingrediente(self, ingrediente_id: UUID, cantidad: float) -> None:
+    def agregar_ingrediente(self, ingrediente_id: UUID, cantidad: Decimal) -> None:
         """Add ingredient to recipe."""
-        if cantidad <= 0:
-            raise ValueError("Ingredient quantity must be positive")
+        if cantidad <= Decimal("0"):
+            raise ValueError("Quantity must be positive")
         
         self.receta[ingrediente_id] = cantidad
-        self.updated_at = datetime.utcnow()
+        self.updated_at = datetime.now(UTC)
+        
+    def agregar_ingrediente_receta(self, ingrediente_id: UUID, cantidad: Decimal) -> None:
+        """Add ingredient to recipe (alias for compatibility)."""
+        self.agregar_ingrediente(ingrediente_id, cantidad)
     
     def remover_ingrediente(self, ingrediente_id: UUID) -> None:
         """Remove ingredient from recipe."""
         if ingrediente_id in self.receta:
             del self.receta[ingrediente_id]
-            self.updated_at = datetime.utcnow()
+            self.updated_at = datetime.now(UTC)
+            
+    def remover_ingrediente_receta(self, ingrediente_id: UUID) -> None:
+        """Remove ingredient from recipe (with validation)."""
+        from app.domain.exceptions.menu_exceptions import IngredienteNotFoundError
+        
+        if ingrediente_id not in self.receta:
+            raise IngredienteNotFoundError(ingrediente_id=ingrediente_id)
+            
+        del self.receta[ingrediente_id]
+        self.updated_at = datetime.now(UTC)
     
-    def actualizar_cantidad_ingrediente(self, ingrediente_id: UUID, nueva_cantidad: float) -> None:
+    def actualizar_cantidad_ingrediente(self, ingrediente_id: UUID, nueva_cantidad: Decimal) -> None:
         """Update ingredient quantity in recipe."""
         if ingrediente_id not in self.receta:
             raise ValueError("Ingredient not found in recipe")
         
-        if nueva_cantidad <= 0:
+        if nueva_cantidad <= Decimal("0"):
             raise ValueError("Ingredient quantity must be positive")
         
         self.receta[ingrediente_id] = nueva_cantidad
-        self.updated_at = datetime.utcnow()
+        self.updated_at = datetime.now(UTC)
     
-    def obtener_ingredientes_necesarios(self) -> Dict[UUID, float]:
+    def obtener_ingredientes_necesarios(self) -> Dict[UUID, Decimal]:
         """Get required ingredients for the dish."""
         return self.receta.copy()
+        
+    def get_ingredientes_necesarios(self) -> Dict[UUID, Decimal]:
+        """Get required ingredients for the dish (alias for compatibility)."""
+        return self.obtener_ingredientes_necesarios()
     
     def verificar_disponibilidad_ingredientes(self, ingredientes_disponibles: Dict[UUID, Ingrediente]) -> bool:
         """Check if all required ingredients are available."""
@@ -84,23 +110,27 @@ class Plato(Item):
         
         return True
     
-    def calcular_costo_ingredientes(self, ingredientes_disponibles: Dict[UUID, Ingrediente]) -> Precio:
+    def calcular_costo_ingredientes(self, ingredientes_disponibles) -> Decimal:
         """Calculate total cost of ingredients."""
-        from decimal import Decimal
-        
         costo_total = Decimal("0")
         
+        # Handle both list and dict inputs
+        if isinstance(ingredientes_disponibles, list):
+            ingredientes_dict = {ing.id: ing for ing in ingredientes_disponibles}
+        else:
+            ingredientes_dict = ingredientes_disponibles
+        
         for ingrediente_id, cantidad_necesaria in self.receta.items():
-            if ingrediente_id not in ingredientes_disponibles:
+            if ingrediente_id not in ingredientes_dict:
                 raise ValueError(f"Ingredient {ingrediente_id} not available")
             
-            ingrediente = ingredientes_disponibles[ingrediente_id]
+            ingrediente = ingredientes_dict[ingrediente_id]
             # Calculate cost per unit based on unit weight
             costo_por_gramo = ingrediente.precio.value / Decimal(str(ingrediente.peso_unitario))
             costo_ingrediente = costo_por_gramo * Decimal(str(cantidad_necesaria))
             costo_total += costo_ingrediente
         
-        return Precio(costo_total)
+        return costo_total
     
     def es_entrada(self) -> bool:
         """Check if dish is an appetizer."""
@@ -141,7 +171,7 @@ class Plato(Item):
     def actualizar_instrucciones(self, nuevas_instrucciones: str) -> None:
         """Update cooking instructions."""
         self.instrucciones = nuevas_instrucciones.strip() if nuevas_instrucciones else None
-        self.updated_at = datetime.utcnow()
+        self.updated_at = datetime.now(UTC)
     
     def asignar_chef(self, chef: str) -> None:
         """Assign recommended chef."""
@@ -149,7 +179,7 @@ class Plato(Item):
             raise ValueError("Chef name cannot be empty")
         
         self.chef_recomendado = chef.strip()
-        self.updated_at = datetime.utcnow()
+        self.updated_at = datetime.now(UTC)
     
     def __str__(self) -> str:
         return f"{self.nombre} ({self.tipo_plato.value}) - {self.porciones} porción(es) - {self.precio}"

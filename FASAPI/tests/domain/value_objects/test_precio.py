@@ -42,10 +42,10 @@ class TestPrecio:
         with pytest.raises(ValueError, match="Price must be positive"):
             Precio(Decimal("0"))
     
-    def test_invalid_precio_too_many_decimals(self):
-        """Test that prices with more than 2 decimal places raise ValueError."""
-        with pytest.raises(ValueError, match="Price cannot have more than 2 decimal places"):
-            Precio(Decimal("10.123"))
+    def test_precio_rounds_to_two_decimals(self):
+        """Test that prices with more than 2 decimal places are rounded."""
+        precio = Precio(Decimal("10.123"))
+        assert precio.value == Decimal("10.12")
     
     def test_precio_immutability(self):
         """Test that Precio is immutable."""

@@ -38,7 +38,7 @@ class TestBebida:
             stock_actual=50,
             stock_minimo=10,
             activo=True,
-            etiquetas=[EtiquetaItem.SIN_GLUTEN],
+            etiquetas={EtiquetaItem.SIN_GLUTEN},
             created_at=datetime.utcnow(),
             updated_at=datetime.utcnow(),
             version=1,
@@ -82,7 +82,7 @@ class TestBebida:
                 stock_actual=50,
                 stock_minimo=10,
                 activo=True,
-                etiquetas=[EtiquetaItem.SIN_GLUTEN],
+                etiquetas={EtiquetaItem.SIN_GLUTEN},
                 created_at=datetime.utcnow(),
                 updated_at=datetime.utcnow(),
                 version=1,
@@ -99,12 +99,12 @@ class TestBebida:
         precio = Precio(Decimal("25.99"))
         info_nutricional = InformacionNutricional(
             calorias=200,
-            proteinas=Decimal("0.0"),
-            azucares=Decimal("0.0"),
-            grasas=Decimal("0.0"),
-            carbohidratos=Decimal("0.0"),
-            fibra=Decimal("0.0"),
-            sodio=Decimal("0.0")
+            proteinas=0.0,
+            azucares=50.0,  # 50g * 4 cal/g = 200 cal
+            grasas=0.0,
+            carbohidratos=50.0,
+            fibra=0.0,
+            sodio=0.0
         )
         
         with pytest.raises(ValueError, match="Alcohol content cannot exceed 100%"):
@@ -118,7 +118,7 @@ class TestBebida:
                 stock_actual=10,
                 stock_minimo=2,
                 activo=True,
-                etiquetas=[EtiquetaItem.SIN_GLUTEN],
+                etiquetas={EtiquetaItem.SIN_GLUTEN},
                 created_at=datetime.utcnow(),
                 updated_at=datetime.utcnow(),
                 version=1,
@@ -154,7 +154,7 @@ class TestBebida:
                 stock_actual=50,
                 stock_minimo=10,
                 activo=True,
-                etiquetas=[EtiquetaItem.SIN_GLUTEN],
+                etiquetas={EtiquetaItem.SIN_GLUTEN},
                 created_at=datetime.utcnow(),
                 updated_at=datetime.utcnow(),
                 version=1,
@@ -190,7 +190,7 @@ class TestBebida:
                 stock_actual=50,
                 stock_minimo=10,
                 activo=True,
-                etiquetas=[EtiquetaItem.SIN_GLUTEN],
+                etiquetas={EtiquetaItem.SIN_GLUTEN},
                 created_at=datetime.utcnow(),
                 updated_at=datetime.utcnow(),
                 version=1,
@@ -226,7 +226,7 @@ class TestBebida:
                 stock_actual=50,
                 stock_minimo=10,
                 activo=True,
-                etiquetas=[EtiquetaItem.SIN_GLUTEN],
+                etiquetas={EtiquetaItem.SIN_GLUTEN},
                 created_at=datetime.utcnow(),
                 updated_at=datetime.utcnow(),
                 version=1,
@@ -262,7 +262,7 @@ class TestBebida:
                 stock_actual=50,
                 stock_minimo=10,
                 activo=True,
-                etiquetas=[EtiquetaItem.SIN_GLUTEN],
+                etiquetas={EtiquetaItem.SIN_GLUTEN},
                 created_at=datetime.utcnow(),
                 updated_at=datetime.utcnow(),
                 version=1,
@@ -279,12 +279,12 @@ class TestBebida:
         precio = Precio(Decimal("15.99"))
         info_nutricional = InformacionNutricional(
             calorias=200,
-            proteinas=Decimal("0.0"),
-            azucares=Decimal("0.0"),
-            grasas=Decimal("0.0"),
-            carbohidratos=Decimal("0.0"),
-            fibra=Decimal("0.0"),
-            sodio=Decimal("0.0")
+            proteinas=0.0,
+            azucares=50.0,  # 50g * 4 cal/g = 200 cal
+            grasas=0.0,
+            carbohidratos=50.0,
+            fibra=0.0,
+            sodio=0.0
         )
         
         # Alcoholic bebida
@@ -298,7 +298,7 @@ class TestBebida:
             stock_actual=30,
             stock_minimo=5,
             activo=True,
-            etiquetas=[EtiquetaItem.SIN_GLUTEN],
+            etiquetas={EtiquetaItem.SIN_GLUTEN},
             created_at=datetime.utcnow(),
             updated_at=datetime.utcnow(),
             version=1,
@@ -329,7 +329,7 @@ class TestBebida:
             stock_actual=100,
             stock_minimo=20,
             activo=True,
-            etiquetas=[EtiquetaItem.SIN_GLUTEN],
+            etiquetas={EtiquetaItem.SIN_GLUTEN},
             created_at=datetime.utcnow(),
             updated_at=datetime.utcnow(),
             version=1,
@@ -349,12 +349,12 @@ class TestBebida:
         precio = Precio(Decimal("25.99"))
         info_nutricional = InformacionNutricional(
             calorias=200,
-            proteinas=Decimal("0.0"),
-            azucares=Decimal("0.0"),
-            grasas=Decimal("0.0"),
-            carbohidratos=Decimal("0.0"),
-            fibra=Decimal("0.0"),
-            sodio=Decimal("0.0")
+            proteinas=0.0,
+            azucares=50.0,  # 50g * 4 cal/g = 200 cal
+            grasas=0.0,
+            carbohidratos=50.0,
+            fibra=0.0,
+            sodio=0.0
         )
         
         # High alcohol content bebida
@@ -368,7 +368,7 @@ class TestBebida:
             stock_actual=10,
             stock_minimo=2,
             activo=True,
-            etiquetas=[EtiquetaItem.SIN_GLUTEN],
+            etiquetas={EtiquetaItem.SIN_GLUTEN},
             created_at=datetime.utcnow(),
             updated_at=datetime.utcnow(),
             version=1,
@@ -391,7 +391,7 @@ class TestBebida:
             stock_actual=50,
             stock_minimo=10,
             activo=True,
-            etiquetas=[EtiquetaItem.SIN_GLUTEN],
+            etiquetas={EtiquetaItem.SIN_GLUTEN},
             created_at=datetime.utcnow(),
             updated_at=datetime.utcnow(),
             version=1,
@@ -429,7 +429,7 @@ class TestBebida:
             stock_actual=50,
             stock_minimo=10,
             activo=True,
-            etiquetas=[EtiquetaItem.SIN_GLUTEN],
+            etiquetas={EtiquetaItem.SIN_GLUTEN},
             created_at=datetime.utcnow(),
             updated_at=datetime.utcnow(),
             version=1,
@@ -449,12 +449,12 @@ class TestBebida:
         precio = Precio(Decimal("15.99"))
         info_nutricional = InformacionNutricional(
             calorias=200,
-            proteinas=Decimal("0.0"),
-            azucares=Decimal("0.0"),
-            grasas=Decimal("0.0"),
-            carbohidratos=Decimal("0.0"),
-            fibra=Decimal("0.0"),
-            sodio=Decimal("0.0")
+            proteinas=0.0,
+            azucares=50.0,  # 50g * 4 cal/g = 200 cal
+            grasas=0.0,
+            carbohidratos=50.0,
+            fibra=0.0,
+            sodio=0.0
         )
         
         bebida = Bebida(
@@ -467,7 +467,7 @@ class TestBebida:
             stock_actual=30,
             stock_minimo=5,
             activo=True,
-            etiquetas=[EtiquetaItem.SIN_GLUTEN],
+            etiquetas={EtiquetaItem.SIN_GLUTEN},
             created_at=datetime.utcnow(),
             updated_at=datetime.utcnow(),
             version=1,

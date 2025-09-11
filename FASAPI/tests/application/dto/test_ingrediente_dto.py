@@ -46,7 +46,7 @@ class TestCreateIngredienteDTO:
         )
         
         assert dto.nombre == "Tomate"
-        assert dto.tipo == EtiquetaIngrediente.VERDURA
+        assert dto.tipo == EtiquetaIngrediente.VERDURA.value
         assert dto.peso_unitario == 150.0
         assert dto.unidad_medida == "gramos"
         assert dto.proveedor == "Proveedor Local"
@@ -72,7 +72,7 @@ class TestCreateIngredienteDTO:
                 unidad_medida="gramos"
             )
         
-        assert "ensure this value is greater than 0" in str(exc_info.value)
+        assert "Input should be greater than 0" in str(exc_info.value)
     
     def test_empty_unidad_medida_raises_error(self):
         """Test that empty unit of measure raises validation error."""
@@ -95,7 +95,7 @@ class TestCreateIngredienteDTO:
                 unidad_medida=""
             )
         
-        assert "Unit of measure cannot be empty" in str(exc_info.value)
+        assert "String should have at least 1 character" in str(exc_info.value)
     
     def test_past_expiration_date_raises_error(self):
         """Test that past expiration date raises validation error."""
@@ -230,7 +230,7 @@ class TestStockUpdateDTO:
                 operacion="aumentar"
             )
         
-        assert "ensure this value is greater than 0" in str(exc_info.value)
+        assert "Input should be greater than 0" in str(exc_info.value)
     
     def test_invalid_operation_raises_error(self):
         """Test that invalid operation raises validation error."""
@@ -240,4 +240,4 @@ class TestStockUpdateDTO:
                 operacion="invalid"
             )
         
-        assert "Operation must be 'aumentar' or 'reducir'" in str(exc_info.value) or "string does not match regex" in str(exc_info.value)
+        assert "String should match pattern" in str(exc_info.value)

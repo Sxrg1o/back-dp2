@@ -189,7 +189,7 @@ class TestCreateBebidaDTO:
                 temperatura_servicio="hirviendo"
             )
         
-        assert "Service temperature must be 'fria', 'caliente', or 'ambiente'" in str(exc_info.value) or "string does not match regex" in str(exc_info.value)
+        assert "String should match pattern" in str(exc_info.value)
     
     def test_whitespace_fields_are_trimmed(self):
         """Test that whitespace in fields is trimmed."""
@@ -286,7 +286,7 @@ class TestUpdateBebidaDTO:
         with pytest.raises(ValidationError) as exc_info:
             UpdateBebidaDTO(temperatura_servicio="congelada")
         
-        assert "Service temperature must be 'fria', 'caliente', or 'ambiente'" in str(exc_info.value) or "string does not match regex" in str(exc_info.value)
+        assert "String should match pattern" in str(exc_info.value)
     
     def test_none_values_are_allowed(self):
         """Test that None values are allowed in update DTO."""

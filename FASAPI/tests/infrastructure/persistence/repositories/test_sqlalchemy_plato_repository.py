@@ -31,9 +31,9 @@ class TestSqlAlchemyPlatoRepository:
         return PlatoMapper()
 
     @pytest.fixture
-    def repository(self, mock_session, mapper):
+    def repository(self, mock_session):
         """Create repository instance."""
-        return SqlAlchemyPlatoRepository(mock_session, mapper)
+        return SqlAlchemyPlatoRepository(mock_session)
 
     @pytest.fixture
     def sample_plato(self):

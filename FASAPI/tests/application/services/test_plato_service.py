@@ -165,7 +165,7 @@ class TestPlatoApplicationService:
         
         # Assert
         assert result.nombre == "Pasta Carbonara"
-        assert result.tipo_plato == EtiquetaPlato.FONDO
+        assert result.tipo_plato == EtiquetaPlato.FONDO.value
         assert result.porciones == 2
         mock_plato_repository.exists_by_name.assert_called_once_with("Pasta Carbonara")
         mock_plato_repository.save.assert_called_once()
@@ -303,7 +303,7 @@ class TestPlatoApplicationService:
         
         # Assert
         assert len(result) == 1
-        assert result[0].tipo_plato == EtiquetaPlato.FONDO
+        assert result[0].tipo_plato == EtiquetaPlato.FONDO.value
         mock_plato_repository.get_by_dish_type.assert_called_once_with(EtiquetaPlato.FONDO)
     
     @pytest.mark.asyncio
