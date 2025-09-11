@@ -1,0 +1,1 @@
+"""Data Transfer Objects for menu application layer."""

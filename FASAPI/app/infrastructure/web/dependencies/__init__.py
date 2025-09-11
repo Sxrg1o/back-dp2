@@ -1,0 +1,1 @@
+"""Dependency injection configuration for web layer."""

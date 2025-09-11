@@ -2,7 +2,7 @@
 
 from fastapi import APIRouter
 
-from app.routers import mesas, pedidos, auth
+from app.routers import mesas, pedidos, auth, menu
 
 api_router = APIRouter()
 
@@ -10,3 +10,4 @@ api_router = APIRouter()
 api_router.include_router(auth.router, prefix="/auth", tags=["authentication"])
 api_router.include_router(mesas.router, prefix="/mesas", tags=["mesas"])
 api_router.include_router(pedidos.router, prefix="/pedidos", tags=["pedidos"])
+api_router.include_router(menu.router, prefix="/menu", tags=["menu"])

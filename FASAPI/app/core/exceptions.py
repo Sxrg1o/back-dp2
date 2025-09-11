@@ -12,6 +12,25 @@ from sqlalchemy.exc import IntegrityError
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
 from app.core.logging import logger
+from app.domain.exceptions.menu_exceptions import (
+    MenuDomainException,
+    ItemNotFoundError,
+    ItemNotAvailableError,
+    InsufficientStockError,
+    InvalidNutritionalDataError,
+    InvalidPriceError,
+    IngredientExpiredError,
+    RecipeValidationError,
+    InvalidVolumeError,
+    InvalidAlcoholContentError,
+    ItemAlreadyExistsError,
+    IngredienteNotFoundError,
+    IngredienteAlreadyExistsError,
+    PlatoNotFoundError,
+    PlatoAlreadyExistsError,
+    BebidaNotFoundError,
+    BebidaAlreadyExistsError,
+)
 
 
 class AppException(Exception):
@@ -178,6 +197,52 @@ async def integrity_error_handler(request: Request, exc: IntegrityError) -> JSON
     )
 
 
+async def menu_domain_exception_handler(
+    request: Request, exc: MenuDomainException
+) -> JSONResponse:
+    """Handle menu domain exceptions."""
+    # Map specific menu exceptions to appropriate HTTP status codes
+    status_code_mapping = {
+        ItemNotFoundError: status.HTTP_404_NOT_FOUND,
+        IngredienteNotFoundError: status.HTTP_404_NOT_FOUND,
+        PlatoNotFoundError: status.HTTP_404_NOT_FOUND,
+        BebidaNotFoundError: status.HTTP_404_NOT_FOUND,
+        ItemNotAvailableError: status.HTTP_409_CONFLICT,
+        InsufficientStockError: status.HTTP_409_CONFLICT,
+        ItemAlreadyExistsError: status.HTTP_409_CONFLICT,
+        IngredienteAlreadyExistsError: status.HTTP_409_CONFLICT,
+        PlatoAlreadyExistsError: status.HTTP_409_CONFLICT,
+        BebidaAlreadyExistsError: status.HTTP_409_CONFLICT,
+        IngredientExpiredError: status.HTTP_409_CONFLICT,
+        InvalidNutritionalDataError: status.HTTP_422_UNPROCESSABLE_ENTITY,
+        InvalidPriceError: status.HTTP_422_UNPROCESSABLE_ENTITY,
+        RecipeValidationError: status.HTTP_422_UNPROCESSABLE_ENTITY,
+        InvalidVolumeError: status.HTTP_422_UNPROCESSABLE_ENTITY,
+        InvalidAlcoholContentError: status.HTTP_422_UNPROCESSABLE_ENTITY,
+    }
+    
+    # Get appropriate status code or default to 400
+    status_code = status_code_mapping.get(type(exc), status.HTTP_400_BAD_REQUEST)
+    
+    logger.warning(
+        "Menu domain exception",
+        extra={
+            "exception_type": type(exc).__name__,
+            "message": exc.message,
+            "details": exc.details,
+            "status_code": status_code,
+        },
+    )
+    
+    return create_error_response(
+        request=request,
+        status_code=status_code,
+        code=type(exc).__name__.upper(),
+        message=exc.message,
+        details=exc.details if exc.details else None,
+    )
+
+
 async def general_exception_handler(request: Request, exc: Exception) -> JSONResponse:
     """Handle general exceptions."""
     logger.error(
@@ -195,6 +260,10 @@ async def general_exception_handler(request: Request, exc: Exception) -> JSONRes
 
 def setup_exception_handlers(app: FastAPI) -> None:
     """Set up exception handlers for the application."""
+    # Add menu domain exception handler first (more specific)
+    app.add_exception_handler(MenuDomainException, menu_domain_exception_handler)
+    
+    # Add general application exception handlers
     app.add_exception_handler(AppException, app_exception_handler)
     app.add_exception_handler(StarletteHTTPException, http_exception_handler)
     app.add_exception_handler(RequestValidationError, validation_exception_handler)

@@ -240,3 +240,147 @@ class InvalidAlcoholContentError(MenuDomainException):
         super().__init__(message, details)
         self.alcohol_content = alcohol_content
         self.validation_rule = validation_rule
+
+
+class ItemAlreadyExistsError(MenuDomainException):
+    """Raised when trying to create an item that already exists."""
+    
+    def __init__(self, item_name: Optional[str] = None, message: Optional[str] = None):
+        if message is None:
+            if item_name:
+                message = f"Item '{item_name}' already exists"
+            else:
+                message = "Item already exists"
+        
+        details = {}
+        if item_name:
+            details["item_name"] = item_name
+        
+        super().__init__(message, details)
+        self.item_name = item_name
+
+
+class IngredienteNotFoundError(MenuDomainException):
+    """Raised when an ingredient is not found."""
+    
+    def __init__(self, ingrediente_id: Optional[UUID] = None, ingrediente_name: Optional[str] = None, 
+                 message: Optional[str] = None):
+        if message is None:
+            if ingrediente_id:
+                message = f"Ingredient with ID {ingrediente_id} not found"
+            elif ingrediente_name:
+                message = f"Ingredient '{ingrediente_name}' not found"
+            else:
+                message = "Ingredient not found"
+        
+        details = {}
+        if ingrediente_id:
+            details["ingrediente_id"] = str(ingrediente_id)
+        if ingrediente_name:
+            details["ingrediente_name"] = ingrediente_name
+        
+        super().__init__(message, details)
+        self.ingrediente_id = ingrediente_id
+        self.ingrediente_name = ingrediente_name
+
+
+class IngredienteAlreadyExistsError(MenuDomainException):
+    """Raised when trying to create an ingredient that already exists."""
+    
+    def __init__(self, ingrediente_name: Optional[str] = None, message: Optional[str] = None):
+        if message is None:
+            if ingrediente_name:
+                message = f"Ingredient '{ingrediente_name}' already exists"
+            else:
+                message = "Ingredient already exists"
+        
+        details = {}
+        if ingrediente_name:
+            details["ingrediente_name"] = ingrediente_name
+        
+        super().__init__(message, details)
+        self.ingrediente_name = ingrediente_name
+
+
+class PlatoNotFoundError(MenuDomainException):
+    """Raised when a dish is not found."""
+    
+    def __init__(self, plato_id: Optional[UUID] = None, plato_name: Optional[str] = None, 
+                 message: Optional[str] = None):
+        if message is None:
+            if plato_id:
+                message = f"Dish with ID {plato_id} not found"
+            elif plato_name:
+                message = f"Dish '{plato_name}' not found"
+            else:
+                message = "Dish not found"
+        
+        details = {}
+        if plato_id:
+            details["plato_id"] = str(plato_id)
+        if plato_name:
+            details["plato_name"] = plato_name
+        
+        super().__init__(message, details)
+        self.plato_id = plato_id
+        self.plato_name = plato_name
+
+
+class PlatoAlreadyExistsError(MenuDomainException):
+    """Raised when trying to create a dish that already exists."""
+    
+    def __init__(self, plato_name: Optional[str] = None, message: Optional[str] = None):
+        if message is None:
+            if plato_name:
+                message = f"Dish '{plato_name}' already exists"
+            else:
+                message = "Dish already exists"
+        
+        details = {}
+        if plato_name:
+            details["plato_name"] = plato_name
+        
+        super().__init__(message, details)
+        self.plato_name = plato_name
+
+
+class BebidaNotFoundError(MenuDomainException):
+    """Raised when a beverage is not found."""
+    
+    def __init__(self, bebida_id: Optional[UUID] = None, bebida_name: Optional[str] = None, 
+                 message: Optional[str] = None):
+        if message is None:
+            if bebida_id:
+                message = f"Beverage with ID {bebida_id} not found"
+            elif bebida_name:
+                message = f"Beverage '{bebida_name}' not found"
+            else:
+                message = "Beverage not found"
+        
+        details = {}
+        if bebida_id:
+            details["bebida_id"] = str(bebida_id)
+        if bebida_name:
+            details["bebida_name"] = bebida_name
+        
+        super().__init__(message, details)
+        self.bebida_id = bebida_id
+        self.bebida_name = bebida_name
+
+
+class BebidaAlreadyExistsError(MenuDomainException):
+    """Raised when trying to create a beverage that already exists."""
+    
+    def __init__(self, bebida_name: Optional[str] = None, message: Optional[str] = None):
+        if message is None:
+            if bebida_name:
+                message = f"Beverage '{bebida_name}' already exists"
+            else:
+                message = "Beverage already exists"
+        
+        details = {}
+        if bebida_name:
+            details["bebida_name"] = bebida_name
+        
+        super().__init__(message, details)
+        self.bebida_name = bebida_name
