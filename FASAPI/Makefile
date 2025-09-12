@@ -7,6 +7,7 @@ help:
 	@echo "Available commands:"
 	@echo "  install     - Install dependencies"
 	@echo "  dev         - Run development server"
+	@echo "  init-db     - Initialize development database with sample data"
 	@echo "  test        - Run tests"
 	@echo "  test-cov    - Run tests with coverage"
 	@echo "  lint        - Run linting"
@@ -72,6 +73,10 @@ migrate:
 # Create new migration
 migration:
 	poetry run alembic revision --autogenerate -m "$(msg)"
+
+# Initialize development database with sample data
+init-db:
+	poetry run python scripts/init_dev_db.py
 
 # Install pre-commit hooks
 pre-commit:

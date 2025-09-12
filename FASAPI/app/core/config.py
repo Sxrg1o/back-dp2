@@ -23,7 +23,7 @@ class Settings(BaseSettings):
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
     
     # Database
-    DATABASE_URL: Optional[PostgresDsn] = None
+    DATABASE_URL: Optional[str] = None
     DATABASE_TEST_URL: str = "sqlite+aiosqlite:///./test.db"
     
     @field_validator("DATABASE_URL", mode="before")
@@ -31,8 +31,9 @@ class Settings(BaseSettings):
     def assemble_db_connection(cls, v: Optional[str]) -> Any:
         if isinstance(v, str):
             return v
-        # For Pydantic v2, we'll use a simple string format since PostgresDsn.build is deprecated
-        return "postgresql+asyncpg://postgres:password@localhost:5432/restaurant_db"
+        # For development without PostgreSQL, use SQLite
+        # return "postgresql+asyncpg://postgres:password@localhost:5432/restaurant_db"
+        return "sqlite+aiosqlite:///./restaurant_dev.db"
     
     # Redis
     REDIS_URL: str = "redis://localhost:6379/0"

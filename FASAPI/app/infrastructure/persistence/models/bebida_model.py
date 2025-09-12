@@ -1,7 +1,6 @@
 """SQLAlchemy model for Bebida entity."""
 
 from sqlalchemy import Column, String, Float, ForeignKey
-from sqlalchemy.dialects.postgresql import UUID
 
 from app.infrastructure.persistence.models.item_model import ItemModel
 
@@ -12,7 +11,7 @@ class BebidaModel(ItemModel):
     __tablename__ = "bebidas"
     
     # Foreign key to parent table for joined table inheritance
-    id = Column(UUID(as_uuid=True), ForeignKey("items.id"), primary_key=True)
+    id = Column(String, ForeignKey("items.id"), primary_key=True)
     
     # Beverage-specific fields
     volumen = Column(Float, nullable=False)  # in milliliters

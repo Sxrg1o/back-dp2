@@ -1,7 +1,6 @@
 """SQLAlchemy model for Plato entity."""
 
 from sqlalchemy import Column, String, Text, Integer, JSON, ForeignKey
-from sqlalchemy.dialects.postgresql import UUID
 
 from app.infrastructure.persistence.models.item_model import ItemModel
 
@@ -12,7 +11,7 @@ class PlatoModel(ItemModel):
     __tablename__ = "platos"
     
     # Foreign key to parent table for joined table inheritance
-    id = Column(UUID(as_uuid=True), ForeignKey("items.id"), primary_key=True)
+    id = Column(String, ForeignKey("items.id"), primary_key=True)
     
     # Dish-specific fields
     tipo_plato = Column(String(50), nullable=False)  # EtiquetaPlato enum value

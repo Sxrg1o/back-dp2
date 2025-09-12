@@ -1,7 +1,6 @@
 """SQLAlchemy model for Item entity."""
 
 from sqlalchemy import Column, String, Text, Integer, Boolean, Numeric, JSON
-from sqlalchemy.dialects.postgresql import ARRAY
 
 from app.infrastructure.persistence.models.base import BaseModel
 
@@ -26,8 +25,8 @@ class ItemModel(BaseModel):
     stock_actual = Column(Integer, nullable=False, default=0)
     stock_minimo = Column(Integer, nullable=False, default=0)
     
-    # Labels/tags (stored as array of strings)
-    etiquetas = Column(ARRAY(String), nullable=False, default=list)
+    # Labels/tags (stored as JSON array for SQLite compatibility)
+    etiquetas = Column(JSON, nullable=False, default=list)
     
     # Status
     activo = Column(Boolean, nullable=False, default=True)

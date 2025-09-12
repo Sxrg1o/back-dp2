@@ -56,30 +56,41 @@ FASAPI/
 ### Instalación
 
 1. **Clonar el repositorio**
+
 ```bash
 git clone <repository-url>
 cd FASAPI
 ```
 
 2. **Instalar dependencias**
+
 ```bash
 poetry install
 ```
 
 3. **Configurar variables de entorno**
+
 ```bash
 cp .env.example .env
 # Editar .env con tus configuraciones
 ```
 
 4. **Ejecutar migraciones**
+
 ```bash
 poetry run alembic upgrade head
 ```
 
-5. **Ejecutar la aplicación**
+5. **Inicializar base de datos con datos de prueba**
+
 ```bash
-poetry run uvicorn app.main:app --reload
+make init-db
+```
+
+6. **Ejecutar la aplicación**
+
+```bash
+make dev
 ```
 
 ## 🐳 Docker
@@ -108,6 +119,22 @@ poetry run pytest -m unit
 poetry run pytest -m integration
 ```
 
+## 🔧 Comandos Disponibles
+
+```bash
+make help          # Mostrar todos los comandos disponibles
+make install       # Instalar dependencias
+make dev           # Ejecutar servidor de desarrollo
+make init-db       # Inicializar base de datos con datos de prueba
+make test          # Ejecutar pruebas
+make test-cov      # Ejecutar pruebas con cobertura
+make lint          # Ejecutar linting
+make format        # Formatear código
+make docker-up     # Iniciar servicios con Docker
+make docker-down   # Detener servicios Docker
+make migrate       # Ejecutar migraciones de base de datos
+```
+
 ## 🔧 Herramientas de Desarrollo
 
 ```bash
@@ -124,6 +151,50 @@ poetry run mypy .
 poetry run pre-commit install
 poetry run pre-commit run --all-files
 ```
+
+## � PProbando la API
+
+### Opción 1: Usando Swagger UI (Recomendado)
+
+1. Inicializar la base de datos: `make init-db`
+2. Iniciar el servidor: `make dev`
+3. Abrir el navegador en: `http://localhost:8000/docs`
+4. Probar los endpoints disponibles:
+
+#### Endpoints de Menú:
+
+- **GET** `/api/v1/menu/` - Obtener menú completo
+- **GET** `/api/v1/menu/categories` - Obtener menú por categorías
+- **GET** `/api/v1/menu/search?query=tomate` - Buscar elementos del menú
+- **GET** `/api/v1/menu/statistics` - Obtener estadísticas del menú
+- **GET** `/api/v1/menu/nutrition` - Obtener resumen nutricional
+
+### Opción 2: Usando curl
+
+```bash
+# Obtener menú completo
+curl http://localhost:8000/api/v1/menu/
+
+# Buscar elementos
+curl "http://localhost:8000/api/v1/menu/search?query=tomate"
+
+# Obtener estadísticas del menú
+curl http://localhost:8000/api/v1/menu/statistics
+
+# Health check
+curl http://localhost:8000/health
+```
+
+### Datos de Prueba
+
+La base de datos de desarrollo incluye datos de ejemplo:
+
+- **Items**: Tomate, Pollo
+- **Ingredientes**: Cebolla
+- **Platos**: Ensalada César
+- **Bebidas**: Agua Mineral
+
+Puedes usar estos datos para probar los endpoints de la API.
 
 ## 📚 API Documentation
 
@@ -154,7 +225,9 @@ Una vez que la aplicación esté ejecutándose, puedes acceder a:
 ## 🔌 Integraciones Externas
 
 ### Web Scraping
+
 Para sitios con contenido estático:
+
 ```python
 from app.oai.sources.scraper import WebScraper
 
@@ -163,7 +236,9 @@ data = await scraper.scrape_menu("https://restaurant.com/menu")
 ```
 
 ### RPA (Robotic Process Automation)
+
 Para sitios con contenido dinámico o que requieren interacción:
+
 ```python
 from app.oai.sources.rpa import RPABot
 
@@ -174,6 +249,7 @@ data = await bot.login_and_scrape("https://restaurant.com/admin")
 ## 📊 Monitoreo y Logs
 
 Los logs se generan en formato estructurado y se almacenan en:
+
 - Desarrollo: `logs/application.log`
 - Producción: stdout (para agregación por contenedor)
 
@@ -226,5 +302,6 @@ Este proyecto está bajo la Licencia MIT - ver el archivo [LICENSE](LICENSE) par
 ## 📞 Soporte
 
 Para soporte y preguntas:
+
 - Email: dev@restaurant-platform.com
 - Issues: [GitHub Issues](https://github.com/your-org/restaurant-api/issues)
