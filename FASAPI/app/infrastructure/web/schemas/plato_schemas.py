@@ -7,7 +7,7 @@ from uuid import UUID
 
 from pydantic import BaseModel, Field
 
-from app.schemas.base import BaseEntitySchema
+from app.infrastructure.web.schemas.base_schemas import BaseEntitySchema
 from app.domain.value_objects.etiqueta_item import EtiquetaItem
 from app.domain.value_objects.etiqueta_plato import EtiquetaPlato
 from app.infrastructure.web.schemas.menu_schemas import InformacionNutricionalSchema, ItemBaseSchema

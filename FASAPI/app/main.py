@@ -9,10 +9,11 @@ from fastapi.middleware.trustedhost import TrustedHostMiddleware
 from app.core.config import settings
 from app.core.exceptions import setup_exception_handlers
 from app.core.logging import setup_logging
-from app.middlewares.request_id import RequestIdMiddleware
-from app.middlewares.idempotency import IdempotencyMiddleware
-from app.routers import api_router
-from app.scheduler.setup import setup_scheduler
+from app.infrastructure.web.controllers.menu_controller import router as menu_router
+from app.infrastructure.web.controllers.item_controller import router as item_router
+from app.infrastructure.web.controllers.bebida_controller import router as bebida_router
+from app.infrastructure.web.controllers.ingrediente_controller import router as ingrediente_router
+from app.infrastructure.web.controllers.plato_controller import router as plato_router
 
 
 @asynccontextmanager
@@ -20,11 +21,9 @@ async def lifespan(app: FastAPI):
     """Application lifespan events."""
     # Startup
     setup_logging()
-    if settings.SCHEDULER_ENABLED:
-        setup_scheduler()
-    
+
     yield
-    
+
     # Shutdown
     # Add cleanup logic here if needed
     pass
@@ -55,16 +54,16 @@ def create_application() -> FastAPI:
 
     # Add security middleware
     app.add_middleware(TrustedHostMiddleware, allowed_hosts=["*"])
-    
-    # Add custom middlewares
-    app.add_middleware(RequestIdMiddleware)
-    app.add_middleware(IdempotencyMiddleware)
 
     # Set up exception handlers
     setup_exception_handlers(app)
 
-    # Include routers
-    app.include_router(api_router, prefix=settings.API_V1_STR)
+    # Include routers from infrastructure layer
+    app.include_router(menu_router, prefix=f"{settings.API_V1_STR}/menu", tags=["menu"])
+    app.include_router(item_router, prefix=f"{settings.API_V1_STR}/items", tags=["items"])
+    app.include_router(bebida_router, prefix=f"{settings.API_V1_STR}/bebidas", tags=["bebidas"])
+    app.include_router(ingrediente_router, prefix=f"{settings.API_V1_STR}/ingredientes", tags=["ingredientes"])
+    app.include_router(plato_router, prefix=f"{settings.API_V1_STR}/platos", tags=["platos"])
 
     return app
 

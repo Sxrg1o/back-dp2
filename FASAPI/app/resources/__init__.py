@@ -1,1 +1,0 @@
-"""Configuration resources and files."""
