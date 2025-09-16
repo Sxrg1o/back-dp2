@@ -1,6 +1,11 @@
 services:
   users:
     build: ./users-ms
-    command: uvicorn main:app --host 0.0.0.0 --port 8001
+    command: uvicorn main:app --host 0.0.0.0 --port 8000
     ports:
-      - "8001:8001"
+      - "8501:8000"
+  menu:
+    build: ./menu-ms
+    command: uvicorn main:app --host 0.0.0.0 --port 8000
+    ports:
+      - "8502:8000"
