@@ -2,7 +2,17 @@ from fastapi import FastAPI
 import uvicorn
 import os
 
-app = FastAPI()
+from infrastructure.db import Base, engine
+from infrastructure.models.user_model import UserModel
+from infrastructure.handlers.user_handler import router as user_router
+
+app = FastAPI(title="Users Microservice")
+
+# Crear tablas
+Base.metadata.create_all(bind=engine)
+
+app.include_router(user_router)
+
 
 @app.get("/health")
 def health():
