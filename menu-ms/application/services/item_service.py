@@ -82,6 +82,15 @@ class ItemService:
         """
         return self.get_all_items_use_case.execute(only_available)
     
+    def get_all_items_with_ingredientes(self) -> List[dict]:
+        """
+        Obtiene todos los ítems del menú con sus ingredientes asociados.
+        
+        Returns:
+            List[dict]: Lista de ítems con ingredientes
+        """
+        return self.item_repository.get_all_with_ingredientes()
+    
     def get_items_by_price_range(
         self, 
         min_price: Decimal, 

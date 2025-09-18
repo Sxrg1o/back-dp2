@@ -14,7 +14,7 @@ from infrastructure.db import get_db
 from .dtos import (
     PlatoCreateDTO, PlatoUpdateDTO, PlatoResponseDTO,
     BebidaCreateDTO, BebidaUpdateDTO, BebidaResponseDTO,
-    ItemResponseDTO, StockUpdateDTO, ItemSearchDTO, PriceRangeDTO,
+    ItemResponseDTO, ItemConIngredientesDTO, StockUpdateDTO, ItemSearchDTO, PriceRangeDTO,
     MessageResponseDTO, ErrorResponseDTO
 )
 
@@ -132,6 +132,21 @@ def get_all_items(
         items = service.get_all_items(only_available)
         return [ItemResponseDTO.model_validate(item) for item in items]
     
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error interno del servidor: {str(e)}")
+
+
+@router.get("/with-ingredientes", response_model=List[ItemConIngredientesDTO])
+def get_all_items_with_ingredientes(
+    service: ItemService = Depends(get_item_service)
+):
+    """
+    Lista todos los ítems del menú con sus ingredientes asociados.
+    Aplica eager loading para optimizar las consultas.
+    """
+    try:
+        items = service.get_all_items_with_ingredientes()
+        return items
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error interno del servidor: {str(e)}")
 

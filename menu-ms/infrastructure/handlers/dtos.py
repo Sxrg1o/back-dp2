@@ -81,6 +81,25 @@ class ItemResponseDTO(ItemBaseDTO):
         from_attributes = True
 
 
+class IngredienteSimpleDTO(BaseModel):
+    """DTO simplificado para ingredientes en la respuesta de ítems."""
+    id: int = Field(..., description="ID del ingrediente")
+    nombre: str = Field(..., description="Nombre del ingrediente")
+    tipo: EtiquetaIngrediente = Field(..., description="Tipo del ingrediente")
+    cantidad: Decimal = Field(default=1.0, description="Cantidad utilizada en el ítem")
+    
+    class Config:
+        from_attributes = True
+
+
+class ItemConIngredientesDTO(ItemResponseDTO):
+    """DTO de respuesta para un ítem con sus ingredientes."""
+    ingredientes: List[IngredienteSimpleDTO] = Field(default=[], description="Lista de ingredientes del ítem")
+    
+    class Config:
+        from_attributes = True
+
+
 class StockUpdateDTO(BaseModel):
     """DTO para actualizar el stock de un ítem."""
     unidades_disponibles: int = Field(..., ge=0, description="Nuevo stock disponible")

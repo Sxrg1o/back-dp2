@@ -4,7 +4,7 @@ Implementación concreta del repositorio de ítems.
 
 from typing import List, Optional
 from decimal import Decimal
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 from domain.entities import Item, Plato, Bebida
 from domain.entities.enums import EtiquetaItem, EtiquetaPlato
 from domain.repositories import ItemRepository, PlatoRepository, BebidaRepository
@@ -137,6 +137,86 @@ class ItemRepositoryImpl(ItemRepository):
         """
         items = self.db.query(ItemModel).all()
         return [item.to_domain() for item in items]
+    
+    def get_all_with_ingredientes(self) -> List[dict]:
+        """
+        Obtiene todos los ítems con sus ingredientes asociados.
+        Aplica eager loading para optimizar las consultas.
+        
+        Returns:
+            List[dict]: Lista de diccionarios con ítems e ingredientes
+        """
+        # Consulta optimizada con eager loading
+        items = (
+            self.db.query(ItemModel)
+            .options(
+                # Cargar ingredientes de forma eager
+                joinedload(ItemModel.ingredientes),
+                # Cargar etiquetas de forma eager
+                joinedload(ItemModel.etiquetas)
+            )
+            .all()
+        )
+        
+        result = []
+        for item in items:
+            # Convertir a entidad de dominio
+            item_domain = item.to_domain()
+            
+            # Obtener ingredientes con cantidad de la tabla de asociación
+            ingredientes_data = []
+            for ingrediente in item.ingredientes:
+                # Buscar la cantidad en la tabla de asociación
+                cantidad = self.db.execute(
+                    item_ingrediente_association.select().where(
+                        item_ingrediente_association.c.item_id == item.id,
+                        item_ingrediente_association.c.ingrediente_id == ingrediente.id
+                    )
+                ).scalar()
+                
+                ingredientes_data.append({
+                    "id": ingrediente.id,
+                    "nombre": ingrediente.nombre,
+                    "tipo": ingrediente.tipo,
+                    "cantidad": cantidad or Decimal('1.0')
+                })
+            
+            # Construir respuesta
+            item_data = {
+                "id": item.id,
+                "descripcion": item.descripcion,
+                "precio": float(item.precio),
+                "tipo": item.tipo,
+                "disponible": item.disponible,
+                "unidades_disponibles": item.unidades_disponibles,
+                "valor_nutricional": item.valor_nutricional or "",
+                "tiempo_preparacion": float(item.tiempo_preparacion),
+                "comentarios": item.comentarios or "",
+                "receta": item.receta or "",
+                "num_ingredientes": item.num_ingredientes,
+                "kcal": item.kcal,
+                "calorias": float(item.calorias),
+                "proteinas": float(item.proteinas),
+                "azucares": float(item.azucares),
+                "etiquetas": [etiqueta.etiqueta for etiqueta in item.etiquetas],
+                "ingredientes": ingredientes_data
+            }
+            
+            # Agregar campos específicos según el tipo
+            if item.tipo == 'PLATO' and hasattr(item, 'peso'):
+                item_data.update({
+                    "peso": float(item.peso),
+                    "tipo_plato": getattr(item, 'tipo_plato', 'FONDO')
+                })
+            elif item.tipo == 'BEBIDA' and hasattr(item, 'litros'):
+                item_data.update({
+                    "litros": float(item.litros),
+                    "alcoholico": getattr(item, 'alcoholico', False)
+                })
+            
+            result.append(item_data)
+        
+        return result
     
     def get_available(self) -> List[Item]:
         """
