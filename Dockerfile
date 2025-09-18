@@ -16,6 +16,9 @@ COPY menu-ms/requirements.txt /app/menu-ms-requirements.txt
 RUN pip install --no-cache-dir -r /app/users-ms-requirements.txt
 RUN pip install --no-cache-dir -r /app/menu-ms-requirements.txt
 
+# Copiar supervisord.conf
+COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
+
 # Copiar código fuente de ambos microservicios
 COPY users-ms/ /app/users-ms/
 COPY menu-ms/ /app/menu-ms/
@@ -23,8 +26,11 @@ COPY menu-ms/ /app/menu-ms/
 # Crear directorios para datos persistentes
 RUN mkdir -p /app/menu-ms/data
 
+# Crear directorios para logs
+RUN mkdir -p /var/log
+
 # Exponer puertos
 EXPOSE 8001 8002
 
-# Comando de inicio para supervisord
-CMD ["/usr/bin/supervisord"]
+# Comando de inicio para supervisord con configuración explícita
+CMD ["/usr/bin/supervisord", "-c", "/etc/supervisor/conf.d/supervisord.conf"]
