@@ -28,12 +28,26 @@ def create_peru_data():
     # Datos de ingredientes peruanos
     ingredientes = [
         {"nombre": "Ají Amarillo", "stock": 15.0, "peso": 0.05, "tipo": "VERDURA"},
+        {"nombre": "Ají Panca", "stock": 10.0, "peso": 0.04, "tipo": "VERDURA"},
         {"nombre": "Rocoto", "stock": 8.0, "peso": 0.03, "tipo": "VERDURA"},
         {"nombre": "Cebolla Morada", "stock": 20.0, "peso": 0.2, "tipo": "VERDURA"},
         {"nombre": "Culantro", "stock": 12.0, "peso": 0.01, "tipo": "VERDURA"},
+        {"nombre": "Ajo", "stock": 15.0, "peso": 0.02, "tipo": "VERDURA"},
+        {"nombre": "Limón", "stock": 25.0, "peso": 0.12, "tipo": "FRUTA"},
         {"nombre": "Papa Amarilla", "stock": 30.0, "peso": 0.3, "tipo": "VERDURA"},
+        {"nombre": "Camote", "stock": 22.0, "peso": 0.35, "tipo": "VERDURA"},
+        {"nombre": "Maíz Morado", "stock": 18.0, "peso": 0.3, "tipo": "FRUTA"},
+        {"nombre": "Choclo", "stock": 18.0, "peso": 0.25, "tipo": "VERDURA"},
+        {"nombre": "Arroz", "stock": 40.0, "peso": 1.0, "tipo": "VERDURA"},
+        {"nombre": "Habas", "stock": 12.0, "peso": 0.2, "tipo": "VERDURA"},
+        {"nombre": "Zapallo", "stock": 10.0, "peso": 0.5, "tipo": "VERDURA"},
+        {"nombre": "Cebollita China", "stock": 6.0, "peso": 0.05, "tipo": "VERDURA"},
+        {"nombre": "Kion", "stock": 6.0, "peso": 0.05, "tipo": "VERDURA"},
         {"nombre": "Pollo Criollo", "stock": 15.0, "peso": 1.2, "tipo": "CARNE"},
+        {"nombre": "Carne de Res", "stock": 12.0, "peso": 1.0, "tipo": "CARNE"},
         {"nombre": "Pescado de Mar", "stock": 12.0, "peso": 0.6, "tipo": "CARNE"},
+        {"nombre": "Camarón", "stock": 10.0, "peso": 0.3, "tipo": "CARNE"},
+        {"nombre": "Calamar", "stock": 8.0, "peso": 0.4, "tipo": "CARNE"},
         {"nombre": "Lúcuma", "stock": 8.0, "peso": 0.2, "tipo": "FRUTA"},
         {"nombre": "Chirimoya", "stock": 6.0, "peso": 0.3, "tipo": "FRUTA"},
         {"nombre": "Maracuyá", "stock": 7.0, "peso": 0.15, "tipo": "FRUTA"}
@@ -128,15 +142,72 @@ def create_peru_data():
             "proteinas": 8.0,
             "azucares": 45.0,
             "etiquetas": ["FRIO", "CON_GLUTEN"]
+        },
+        {
+            "descripcion": "Arroz con Pollo",
+            "precio": 24.00,
+            "peso": 380.0,
+            "tipo": "FONDO",
+            "valor_nutricional": "Balanceado en carbohidratos y proteínas",
+            "tiempo_preparacion": 35.0,
+            "comentarios": "Arroz verde con pollo",
+            "receta": "Cocinar arroz con culantro, agregar pollo, arvejas y zanahoria",
+            "disponible": True,
+            "unidades_disponibles": 14,
+            "num_ingredientes": 7,
+            "kcal": 520,
+            "calorias": 520.0,
+            "proteinas": 32.0,
+            "azucares": 10.0,
+            "etiquetas": ["CALIENTE", "CON_GLUTEN"]
+        },
+        {
+            "descripcion": "Ají de Gallina",
+            "precio": 26.00,
+            "peso": 320.0,
+            "tipo": "FONDO",
+            "valor_nutricional": "Rico en proteínas y carbohidratos",
+            "tiempo_preparacion": 40.0,
+            "comentarios": "Pollo en crema de ají amarillo",
+            "receta": "Preparar crema con ají amarillo, leche y pan, agregar pollo",
+            "disponible": True,
+            "unidades_disponibles": 12,
+            "num_ingredientes": 6,
+            "kcal": 450,
+            "calorias": 450.0,
+            "proteinas": 28.0,
+            "azucares": 8.0,
+            "etiquetas": ["CALIENTE", "PICANTE", "CON_GLUTEN"]
         }
     ]
     
+    # Helper: obtener ids de ingredientes por nombre
+    def get_ing_id(nombre: str) -> int:
+        r = requests.get(f"{base_url}/ingredientes/")
+        r.raise_for_status()
+        for ing in r.json():
+            if ing["nombre"].lower() == nombre.lower():
+                return ing["id"]
+        raise RuntimeError(f"Ingrediente no encontrado: {nombre}")
+
     # Crear platos
     print("\n🍽️ Creando platos peruanos...")
     platos_creados = 0
     for plato in platos:
         try:
-            response = requests.post(f"{base_url}/items/platos", json=plato)
+            # Asociar ingredientes por nombre según el plato
+            nombres_por_plato = {
+                "Ceviche de Pescado": ["Pescado de Mar", "Cebolla Morada", "Culantro", "Limón"],
+                "Lomo Saltado": ["Carne de Res", "Cebolla Morada", "Ají Amarillo", "Papa Amarilla", "Arroz"],
+                "Causa Limeña de Pollo": ["Papa Amarilla", "Ají Amarillo", "Pollo Criollo"],
+                "Suspiro a la Limeña": ["Lúcuma"],
+                "Arroz con Pollo": ["Arroz", "Culantro", "Pollo Criollo", "Zanahoria"],
+                "Ají de Gallina": ["Ají Amarillo", "Pollo Criollo", "Pan"]
+            }
+            ingredientes_ids = [get_ing_id(n) for n in nombres_por_plato.get(plato["descripcion"], [])]
+            payload = dict(plato)
+            payload["ingredientes_ids"] = ingredientes_ids
+            response = requests.post(f"{base_url}/items/platos", json=payload)
             if response.status_code == 201:
                 platos_creados += 1
                 print(f"   ✅ {plato['descripcion']} - S/ {plato['precio']}")
@@ -167,6 +238,24 @@ def create_peru_data():
             "proteinas": 1.0,
             "azucares": 28.0,
             "etiquetas": ["FRIO", "SIN_GLUTEN"]
+        },
+        {
+            "descripcion": "Chicha de Jora",
+            "precio": 7.50,
+            "litros": 0.5,
+            "alcoholico": True,
+            "valor_nutricional": "Fermentado tradicional",
+            "tiempo_preparacion": 0.0,
+            "comentarios": "Bebida andina",
+            "receta": "Fermentar maíz de jora",
+            "disponible": True,
+            "unidades_disponibles": 12,
+            "num_ingredientes": 2,
+            "kcal": 120,
+            "calorias": 120.0,
+            "proteinas": 1.5,
+            "azucares": 10.0,
+            "etiquetas": ["FRIO"]
         },
         {
             "descripcion": "Pisco Sour",
@@ -211,7 +300,16 @@ def create_peru_data():
     bebidas_creadas = 0
     for bebida in bebidas:
         try:
-            response = requests.post(f"{base_url}/items/bebidas", json=bebida)
+            nombres_por_bebida = {
+                "Chicha Morada": [],
+                "Chicha de Jora": ["Maíz Morado"],
+                "Pisco Sour": [],
+                "Inca Kola": []
+            }
+            ingredientes_ids = [get_ing_id(n) for n in nombres_por_bebida.get(bebida["descripcion"], [])]
+            payload = dict(bebida)
+            payload["ingredientes_ids"] = ingredientes_ids
+            response = requests.post(f"{base_url}/items/bebidas", json=payload)
             if response.status_code == 201:
                 bebidas_creadas += 1
                 print(f"   ✅ {bebida['descripcion']} - S/ {bebida['precio']}")

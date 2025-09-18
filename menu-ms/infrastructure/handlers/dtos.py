@@ -25,6 +25,7 @@ class ItemBaseDTO(BaseModel):
     azucares: Decimal = Field(default=0, ge=0, description="Contenido de azúcares en gramos")
     descripcion: str = Field(..., min_length=1, description="Descripción detallada del ítem")
     etiquetas: List[EtiquetaItem] = Field(default=[], description="Lista de etiquetas del ítem")
+    ingredientes_ids: List[int] = Field(default=[], description="IDs de ingredientes asociados")
 
 
 class PlatoCreateDTO(ItemBaseDTO):

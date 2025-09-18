@@ -7,6 +7,7 @@ from abc import ABC, abstractmethod
 from typing import List, Optional
 from decimal import Decimal
 from .enums import EtiquetaItem
+from .ingrediente import Ingrediente
 
 
 class Item(ABC):
@@ -31,7 +32,8 @@ class Item(ABC):
         proteinas: Decimal = Decimal('0.0'),
         azucares: Decimal = Decimal('0.0'),
         descripcion: str = "",
-        etiquetas: List[EtiquetaItem] = None
+        etiquetas: List[EtiquetaItem] = None,
+        ingredientes: List[Ingrediente] = None
     ):
         """
         Inicializa un ítem del menú.
@@ -68,6 +70,7 @@ class Item(ABC):
         self.azucares = azucares
         self.descripcion = descripcion
         self.etiquetas = etiquetas or []
+        self.ingredientes = ingredientes or []
     
     def verificar_stock(self) -> bool:
         """

@@ -45,6 +45,7 @@ def create_plato(
     try:
         from domain.entities import Plato
         
+        # Construir entidad de dominio
         plato = Plato(
             valor_nutricional=plato_data.valor_nutricional,
             precio=plato_data.precio,
@@ -63,6 +64,10 @@ def create_plato(
             peso=plato_data.peso,
             tipo=plato_data.tipo
         )
+        # Mapear ingredientes_ids a entidades mínimas (solo id)
+        if getattr(plato_data, 'ingredientes_ids', None):
+            from domain.entities import Ingrediente
+            plato.ingredientes = [Ingrediente(id=i) for i in plato_data.ingredientes_ids]
         
         created_plato = service.create_item(plato)
         return PlatoResponseDTO.model_validate(created_plato)
@@ -102,6 +107,9 @@ def create_bebida(
             litros=bebida_data.litros,
             alcoholico=bebida_data.alcoholico
         )
+        if getattr(bebida_data, 'ingredientes_ids', None):
+            from domain.entities import Ingrediente
+            bebida.ingredientes = [Ingrediente(id=i) for i in bebida_data.ingredientes_ids]
         
         created_bebida = service.create_item(bebida)
         return BebidaResponseDTO.model_validate(created_bebida)
@@ -147,6 +155,57 @@ def get_item(
         raise
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error interno del servidor: {str(e)}")
+
+
+@router.get("/{item_id}/ingredientes")
+def get_item_ingredientes(
+    item_id: int,
+    service: ItemService = Depends(get_item_service)
+):
+    """
+    Lista los ingredientes asociados a un ítem (plato/bebida).
+    """
+    try:
+        # Obtener el ítem de dominio
+        item = service.get_item(item_id)
+        if not item:
+            raise HTTPException(status_code=404, detail="Ítem no encontrado")
+
+        # Consultar ingredientes por modelo
+        from infrastructure.models.item_model import ItemModel, IngredienteModel, item_ingrediente_association
+        from infrastructure.db import SessionLocal
+
+        db = next(get_db())
+        try:
+            # Join directo a través de la tabla de asociación
+            ingredientes = (
+                db.query(IngredienteModel)
+                .join(item_ingrediente_association, IngredienteModel.id == item_ingrediente_association.c.ingrediente_id)
+                .join(ItemModel, ItemModel.id == item_ingrediente_association.c.item_id)
+                .filter(ItemModel.id == item_id)
+                .all()
+            )
+
+            # Respuesta simple (evitar DTOs complejos por ahora)
+            return [
+                {
+                    "id": ing.id,
+                    "nombre": ing.nombre,
+                    "stock": float(ing.stock),
+                    "peso": float(ing.peso),
+                    "tipo": ing.tipo,
+                }
+                for ing in ingredientes
+            ]
+        finally:
+            try:
+                db.close()
+            except Exception:
+                pass
+    except HTTPException:
+        raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error interno del servidor: {str(e)}")
 

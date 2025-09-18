@@ -9,6 +9,7 @@ from domain.entities import Item, Plato, Bebida
 from domain.entities.enums import EtiquetaItem, EtiquetaPlato
 from domain.repositories import ItemRepository, PlatoRepository, BebidaRepository
 from infrastructure.models.item_model import ItemModel, PlatoModel, BebidaModel, ItemEtiquetaModel
+from infrastructure.models.item_model import IngredienteModel, item_ingrediente_association
 
 
 class ItemRepositoryImpl(ItemRepository):
@@ -86,6 +87,34 @@ class ItemRepositoryImpl(ItemRepository):
                 etiqueta=etiqueta.value
             )
             self.db.add(etiqueta_model)
+
+        # Agregar ingredientes asociados (si vienen en la entidad de dominio)
+        if getattr(item, 'ingredientes', None):
+            for ing in item.ingredientes:
+                # Buscar o crear ingrediente por nombre
+                ing_model = None
+                if getattr(ing, 'id', None):
+                    ing_model = self.db.query(IngredienteModel).filter(IngredienteModel.id == ing.id).first()
+                if ing_model is None and getattr(ing, 'nombre', None):
+                    ing_model = self.db.query(IngredienteModel).filter(IngredienteModel.nombre == ing.nombre).first()
+                if ing_model is None:
+                    # Crear rápido si no existe (con valores mínimos)
+                    ing_model = IngredienteModel(
+                        nombre=ing.nombre or "Ingrediente",
+                        stock=Decimal('0.0'),
+                        peso=Decimal('0.0'),
+                        tipo=getattr(ing.tipo, 'VERDURA') if hasattr(ing, 'tipo') else 'VERDURA'
+                    )
+                    self.db.add(ing_model)
+                    self.db.flush()
+                # Insertar en tabla de asociación (cantidad 1 por defecto)
+                self.db.execute(
+                    item_ingrediente_association.insert().values(
+                        item_id=model.id,
+                        ingrediente_id=ing_model.id,
+                        cantidad=Decimal('1.0')
+                    )
+                )
         
         self.db.commit()
         self.db.refresh(model)
