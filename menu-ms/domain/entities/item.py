@@ -33,7 +33,8 @@ class Item(ABC):
         azucares: Decimal = Decimal('0.0'),
         descripcion: str = "",
         etiquetas: List[EtiquetaItem] = None,
-        ingredientes: List[Ingrediente] = None
+        ingredientes: List[Ingrediente] = None,
+        tipo: str = ""
     ):
         """
         Inicializa un ítem del menú.
@@ -54,6 +55,8 @@ class Item(ABC):
             azucares: Contenido de azúcares en gramos
             descripcion: Descripción detallada del ítem
             etiquetas: Lista de etiquetas del ítem
+            ingredientes: Lista de ingredientes del ítem
+            tipo: Tipo del ítem (PLATO o BEBIDA)
         """
         self.id = id
         self.valor_nutricional = valor_nutricional
@@ -71,6 +74,7 @@ class Item(ABC):
         self.descripcion = descripcion
         self.etiquetas = etiquetas or []
         self.ingredientes = ingredientes or []
+        self.tipo = tipo
     
     def verificar_stock(self) -> bool:
         """

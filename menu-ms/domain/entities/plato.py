@@ -72,10 +72,11 @@ class Plato(Item):
             proteinas=proteinas,
             azucares=azucares,
             descripcion=descripcion,
-            etiquetas=etiquetas or []
+            etiquetas=etiquetas or [],
+            tipo="PLATO"
         )
         self.peso = peso
-        self.tipo = tipo
+        self.tipo_plato = tipo
     
     def get_tipo(self) -> str:
         """
@@ -93,7 +94,7 @@ class Plato(Item):
         Returns:
             EtiquetaPlato: Clasificación del plato
         """
-        return self.tipo
+        return self.tipo_plato
     
     def calcular_densidad_calorica(self) -> Decimal:
         """
@@ -113,7 +114,7 @@ class Plato(Item):
         Returns:
             bool: True si es entrada, False en caso contrario
         """
-        return self.tipo == EtiquetaPlato.ENTRADA
+        return self.tipo_plato == EtiquetaPlato.ENTRADA
     
     def es_plato_principal(self) -> bool:
         """
@@ -122,7 +123,7 @@ class Plato(Item):
         Returns:
             bool: True si es plato principal, False en caso contrario
         """
-        return self.tipo == EtiquetaPlato.FONDO
+        return self.tipo_plato == EtiquetaPlato.FONDO
     
     def es_postre(self) -> bool:
         """
@@ -131,10 +132,10 @@ class Plato(Item):
         Returns:
             bool: True si es postre, False en caso contrario
         """
-        return self.tipo == EtiquetaPlato.POSTRE
+        return self.tipo_plato == EtiquetaPlato.POSTRE
     
     def __str__(self) -> str:
-        return f"Plato(id={self.id}, descripcion='{self.descripcion}', precio={self.precio}, tipo={self.tipo.value}, peso={self.peso}g)"
+        return f"Plato(id={self.id}, descripcion='{self.descripcion}', precio={self.precio}, tipo={self.tipo_plato.value}, peso={self.peso}g)"
     
     def __repr__(self) -> str:
         return self.__str__()

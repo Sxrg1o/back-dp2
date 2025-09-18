@@ -96,8 +96,6 @@ class ItemModel(Base):
                 peso=getattr(self, 'peso', Decimal('0.0')),
                 tipo=EtiquetaPlato(getattr(self, 'tipo_plato', 'FONDO'))
             )
-            # Agregar campo tipo para compatibilidad con DTO
-            plato.tipo = 'PLATO'
             return plato
         elif self.tipo == 'BEBIDA':
             bebida = Bebida(
@@ -119,8 +117,6 @@ class ItemModel(Base):
                 litros=getattr(self, 'litros', Decimal('0.0')),
                 alcoholico=getattr(self, 'alcoholico', False)
             )
-            # Agregar campo tipo para compatibilidad con DTO
-            bebida.tipo = 'BEBIDA'
             return bebida
         else:
             # Fallback para ítems genéricos
@@ -139,7 +135,8 @@ class ItemModel(Base):
                 proteinas=self.proteinas,
                 azucares=self.azucares,
                 descripcion=self.descripcion,
-                etiquetas=etiquetas
+                etiquetas=etiquetas,
+                tipo=self.tipo
             )
 
 

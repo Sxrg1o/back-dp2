@@ -71,7 +71,8 @@ class Bebida(Item):
             proteinas=proteinas,
             azucares=azucares,
             descripcion=descripcion,
-            etiquetas=etiquetas or []
+            etiquetas=etiquetas or [],
+            tipo="BEBIDA"
         )
         self.litros = litros
         self.alcoholico = alcoholico
