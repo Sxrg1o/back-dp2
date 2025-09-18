@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 from infrastructure.db import SessionLocal
 from domain.entities.user import User
+from infrastructure.models.user_model import CreateUserRequest
 from infrastructure.repositories.user_repository_impl import UserRepositoryImpl
 from application.services.user_service import UserService
 
@@ -23,5 +24,7 @@ def list_users(service: UserService = Depends(get_user_service)):
     return service.get_all_users()
 
 @router.post("/", response_model=User)
-def create_user(user: User, service: UserService = Depends(get_user_service)):
+def create_user(user_request: CreateUserRequest, service: UserService = Depends(get_user_service)):
+    # Crear usuario sin ID (autogenerado)
+    user = User(name=user_request.name, email=user_request.email)
     return service.create_user(user)
