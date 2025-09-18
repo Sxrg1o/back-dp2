@@ -8,12 +8,13 @@ class UserRepositoryImpl(UserRepository):
         self.db = db
 
     def get_all(self) -> list[User]:
-        return self.db.query(UserModel).all()
+        db_users = self.db.query(UserModel).all()
+        return [User(id=db_user.id, name=db_user.name, email=db_user.email) for db_user in db_users]
 
     def create(self, user: User) -> User:
         db_user = UserModel(name=user.name, email=user.email)
         self.db.add(db_user)
         self.db.commit()
         self.db.refresh(db_user)
-        return db_user
+        return User(id=db_user.id, name=db_user.name, email=db_user.email)
 
