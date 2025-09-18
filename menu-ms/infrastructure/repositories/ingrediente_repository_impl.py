@@ -31,8 +31,8 @@ class IngredienteRepositoryImpl(IngredienteRepository):
         """
         ingrediente_model = IngredienteModel(
             nombre=ingrediente.nombre,
-            stock=ingrediente.stock,
-            peso=ingrediente.peso,
+            stock=float(ingrediente.stock) if ingrediente.stock is not None else 0.0,
+            peso=float(ingrediente.peso) if ingrediente.peso is not None else 0.0,
             tipo=ingrediente.tipo.value
         )
         

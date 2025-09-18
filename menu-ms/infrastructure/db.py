@@ -41,5 +41,8 @@ def create_tables():
     """
     Crea todas las tablas en la base de datos.
     """
-    from infrastructure.models.item_model import Base
+    # Importar modelos para registrar metadata en Base
+    from infrastructure.models.item_model import (
+        ItemModel, PlatoModel, BebidaModel, IngredienteModel, ItemEtiquetaModel
+    )
     Base.metadata.create_all(bind=engine)

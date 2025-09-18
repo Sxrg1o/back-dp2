@@ -3,11 +3,10 @@ Modelos de base de datos para ítems del menú.
 """
 
 from sqlalchemy import Column, Integer, String, Boolean, Numeric, Text, ForeignKey, Table
-from sqlalchemy.ext.declarative import declarative_base
+from infrastructure.db import Base
 from sqlalchemy.orm import relationship
 from decimal import Decimal
 
-Base = declarative_base()
 
 # Tabla de asociación para la relación many-to-many entre ítems e ingredientes
 item_ingrediente_association = Table(
@@ -48,6 +47,11 @@ class ItemModel(Base):
     azucares = Column(Numeric(8, 2), nullable=False, default=0)
     descripcion = Column(String(500), nullable=False)
     tipo = Column(String(20), nullable=False)  # 'PLATO' o 'BEBIDA'
+    
+    __mapper_args__ = {
+        'polymorphic_on': tipo,
+        'polymorphic_identity': 'ITEM'
+    }
     
     # Relación con ingredientes
     ingredientes = relationship(
@@ -142,6 +146,10 @@ class PlatoModel(ItemModel):
     id = Column(Integer, ForeignKey('items.id'), primary_key=True)
     peso = Column(Numeric(8, 2), nullable=False)
     tipo_plato = Column(String(20), nullable=False)  # 'ENTRADA', 'FONDO', 'POSTRE'
+    
+    __mapper_args__ = {
+        'polymorphic_identity': 'PLATO'
+    }
 
 
 class BebidaModel(ItemModel):
@@ -153,6 +161,10 @@ class BebidaModel(ItemModel):
     id = Column(Integer, ForeignKey('items.id'), primary_key=True)
     litros = Column(Numeric(8, 3), nullable=False)
     alcoholico = Column(Boolean, nullable=False, default=False)
+    
+    __mapper_args__ = {
+        'polymorphic_identity': 'BEBIDA'
+    }
 
 
 class IngredienteModel(Base):

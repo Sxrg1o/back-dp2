@@ -144,6 +144,31 @@ def service_info():
     }
 
 
+@app.post("/seed-data", tags=["admin"])
+def seed_peruvian_data():
+    """
+    Pobla la base de datos con datos de prueba típicos de Perú.
+    Incluye platos, bebidas e ingredientes tradicionales peruanos.
+    """
+    try:
+        from seed_data_peru import seed_database
+        seed_database()
+        return {
+            "message": "Base de datos poblada exitosamente con datos peruanos",
+            "success": True,
+            "data": {
+                "ingredientes": "Ingredientes típicos peruanos (ají amarillo, rocoto, lúcuma, etc.)",
+                "platos": "Platos tradicionales (ceviche, lomo saltado, causa limeña, etc.)",
+                "bebidas": "Bebidas peruanas (chicha morada, pisco sour, Inca Kola, etc.)"
+            }
+        }
+    except Exception as e:
+        raise HTTPException(
+            status_code=500, 
+            detail=f"Error al poblar la base de datos: {str(e)}"
+        )
+
+
 if __name__ == "__main__":
     port = int(os.getenv("PORT", 8002))  # Puerto por defecto 8002
     host = os.getenv("HOST", "0.0.0.0")

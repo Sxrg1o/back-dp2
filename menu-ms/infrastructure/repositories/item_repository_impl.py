@@ -29,56 +29,69 @@ class ItemRepositoryImpl(ItemRepository):
         """
         Crea un nuevo ítem en el repositorio.
         """
-        # Crear el modelo base
-        item_model = ItemModel(
-            valor_nutricional=item.valor_nutricional,
-            precio=item.precio,
-            tiempo_preparacion=item.tiempo_preparacion,
-            comentarios=item.comentarios,
-            receta=item.receta,
-            disponible=item.disponible,
-            unidades_disponibles=item.unidades_disponibles,
-            num_ingredientes=item.num_ingredientes,
-            kcal=item.kcal,
-            calorias=item.calorias,
-            proteinas=item.proteinas,
-            azucares=item.azucares,
-            descripcion=item.descripcion,
+        # Helper: asegurar Decimal para columnas Numeric
+        def to_decimal(value, default="0.0"):
+            if value is None:
+                return Decimal(default)
+            if isinstance(value, Decimal):
+                return value
+            try:
+                return Decimal(str(value))
+            except Exception:
+                return Decimal(default)
+
+        # Construir kwargs comunes
+        base_kwargs = dict(
+            valor_nutricional=item.valor_nutricional or "",
+            precio=to_decimal(item.precio),
+            tiempo_preparacion=to_decimal(item.tiempo_preparacion, "0.0"),
+            comentarios=item.comentarios or "",
+            receta=item.receta or "",
+            disponible=item.disponible if item.disponible is not None else True,
+            unidades_disponibles=item.unidades_disponibles or 0,
+            num_ingredientes=item.num_ingredientes or 0,
+            kcal=item.kcal or 0,
+            calorias=to_decimal(item.calorias, "0.0"),
+            proteinas=to_decimal(item.proteinas, "0.0"),
+            azucares=to_decimal(item.azucares, "0.0"),
+            descripcion=item.descripcion or "",
             tipo=item.get_tipo()
         )
-        
-        self.db.add(item_model)
-        self.db.flush()  # Para obtener el ID
-        
-        # Crear modelo específico según el tipo
+
+        print(f"DEBUG: Creando ítem - precio: {item.precio}, tipo: {type(item.precio)} -> {base_kwargs['precio']}")
+
+        # Crear instancia SOLO de la subclase adecuada (herencia unida)
         if isinstance(item, Plato):
-            plato_model = PlatoModel(
-                id=item_model.id,
-                peso=item.peso,
+            model = PlatoModel(
+                **base_kwargs,
+                peso=to_decimal(item.peso, "0.0"),
                 tipo_plato=item.tipo.value
             )
-            self.db.add(plato_model)
         elif isinstance(item, Bebida):
-            bebida_model = BebidaModel(
-                id=item_model.id,
-                litros=item.litros,
-                alcoholico=item.alcoholico
+            model = BebidaModel(
+                **base_kwargs,
+                litros=to_decimal(item.litros, "0.0"),
+                alcoholico=item.alcoholico if item.alcoholico is not None else False
             )
-            self.db.add(bebida_model)
+        else:
+            model = ItemModel(**base_kwargs)
+
+        self.db.add(model)
+        self.db.flush()
         
         # Agregar etiquetas
         for etiqueta in item.etiquetas:
             etiqueta_model = ItemEtiquetaModel(
-                item_id=item_model.id,
+                item_id=model.id,
                 etiqueta=etiqueta.value
             )
             self.db.add(etiqueta_model)
         
         self.db.commit()
-        self.db.refresh(item_model)
+        self.db.refresh(model)
         
         # Retornar la entidad de dominio
-        return item_model.to_domain()
+        return model.to_domain()
     
     def get_by_id(self, item_id: int) -> Optional[Item]:
         """
