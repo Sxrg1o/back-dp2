@@ -6,7 +6,15 @@ from infrastructure.db import Base, engine
 from infrastructure.models.user_model import UserModel
 from infrastructure.handlers.user_handler import router as user_router
 
-app = FastAPI(title="Users Microservice")
+# Configurar FastAPI para trabajar detrás de un proxy
+app = FastAPI(
+    title="Users Microservice",
+    description="API for user management and authentication",
+    version="1.0.0",
+    root_path="/api/users",
+    openapi_url="/openapi.json",
+    docs_url="/docs",
+)
 
 # Crear tablas
 Base.metadata.create_all(bind=engine)
