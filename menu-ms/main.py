@@ -163,10 +163,23 @@ def seed_peruvian_data():
             }
         }
     except Exception as e:
-        raise HTTPException(
-            status_code=500, 
-            detail=f"Error al poblar la base de datos: {str(e)}"
-        )
+        error_msg = str(e)
+        if "UNIQUE constraint failed" in error_msg:
+            return {
+                "message": "Los datos ya existen en la base de datos",
+                "success": True,
+                "warning": "No se agregaron datos duplicados",
+                "data": {
+                    "ingredientes": "Ingredientes típicos peruanos ya presentes",
+                    "platos": "Platos tradicionales ya presentes", 
+                    "bebidas": "Bebidas peruanas ya presentes"
+                }
+            }
+        else:
+            raise HTTPException(
+                status_code=500, 
+                detail=f"Error al poblar la base de datos: {error_msg}"
+            )
 
 
 if __name__ == "__main__":

@@ -1,0 +1,1630 @@
+{
+  "summary": {
+    "total_tests": 35,
+    "working": 25,
+    "failing": 10,
+    "success_rate": 71.42857142857143,
+    "start_time": "2025-09-18T14:10:18.937812",
+    "end_time": "2025-09-18T14:10:19.292547",
+    "duration_seconds": 0.354735
+  },
+  "working_endpoints": [
+    {
+      "endpoint": "/health",
+      "method": "GET",
+      "description": "Health Check",
+      "status_code": 200,
+      "expected_status": 200,
+      "response_time_ms": 5.09,
+      "success": true,
+      "url": "http://localhost:8002/health",
+      "timestamp": "2025-09-18T14:10:18.958663",
+      "response_data": {
+        "status": "healthy",
+        "service": "menu-ms",
+        "version": "1.0.0",
+        "message": "Microservicio de Menú y Carta funcionando correctamente"
+      },
+      "data_type": "JSON",
+      "data_size": 133,
+      "status": "✅ ÉXITO"
+    },
+    {
+      "endpoint": "/",
+      "method": "GET",
+      "description": "Root endpoint",
+      "status_code": 200,
+      "expected_status": 200,
+      "response_time_ms": 3.11,
+      "success": true,
+      "url": "http://localhost:8002/",
+      "timestamp": "2025-09-18T14:10:18.962303",
+      "response_data": {
+        "message": "🍽️ API de Menú y Carta funcionando 🚀",
+        "service": "menu-ms",
+        "version": "1.0.0",
+        "docs": "/docs",
+        "health": "/health"
+      },
+      "data_type": "JSON",
+      "data_size": 131,
+      "status": "✅ ÉXITO"
+    },
+    {
+      "endpoint": "/info",
+      "method": "GET",
+      "description": "Información del servicio",
+      "status_code": 200,
+      "expected_status": 200,
+      "response_time_ms": 4.08,
+      "success": true,
+      "url": "http://localhost:8002/info",
+      "timestamp": "2025-09-18T14:10:18.967365",
+      "response_data": {
+        "service": "menu-ms",
+        "version": "1.0.0",
+        "description": "Microservicio de Menú y Carta para el restaurante Domótica",
+        "features": [
+          "Gestión de platos (entradas, principales, postres)",
+          "Gestión de bebidas (alcohólicas y no alcohólicas)",
+          "Control de ingredientes e inventario",
+          "Información nutricional completa",
+          "Sistema de etiquetas y filtros",
+          "Búsqueda avanzada",
+          "Arquitectura hexagonal"
+        ],
+        "endpoints": {
+          "items": "/items/",
+          "ingredientes": "/ingredientes/",
+          "health": "/health",
+          "docs": "/docs"
+        },
+        "database": "SQLite (desarrollo) / PostgreSQL (producción)"
+      },
+      "data_type": "JSON",
+      "data_size": 565,
+      "status": "✅ ÉXITO"
+    },
+    {
+      "endpoint": "/docs",
+      "method": "GET",
+      "description": "Documentación Swagger",
+      "status_code": 200,
+      "expected_status": 200,
+      "response_time_ms": 3.15,
+      "success": true,
+      "url": "http://localhost:8002/docs",
+      "timestamp": "2025-09-18T14:10:18.971612",
+      "response_text": "\n    <!DOCTYPE html>\n    <html>\n    <head>\n    <link type=\"text/css\" rel=\"stylesheet\" href=\"https://cdn.jsdelivr.net/npm/swagger-ui-dist@5/swagger-ui.css\">\n    <link rel=\"shortcut icon\" href=\"https://fastapi.tiangolo.com/img/favicon.png\">\n    <title>Menú y Carta API - Swagger UI</title>\n    </head>\n    <body>\n    <div id=\"swagger-ui\">\n    </div>\n    <script src=\"https://cdn.jsdelivr.net/npm/swagger-ui-dist@5/swagger-ui-bundle.js\"></script>\n    <!-- `SwaggerUIBundle` is now available on the page ",
+      "data_type": "TEXT",
+      "data_size": 940,
+      "status": "✅ ÉXITO"
+    },
+    {
+      "endpoint": "/redoc",
+      "method": "GET",
+      "description": "Documentación ReDoc",
+      "status_code": 200,
+      "expected_status": 200,
+      "response_time_ms": 3.0,
+      "success": true,
+      "url": "http://localhost:8002/redoc",
+      "timestamp": "2025-09-18T14:10:18.975612",
+      "response_text": "\n    <!DOCTYPE html>\n    <html>\n    <head>\n    <title>Menú y Carta API - ReDoc</title>\n    <!-- needed for adaptive design -->\n    <meta charset=\"utf-8\"/>\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">\n    \n    <link href=\"https://fonts.googleapis.com/css?family=Montserrat:300,400,700|Roboto:300,400,700\" rel=\"stylesheet\">\n    \n    <link rel=\"shortcut icon\" href=\"https://fastapi.tiangolo.com/img/favicon.png\">\n    <!--\n    ReDoc doesn't change outer page styles\n    -->\n  ",
+      "data_type": "TEXT",
+      "data_size": 897,
+      "status": "✅ ÉXITO"
+    },
+    {
+      "endpoint": "/ingredientes/",
+      "method": "GET",
+      "description": "Listar todos los ingredientes",
+      "status_code": 200,
+      "expected_status": 200,
+      "response_time_ms": 9.64,
+      "success": true,
+      "url": "http://localhost:8002/ingredientes/",
+      "timestamp": "2025-09-18T14:10:18.988251",
+      "response_data": [
+        {
+          "nombre": "Ají Amarillo",
+          "stock": "15.000",
+          "peso": "0.050",
+          "tipo": "VERDURA",
+          "id": 1
+        },
+        {
+          "nombre": "Ají Panca",
+          "stock": "10.000",
+          "peso": "0.040",
+          "tipo": "VERDURA",
+          "id": 2
+        },
+        {
+          "nombre": "Rocoto",
+          "stock": "8.000",
+          "peso": "0.030",
+          "tipo": "VERDURA",
+          "id": 3
+        },
+        {
+          "nombre": "Cebolla Morada",
+          "stock": "20.000",
+          "peso": "0.200",
+          "tipo": "VERDURA",
+          "id": 4
+        },
+        {
+          "nombre": "Culantro",
+          "stock": "12.000",
+          "peso": "0.010",
+          "tipo": "VERDURA",
+          "id": 5
+        },
+        {
+          "nombre": "Ajo",
+          "stock": "15.000",
+          "peso": "0.020",
+          "tipo": "VERDURA",
+          "id": 6
+        },
+        {
+          "nombre": "Limón",
+          "stock": "25.000",
+          "peso": "0.120",
+          "tipo": "FRUTA",
+          "id": 7
+        },
+        {
+          "nombre": "Papa Amarilla",
+          "stock": "30.000",
+          "peso": "0.300",
+          "tipo": "VERDURA",
+          "id": 8
+        },
+        {
+          "nombre": "Camote",
+          "stock": "22.000",
+          "peso": "0.350",
+          "tipo": "VERDURA",
+          "id": 9
+        },
+        {
+          "nombre": "Maíz Morado",
+          "stock": "18.000",
+          "peso": "0.300",
+          "tipo": "FRUTA",
+          "id": 10
+        },
+        {
+          "nombre": "Choclo",
+          "stock": "18.000",
+          "peso": "0.250",
+          "tipo": "VERDURA",
+          "id": 11
+        },
+        {
+          "nombre": "Arroz",
+          "stock": "40.000",
+          "peso": "1.000",
+          "tipo": "VERDURA",
+          "id": 12
+        },
+        {
+          "nombre": "Habas",
+          "stock": "12.000",
+          "peso": "0.200",
+          "tipo": "VERDURA",
+          "id": 13
+        },
+        {
+          "nombre": "Zapallo",
+          "stock": "10.000",
+          "peso": "0.500",
+          "tipo": "VERDURA",
+          "id": 14
+        },
+        {
+          "nombre": "Cebollita China",
+          "stock": "6.000",
+          "peso": "0.050",
+          "tipo": "VERDURA",
+          "id": 15
+        },
+        {
+          "nombre": "Kion",
+          "stock": "6.000",
+          "peso": "0.050",
+          "tipo": "VERDURA",
+          "id": 16
+        },
+        {
+          "nombre": "Pollo Criollo",
+          "stock": "15.000",
+          "peso": "1.200",
+          "tipo": "CARNE",
+          "id": 17
+        },
+        {
+          "nombre": "Carne de Res",
+          "stock": "12.000",
+          "peso": "1.000",
+          "tipo": "CARNE",
+          "id": 18
+        },
+        {
+          "nombre": "Pescado de Mar",
+          "stock": "12.000",
+          "peso": "0.600",
+          "tipo": "CARNE",
+          "id": 19
+        },
+        {
+          "nombre": "Camarón",
+          "stock": "10.000",
+          "peso": "0.300",
+          "tipo": "CARNE",
+          "id": 20
+        },
+        {
+          "nombre": "Calamar",
+          "stock": "8.000",
+          "peso": "0.400",
+          "tipo": "CARNE",
+          "id": 21
+        },
+        {
+          "nombre": "Lúcuma",
+          "stock": "8.000",
+          "peso": "0.200",
+          "tipo": "FRUTA",
+          "id": 22
+        },
+        {
+          "nombre": "Chirimoya",
+          "stock": "6.000",
+          "peso": "0.300",
+          "tipo": "FRUTA",
+          "id": 23
+        },
+        {
+          "nombre": "Maracuyá",
+          "stock": "7.000",
+          "peso": "0.150",
+          "tipo": "FRUTA",
+          "id": 24
+        }
+      ],
+      "data_type": "JSON",
+      "data_size": 2113,
+      "status": "✅ ÉXITO"
+    },
+    {
+      "endpoint": "/ingredientes/1",
+      "method": "GET",
+      "description": "Obtener ingrediente por ID",
+      "status_code": 200,
+      "expected_status": 200,
+      "response_time_ms": 7.52,
+      "success": true,
+      "url": "http://localhost:8002/ingredientes/1",
+      "timestamp": "2025-09-18T14:10:18.997772",
+      "response_data": {
+        "nombre": "Ají Amarillo",
+        "stock": "15.000",
+        "peso": "0.050",
+        "tipo": "VERDURA",
+        "id": 1
+      },
+      "data_type": "JSON",
+      "data_size": 90,
+      "status": "✅ ÉXITO"
+    },
+    {
+      "endpoint": "/ingredientes/999",
+      "method": "GET",
+      "description": "Obtener ingrediente inexistente",
+      "status_code": 404,
+      "expected_status": 404,
+      "response_time_ms": 6.4,
+      "success": true,
+      "url": "http://localhost:8002/ingredientes/999",
+      "timestamp": "2025-09-18T14:10:19.006199",
+      "response_data": {
+        "detail": "Ingrediente no encontrado"
+      },
+      "data_type": "JSON",
+      "data_size": 39,
+      "status": "✅ ÉXITO"
+    },
+    {
+      "endpoint": "/ingredientes/search",
+      "method": "GET",
+      "description": "Buscar ingredientes",
+      "status_code": 422,
+      "expected_status": 422,
+      "response_time_ms": 4.0,
+      "success": true,
+      "url": "http://localhost:8002/ingredientes/search",
+      "timestamp": "2025-09-18T14:10:19.011200",
+      "response_data": {
+        "detail": [
+          {
+            "type": "int_parsing",
+            "loc": [
+              "path",
+              "ingrediente_id"
+            ],
+            "msg": "Input should be a valid integer, unable to parse string as an integer",
+            "input": "search"
+          }
+        ]
+      },
+      "data_type": "JSON",
+      "data_size": 171,
+      "status": "✅ ÉXITO"
+    },
+    {
+      "endpoint": "/ingredientes/filter/tipo/VERDURA",
+      "method": "GET",
+      "description": "Filtrar por tipo VERDURA",
+      "status_code": 200,
+      "expected_status": 200,
+      "response_time_ms": 7.78,
+      "success": true,
+      "url": "http://localhost:8002/ingredientes/filter/tipo/VERDURA",
+      "timestamp": "2025-09-18T14:10:19.019980",
+      "response_data": [
+        {
+          "nombre": "Ají Amarillo",
+          "stock": "15.000",
+          "peso": "0.050",
+          "tipo": "VERDURA",
+          "id": 1
+        },
+        {
+          "nombre": "Ají Panca",
+          "stock": "10.000",
+          "peso": "0.040",
+          "tipo": "VERDURA",
+          "id": 2
+        },
+        {
+          "nombre": "Rocoto",
+          "stock": "8.000",
+          "peso": "0.030",
+          "tipo": "VERDURA",
+          "id": 3
+        },
+        {
+          "nombre": "Cebolla Morada",
+          "stock": "20.000",
+          "peso": "0.200",
+          "tipo": "VERDURA",
+          "id": 4
+        },
+        {
+          "nombre": "Culantro",
+          "stock": "12.000",
+          "peso": "0.010",
+          "tipo": "VERDURA",
+          "id": 5
+        },
+        {
+          "nombre": "Ajo",
+          "stock": "15.000",
+          "peso": "0.020",
+          "tipo": "VERDURA",
+          "id": 6
+        },
+        {
+          "nombre": "Papa Amarilla",
+          "stock": "30.000",
+          "peso": "0.300",
+          "tipo": "VERDURA",
+          "id": 8
+        },
+        {
+          "nombre": "Camote",
+          "stock": "22.000",
+          "peso": "0.350",
+          "tipo": "VERDURA",
+          "id": 9
+        },
+        {
+          "nombre": "Choclo",
+          "stock": "18.000",
+          "peso": "0.250",
+          "tipo": "VERDURA",
+          "id": 11
+        },
+        {
+          "nombre": "Arroz",
+          "stock": "40.000",
+          "peso": "1.000",
+          "tipo": "VERDURA",
+          "id": 12
+        },
+        {
+          "nombre": "Habas",
+          "stock": "12.000",
+          "peso": "0.200",
+          "tipo": "VERDURA",
+          "id": 13
+        },
+        {
+          "nombre": "Zapallo",
+          "stock": "10.000",
+          "peso": "0.500",
+          "tipo": "VERDURA",
+          "id": 14
+        },
+        {
+          "nombre": "Cebollita China",
+          "stock": "6.000",
+          "peso": "0.050",
+          "tipo": "VERDURA",
+          "id": 15
+        },
+        {
+          "nombre": "Kion",
+          "stock": "6.000",
+          "peso": "0.050",
+          "tipo": "VERDURA",
+          "id": 16
+        }
+      ],
+      "data_type": "JSON",
+      "data_size": 1236,
+      "status": "✅ ÉXITO"
+    },
+    {
+      "endpoint": "/ingredientes/filter/tipo/CARNE",
+      "method": "GET",
+      "description": "Filtrar por tipo CARNE",
+      "status_code": 200,
+      "expected_status": 200,
+      "response_time_ms": 6.78,
+      "success": true,
+      "url": "http://localhost:8002/ingredientes/filter/tipo/CARNE",
+      "timestamp": "2025-09-18T14:10:19.027763",
+      "response_data": [
+        {
+          "nombre": "Pollo Criollo",
+          "stock": "15.000",
+          "peso": "1.200",
+          "tipo": "CARNE",
+          "id": 17
+        },
+        {
+          "nombre": "Carne de Res",
+          "stock": "12.000",
+          "peso": "1.000",
+          "tipo": "CARNE",
+          "id": 18
+        },
+        {
+          "nombre": "Pescado de Mar",
+          "stock": "12.000",
+          "peso": "0.600",
+          "tipo": "CARNE",
+          "id": 19
+        },
+        {
+          "nombre": "Camarón",
+          "stock": "10.000",
+          "peso": "0.300",
+          "tipo": "CARNE",
+          "id": 20
+        },
+        {
+          "nombre": "Calamar",
+          "stock": "8.000",
+          "peso": "0.400",
+          "tipo": "CARNE",
+          "id": 21
+        }
+      ],
+      "data_type": "JSON",
+      "data_size": 447,
+      "status": "✅ ÉXITO"
+    },
+    {
+      "endpoint": "/ingredientes/filter/tipo/FRUTA",
+      "method": "GET",
+      "description": "Filtrar por tipo FRUTA",
+      "status_code": 200,
+      "expected_status": 200,
+      "response_time_ms": 6.74,
+      "success": true,
+      "url": "http://localhost:8002/ingredientes/filter/tipo/FRUTA",
+      "timestamp": "2025-09-18T14:10:19.035676",
+      "response_data": [
+        {
+          "nombre": "Limón",
+          "stock": "25.000",
+          "peso": "0.120",
+          "tipo": "FRUTA",
+          "id": 7
+        },
+        {
+          "nombre": "Maíz Morado",
+          "stock": "18.000",
+          "peso": "0.300",
+          "tipo": "FRUTA",
+          "id": 10
+        },
+        {
+          "nombre": "Lúcuma",
+          "stock": "8.000",
+          "peso": "0.200",
+          "tipo": "FRUTA",
+          "id": 22
+        },
+        {
+          "nombre": "Chirimoya",
+          "stock": "6.000",
+          "peso": "0.300",
+          "tipo": "FRUTA",
+          "id": 23
+        },
+        {
+          "nombre": "Maracuyá",
+          "stock": "7.000",
+          "peso": "0.150",
+          "tipo": "FRUTA",
+          "id": 24
+        }
+      ],
+      "data_type": "JSON",
+      "data_size": 430,
+      "status": "✅ ÉXITO"
+    },
+    {
+      "endpoint": "/items/1",
+      "method": "GET",
+      "description": "Obtener ítem por ID",
+      "status_code": 200,
+      "expected_status": 200,
+      "response_time_ms": 7.44,
+      "success": true,
+      "url": "http://localhost:8002/items/1",
+      "timestamp": "2025-09-18T14:10:19.113187",
+      "response_data": {
+        "valor_nutricional": "Rico en proteínas, omega-3 y vitamina C",
+        "precio": "28.00",
+        "tiempo_preparacion": "20.00",
+        "comentarios": "Plato bandera del Perú, pescado fresco marinado en leche de tigre",
+        "receta": "Cortar pescado fresco, marinar en limón, ají, cebolla morada y culantro",
+        "disponible": true,
+        "unidades_disponibles": 15,
+        "num_ingredientes": 7,
+        "kcal": 250,
+        "calorias": "250.00",
+        "proteinas": "30.00",
+        "azucares": "5.00",
+        "descripcion": "Ceviche de Pescado",
+        "etiquetas": [
+          "FRIO",
+          "ACIDO",
+          "SIN_GLUTEN"
+        ],
+        "ingredientes_ids": [],
+        "id": 1,
+        "tipo": "FONDO"
+      },
+      "data_type": "JSON",
+      "data_size": 564,
+      "status": "✅ ÉXITO"
+    },
+    {
+      "endpoint": "/items/999",
+      "method": "GET",
+      "description": "Obtener ítem inexistente",
+      "status_code": 404,
+      "expected_status": 404,
+      "response_time_ms": 4.87,
+      "success": true,
+      "url": "http://localhost:8002/items/999",
+      "timestamp": "2025-09-18T14:10:19.119639",
+      "response_data": {
+        "detail": "Ítem no encontrado"
+      },
+      "data_type": "JSON",
+      "data_size": 32,
+      "status": "✅ ÉXITO"
+    },
+    {
+      "endpoint": "/items/with-ingredientes",
+      "method": "GET",
+      "description": "Listar ítems con ingredientes",
+      "status_code": 200,
+      "expected_status": 200,
+      "response_time_ms": 24.87,
+      "success": true,
+      "url": "http://localhost:8002/items/with-ingredientes",
+      "timestamp": "2025-09-18T14:10:19.145490",
+      "response_data": [
+        {
+          "valor_nutricional": "Rico en proteínas, omega-3 y vitamina C",
+          "precio": "28.0",
+          "tiempo_preparacion": "20.0",
+          "comentarios": "Plato bandera del Perú, pescado fresco marinado en leche de tigre",
+          "receta": "Cortar pescado fresco, marinar en limón, ají, cebolla morada y culantro",
+          "disponible": true,
+          "unidades_disponibles": 15,
+          "num_ingredientes": 7,
+          "kcal": 250,
+          "calorias": "250.0",
+          "proteinas": "30.0",
+          "azucares": "5.0",
+          "descripcion": "Ceviche de Pescado",
+          "etiquetas": [
+            "ACIDO",
+            "FRIO",
+            "SIN_GLUTEN"
+          ],
+          "ingredientes_ids": [],
+          "id": 1,
+          "tipo": "PLATO",
+          "ingredientes": [
+            {
+              "id": 4,
+              "nombre": "Cebolla Morada",
+              "tipo": "VERDURA",
+              "cantidad": "1"
+            },
+            {
+              "id": 5,
+              "nombre": "Culantro",
+              "tipo": "VERDURA",
+              "cantidad": "1"
+            },
+            {
+              "id": 7,
+              "nombre": "Limón",
+              "tipo": "FRUTA",
+              "cantidad": "1"
+            },
+            {
+              "id": 19,
+              "nombre": "Pescado de Mar",
+              "tipo": "CARNE",
+              "cantidad": "1"
+            }
+          ]
+        },
+        {
+          "valor_nutricional": "Alto en proteínas, carbohidratos y vitaminas",
+          "precio": "32.5",
+          "tiempo_preparacion": "25.0",
+          "comentarios": "Fusión peruano-china, lomo de res salteado con verduras",
+          "receta": "Saltear lomo con cebolla, tomate, ají amarillo, servir con papas fritas y arroz",
+          "disponible": true,
+          "unidades_disponibles": 10,
+          "num_ingredientes": 8,
+          "kcal": 580,
+          "calorias": "580.0",
+          "proteinas": "35.0",
+          "azucares": "12.0",
+          "descripcion": "Lomo Saltado",
+          "etiquetas": [
+            "CALIENTE",
+            "CON_GLUTEN"
+          ],
+          "ingredientes_ids": [],
+          "id": 2,
+          "tipo": "PLATO",
+          "ingredientes": [
+            {
+              "id": 1,
+              "nombre": "Ají Amarillo",
+              "tipo": "VERDURA",
+              "cantidad": "2"
+            },
+            {
+              "id": 4,
+              "nombre": "Cebolla Morada",
+              "tipo": "VERDURA",
+              "cantidad": "2"
+            },
+            {
+              "id": 8,
+              "nombre": "Papa Amarilla",
+              "tipo": "VERDURA",
+              "cantidad": "2"
+            },
+            {
+              "id": 12,
+              "nombre": "Arroz",
+              "tipo": "VERDURA",
+              "cantidad": "2"
+            },
+            {
+              "id": 18,
+              "nombre": "Carne de Res",
+              "tipo": "CARNE",
+              "cantidad": "2"
+            }
+          ]
+        },
+        {
+          "valor_nutricional": "Rica en carbohidratos, proteínas y vitaminas A y C",
+          "precio": "18.5",
+          "tiempo_preparacion": "30.0",
+          "comentarios": "Plato tradicional de la gastronomía peruana",
+          "receta": "Cocinar papa amarilla, hacer puré, mezclar con ají amarillo, rellenar con pollo deshilachado",
+          "disponible": true,
+          "unidades_disponibles": 12,
+          "num_ingredientes": 6,
+          "kcal": 320,
+          "calorias": "320.0",
+          "proteinas": "18.0",
+          "azucares": "8.0",
+          "descripcion": "Causa Limeña de Pollo",
+          "etiquetas": [
+            "FRIO",
+            "SIN_GLUTEN"
+          ],
+          "ingredientes_ids": [],
+          "id": 3,
+          "tipo": "PLATO",
+          "ingredientes": [
+            {
+              "id": 1,
+              "nombre": "Ají Amarillo",
+              "tipo": "VERDURA",
+              "cantidad": "3"
+            },
+            {
+              "id": 8,
+              "nombre": "Papa Amarilla",
+              "tipo": "VERDURA",
+              "cantidad": "3"
+            },
+            {
+              "id": 17,
+              "nombre": "Pollo Criollo",
+              "tipo": "CARNE",
+              "cantidad": "3"
+            }
+          ]
+        },
+        {
+          "valor_nutricional": "Rico en azúcares y grasas",
+          "precio": "12.0",
+          "tiempo_preparacion": "30.0",
+          "comentarios": "Postre tradicional de Lima, manjar blanco con merengue",
+          "receta": "Preparar manjar blanco, cubrir con merengue italiano, espolvorear canela",
+          "disponible": true,
+          "unidades_disponibles": 10,
+          "num_ingredientes": 5,
+          "kcal": 380,
+          "calorias": "380.0",
+          "proteinas": "8.0",
+          "azucares": "45.0",
+          "descripcion": "Suspiro a la Limeña",
+          "etiquetas": [
+            "CON_GLUTEN",
+            "FRIO"
+          ],
+          "ingredientes_ids": [],
+          "id": 4,
+          "tipo": "PLATO",
+          "ingredientes": [
+            {
+              "id": 22,
+              "nombre": "Lúcuma",
+              "tipo": "FRUTA",
+              "cantidad": "4"
+            }
+          ]
+        },
+        {
+          "valor_nutricional": "Rica en antioxidantes y vitamina C",
+          "precio": "6.5",
+          "tiempo_preparacion": "15.0",
+          "comentarios": "Bebida tradicional de maíz morado",
+          "receta": "Cocinar maíz morado con canela y clavo, endulzar y servir frío",
+          "disponible": true,
+          "unidades_disponibles": 25,
+          "num_ingredientes": 3,
+          "kcal": 120,
+          "calorias": "120.0",
+          "proteinas": "1.0",
+          "azucares": "28.0",
+          "descripcion": "Chicha Morada",
+          "etiquetas": [
+            "FRIO",
+            "SIN_GLUTEN"
+          ],
+          "ingredientes_ids": [],
+          "id": 5,
+          "tipo": "BEBIDA",
+          "ingredientes": []
+        },
+        {
+          "valor_nutricional": "Fermentado tradicional",
+          "precio": "7.5",
+          "tiempo_preparacion": "0.0",
+          "comentarios": "Bebida andina",
+          "receta": "Fermentar maíz de jora",
+          "disponible": true,
+          "unidades_disponibles": 12,
+          "num_ingredientes": 2,
+          "kcal": 120,
+          "calorias": "120.0",
+          "proteinas": "1.5",
+          "azucares": "10.0",
+          "descripcion": "Chicha de Jora",
+          "etiquetas": [
+            "FRIO"
+          ],
+          "ingredientes_ids": [],
+          "id": 6,
+          "tipo": "BEBIDA",
+          "ingredientes": [
+            {
+              "id": 10,
+              "nombre": "Maíz Morado",
+              "tipo": "FRUTA",
+              "cantidad": "6"
+            }
+          ]
+        },
+        {
+          "valor_nutricional": "Cóctel nacional del Perú",
+          "precio": "18.0",
+          "tiempo_preparacion": "8.0",
+          "comentarios": "Cóctel emblemático con pisco, limón y clara de huevo",
+          "receta": "Mezclar pisco, jugo de limón, jarabe de goma y clara de huevo, batir con hielo",
+          "disponible": true,
+          "unidades_disponibles": 15,
+          "num_ingredientes": 5,
+          "kcal": 200,
+          "calorias": "200.0",
+          "proteinas": "2.0",
+          "azucares": "8.0",
+          "descripcion": "Pisco Sour",
+          "etiquetas": [
+            "ACIDO",
+            "FRIO"
+          ],
+          "ingredientes_ids": [],
+          "id": 7,
+          "tipo": "BEBIDA",
+          "ingredientes": []
+        },
+        {
+          "valor_nutricional": "Bebida gaseosa con sabor a hierba luisa",
+          "precio": "4.5",
+          "tiempo_preparacion": "0.0",
+          "comentarios": "La bebida nacional del Perú",
+          "receta": "Servir fría",
+          "disponible": true,
+          "unidades_disponibles": 30,
+          "num_ingredientes": 1,
+          "kcal": 150,
+          "calorias": "150.0",
+          "proteinas": "0.0",
+          "azucares": "35.0",
+          "descripcion": "Inca Kola",
+          "etiquetas": [
+            "FRIO"
+          ],
+          "ingredientes_ids": [],
+          "id": 8,
+          "tipo": "BEBIDA",
+          "ingredientes": []
+        }
+      ],
+      "data_type": "JSON",
+      "data_size": 5222,
+      "status": "✅ ÉXITO"
+    },
+    {
+      "endpoint": "/items/search",
+      "method": "GET",
+      "description": "Buscar ítems",
+      "status_code": 422,
+      "expected_status": 422,
+      "response_time_ms": 5.0,
+      "success": true,
+      "url": "http://localhost:8002/items/search",
+      "timestamp": "2025-09-18T14:10:19.151492",
+      "response_data": {
+        "detail": [
+          {
+            "type": "int_parsing",
+            "loc": [
+              "path",
+              "item_id"
+            ],
+            "msg": "Input should be a valid integer, unable to parse string as an integer",
+            "input": "search"
+          }
+        ]
+      },
+      "data_type": "JSON",
+      "data_size": 164,
+      "status": "✅ ÉXITO"
+    },
+    {
+      "endpoint": "/items/filter/etiqueta/CALIENTE",
+      "method": "GET",
+      "description": "Filtrar por etiqueta CALIENTE",
+      "status_code": 200,
+      "expected_status": 200,
+      "response_time_ms": 8.16,
+      "success": true,
+      "url": "http://localhost:8002/items/filter/etiqueta/CALIENTE",
+      "timestamp": "2025-09-18T14:10:19.194250",
+      "response_data": [
+        {
+          "valor_nutricional": "Alto en proteínas, carbohidratos y vitaminas",
+          "precio": "32.50",
+          "tiempo_preparacion": "25.00",
+          "comentarios": "Fusión peruano-china, lomo de res salteado con verduras",
+          "receta": "Saltear lomo con cebolla, tomate, ají amarillo, servir con papas fritas y arroz",
+          "disponible": true,
+          "unidades_disponibles": 10,
+          "num_ingredientes": 8,
+          "kcal": 580,
+          "calorias": "580.00",
+          "proteinas": "35.00",
+          "azucares": "12.00",
+          "descripcion": "Lomo Saltado",
+          "etiquetas": [
+            "CALIENTE",
+            "CON_GLUTEN"
+          ],
+          "ingredientes_ids": [],
+          "id": 2,
+          "tipo": "FONDO"
+        }
+      ],
+      "data_type": "JSON",
+      "data_size": 559,
+      "status": "✅ ÉXITO"
+    },
+    {
+      "endpoint": "/items/platos/entradas",
+      "method": "GET",
+      "description": "Obtener entradas",
+      "status_code": 200,
+      "expected_status": 200,
+      "response_time_ms": 8.55,
+      "success": true,
+      "url": "http://localhost:8002/items/platos/entradas",
+      "timestamp": "2025-09-18T14:10:19.204803",
+      "response_data": [
+        {
+          "valor_nutricional": "Rica en carbohidratos, proteínas y vitaminas A y C",
+          "precio": "18.50",
+          "tiempo_preparacion": "30.00",
+          "comentarios": "Plato tradicional de la gastronomía peruana",
+          "receta": "Cocinar papa amarilla, hacer puré, mezclar con ají amarillo, rellenar con pollo deshilachado",
+          "disponible": true,
+          "unidades_disponibles": 12,
+          "num_ingredientes": 6,
+          "kcal": 320,
+          "calorias": "320.00",
+          "proteinas": "18.00",
+          "azucares": "8.00",
+          "descripcion": "Causa Limeña de Pollo",
+          "etiquetas": [
+            "FRIO",
+            "SIN_GLUTEN"
+          ],
+          "ingredientes_ids": [],
+          "id": 3,
+          "peso": "250.00",
+          "tipo": "ENTRADA"
+        }
+      ],
+      "data_type": "JSON",
+      "data_size": 590,
+      "status": "✅ ÉXITO"
+    },
+    {
+      "endpoint": "/items/platos/principales",
+      "method": "GET",
+      "description": "Obtener platos principales",
+      "status_code": 200,
+      "expected_status": 200,
+      "response_time_ms": 9.0,
+      "success": true,
+      "url": "http://localhost:8002/items/platos/principales",
+      "timestamp": "2025-09-18T14:10:19.214806",
+      "response_data": [
+        {
+          "valor_nutricional": "Rico en proteínas, omega-3 y vitamina C",
+          "precio": "28.00",
+          "tiempo_preparacion": "20.00",
+          "comentarios": "Plato bandera del Perú, pescado fresco marinado en leche de tigre",
+          "receta": "Cortar pescado fresco, marinar en limón, ají, cebolla morada y culantro",
+          "disponible": true,
+          "unidades_disponibles": 15,
+          "num_ingredientes": 7,
+          "kcal": 250,
+          "calorias": "250.00",
+          "proteinas": "30.00",
+          "azucares": "5.00",
+          "descripcion": "Ceviche de Pescado",
+          "etiquetas": [
+            "FRIO",
+            "ACIDO",
+            "SIN_GLUTEN"
+          ],
+          "ingredientes_ids": [],
+          "id": 1,
+          "peso": "300.00",
+          "tipo": "FONDO"
+        },
+        {
+          "valor_nutricional": "Alto en proteínas, carbohidratos y vitaminas",
+          "precio": "32.50",
+          "tiempo_preparacion": "25.00",
+          "comentarios": "Fusión peruano-china, lomo de res salteado con verduras",
+          "receta": "Saltear lomo con cebolla, tomate, ají amarillo, servir con papas fritas y arroz",
+          "disponible": true,
+          "unidades_disponibles": 10,
+          "num_ingredientes": 8,
+          "kcal": 580,
+          "calorias": "580.00",
+          "proteinas": "35.00",
+          "azucares": "12.00",
+          "descripcion": "Lomo Saltado",
+          "etiquetas": [
+            "CALIENTE",
+            "CON_GLUTEN"
+          ],
+          "ingredientes_ids": [],
+          "id": 2,
+          "peso": "350.00",
+          "tipo": "FONDO"
+        }
+      ],
+      "data_type": "JSON",
+      "data_size": 1161,
+      "status": "✅ ÉXITO"
+    },
+    {
+      "endpoint": "/items/platos/postres",
+      "method": "GET",
+      "description": "Obtener postres",
+      "status_code": 200,
+      "expected_status": 200,
+      "response_time_ms": 7.52,
+      "success": true,
+      "url": "http://localhost:8002/items/platos/postres",
+      "timestamp": "2025-09-18T14:10:19.224327",
+      "response_data": [
+        {
+          "valor_nutricional": "Rico en azúcares y grasas",
+          "precio": "12.00",
+          "tiempo_preparacion": "30.00",
+          "comentarios": "Postre tradicional de Lima, manjar blanco con merengue",
+          "receta": "Preparar manjar blanco, cubrir con merengue italiano, espolvorear canela",
+          "disponible": true,
+          "unidades_disponibles": 10,
+          "num_ingredientes": 5,
+          "kcal": 380,
+          "calorias": "380.00",
+          "proteinas": "8.00",
+          "azucares": "45.00",
+          "descripcion": "Suspiro a la Limeña",
+          "etiquetas": [
+            "FRIO",
+            "CON_GLUTEN"
+          ],
+          "ingredientes_ids": [],
+          "id": 4,
+          "peso": "150.00",
+          "tipo": "POSTRE"
+        }
+      ],
+      "data_type": "JSON",
+      "data_size": 553,
+      "status": "✅ ÉXITO"
+    },
+    {
+      "endpoint": "/items/bebidas/alcoholicas",
+      "method": "GET",
+      "description": "Obtener bebidas alcohólicas",
+      "status_code": 200,
+      "expected_status": 200,
+      "response_time_ms": 11.22,
+      "success": true,
+      "url": "http://localhost:8002/items/bebidas/alcoholicas",
+      "timestamp": "2025-09-18T14:10:19.237549",
+      "response_data": [
+        {
+          "valor_nutricional": "Fermentado tradicional",
+          "precio": "7.50",
+          "tiempo_preparacion": "0.00",
+          "comentarios": "Bebida andina",
+          "receta": "Fermentar maíz de jora",
+          "disponible": true,
+          "unidades_disponibles": 12,
+          "num_ingredientes": 2,
+          "kcal": 120,
+          "calorias": "120.00",
+          "proteinas": "1.50",
+          "azucares": "10.00",
+          "descripcion": "Chicha de Jora",
+          "etiquetas": [
+            "FRIO"
+          ],
+          "ingredientes_ids": [],
+          "id": 6,
+          "litros": "0.500",
+          "alcoholico": true
+        },
+        {
+          "valor_nutricional": "Cóctel nacional del Perú",
+          "precio": "18.00",
+          "tiempo_preparacion": "8.00",
+          "comentarios": "Cóctel emblemático con pisco, limón y clara de huevo",
+          "receta": "Mezclar pisco, jugo de limón, jarabe de goma y clara de huevo, batir con hielo",
+          "disponible": true,
+          "unidades_disponibles": 15,
+          "num_ingredientes": 5,
+          "kcal": 200,
+          "calorias": "200.00",
+          "proteinas": "2.00",
+          "azucares": "8.00",
+          "descripcion": "Pisco Sour",
+          "etiquetas": [
+            "FRIO",
+            "ACIDO"
+          ],
+          "ingredientes_ids": [],
+          "id": 7,
+          "litros": "0.200",
+          "alcoholico": true
+        }
+      ],
+      "data_type": "JSON",
+      "data_size": 984,
+      "status": "✅ ÉXITO"
+    },
+    {
+      "endpoint": "/items/bebidas/no-alcoholicas",
+      "method": "GET",
+      "description": "Obtener bebidas no alcohólicas",
+      "status_code": 200,
+      "expected_status": 200,
+      "response_time_ms": 11.0,
+      "success": true,
+      "url": "http://localhost:8002/items/bebidas/no-alcoholicas",
+      "timestamp": "2025-09-18T14:10:19.249549",
+      "response_data": [
+        {
+          "valor_nutricional": "Rica en antioxidantes y vitamina C",
+          "precio": "6.50",
+          "tiempo_preparacion": "15.00",
+          "comentarios": "Bebida tradicional de maíz morado",
+          "receta": "Cocinar maíz morado con canela y clavo, endulzar y servir frío",
+          "disponible": true,
+          "unidades_disponibles": 25,
+          "num_ingredientes": 3,
+          "kcal": 120,
+          "calorias": "120.00",
+          "proteinas": "1.00",
+          "azucares": "28.00",
+          "descripcion": "Chicha Morada",
+          "etiquetas": [
+            "FRIO",
+            "SIN_GLUTEN"
+          ],
+          "ingredientes_ids": [],
+          "id": 5,
+          "litros": "0.500",
+          "alcoholico": false
+        },
+        {
+          "valor_nutricional": "Bebida gaseosa con sabor a hierba luisa",
+          "precio": "4.50",
+          "tiempo_preparacion": "0.00",
+          "comentarios": "La bebida nacional del Perú",
+          "receta": "Servir fría",
+          "disponible": true,
+          "unidades_disponibles": 30,
+          "num_ingredientes": 1,
+          "kcal": 150,
+          "calorias": "150.00",
+          "proteinas": "0.00",
+          "azucares": "35.00",
+          "descripcion": "Inca Kola",
+          "etiquetas": [
+            "FRIO"
+          ],
+          "ingredientes_ids": [],
+          "id": 8,
+          "litros": "0.500",
+          "alcoholico": false
+        }
+      ],
+      "data_type": "JSON",
+      "data_size": 985,
+      "status": "✅ ÉXITO"
+    },
+    {
+      "endpoint": "/items/bebidas/filter/volume",
+      "method": "GET",
+      "description": "Filtrar bebidas por volumen",
+      "status_code": 200,
+      "expected_status": 200,
+      "response_time_ms": 11.0,
+      "success": true,
+      "url": "http://localhost:8002/items/bebidas/filter/volume",
+      "timestamp": "2025-09-18T14:10:19.261549",
+      "response_data": [
+        {
+          "valor_nutricional": "Rica en antioxidantes y vitamina C",
+          "precio": "6.50",
+          "tiempo_preparacion": "15.00",
+          "comentarios": "Bebida tradicional de maíz morado",
+          "receta": "Cocinar maíz morado con canela y clavo, endulzar y servir frío",
+          "disponible": true,
+          "unidades_disponibles": 25,
+          "num_ingredientes": 3,
+          "kcal": 120,
+          "calorias": "120.00",
+          "proteinas": "1.00",
+          "azucares": "28.00",
+          "descripcion": "Chicha Morada",
+          "etiquetas": [
+            "FRIO",
+            "SIN_GLUTEN"
+          ],
+          "ingredientes_ids": [],
+          "id": 5,
+          "litros": "0.500",
+          "alcoholico": false
+        },
+        {
+          "valor_nutricional": "Fermentado tradicional",
+          "precio": "7.50",
+          "tiempo_preparacion": "0.00",
+          "comentarios": "Bebida andina",
+          "receta": "Fermentar maíz de jora",
+          "disponible": true,
+          "unidades_disponibles": 12,
+          "num_ingredientes": 2,
+          "kcal": 120,
+          "calorias": "120.00",
+          "proteinas": "1.50",
+          "azucares": "10.00",
+          "descripcion": "Chicha de Jora",
+          "etiquetas": [
+            "FRIO"
+          ],
+          "ingredientes_ids": [],
+          "id": 6,
+          "litros": "0.500",
+          "alcoholico": true
+        },
+        {
+          "valor_nutricional": "Bebida gaseosa con sabor a hierba luisa",
+          "precio": "4.50",
+          "tiempo_preparacion": "0.00",
+          "comentarios": "La bebida nacional del Perú",
+          "receta": "Servir fría",
+          "disponible": true,
+          "unidades_disponibles": 30,
+          "num_ingredientes": 1,
+          "kcal": 150,
+          "calorias": "150.00",
+          "proteinas": "0.00",
+          "azucares": "35.00",
+          "descripcion": "Inca Kola",
+          "etiquetas": [
+            "FRIO"
+          ],
+          "ingredientes_ids": [],
+          "id": 8,
+          "litros": "0.500",
+          "alcoholico": false
+        }
+      ],
+      "data_type": "JSON",
+      "data_size": 1426,
+      "status": "✅ ÉXITO"
+    },
+    {
+      "endpoint": "/items/1/ingredientes",
+      "method": "GET",
+      "description": "Obtener ingredientes de un ítem",
+      "status_code": 200,
+      "expected_status": 200,
+      "response_time_ms": 9.0,
+      "success": true,
+      "url": "http://localhost:8002/items/1/ingredientes",
+      "timestamp": "2025-09-18T14:10:19.272549",
+      "response_data": [
+        {
+          "id": 4,
+          "nombre": "Cebolla Morada",
+          "stock": 20.0,
+          "peso": 0.2,
+          "tipo": "VERDURA"
+        },
+        {
+          "id": 5,
+          "nombre": "Culantro",
+          "stock": 12.0,
+          "peso": 0.01,
+          "tipo": "VERDURA"
+        },
+        {
+          "id": 7,
+          "nombre": "Limón",
+          "stock": 25.0,
+          "peso": 0.12,
+          "tipo": "FRUTA"
+        },
+        {
+          "id": 19,
+          "nombre": "Pescado de Mar",
+          "stock": 12.0,
+          "peso": 0.6,
+          "tipo": "CARNE"
+        }
+      ],
+      "data_type": "JSON",
+      "data_size": 328,
+      "status": "✅ ÉXITO"
+    },
+    {
+      "endpoint": "/items/999/ingredientes",
+      "method": "GET",
+      "description": "Ingredientes de ítem inexistente",
+      "status_code": 404,
+      "expected_status": 404,
+      "response_time_ms": 5.0,
+      "success": true,
+      "url": "http://localhost:8002/items/999/ingredientes",
+      "timestamp": "2025-09-18T14:10:19.278551",
+      "response_data": {
+        "detail": "Ítem no encontrado"
+      },
+      "data_type": "JSON",
+      "data_size": 32,
+      "status": "✅ ÉXITO"
+    }
+  ],
+  "failing_endpoints": [
+    {
+      "endpoint": "/ingredientes/verduras",
+      "method": "GET",
+      "description": "Obtener verduras",
+      "status_code": 422,
+      "expected_status": 200,
+      "response_time_ms": 5.0,
+      "success": false,
+      "url": "http://localhost:8002/ingredientes/verduras",
+      "timestamp": "2025-09-18T14:10:19.041679",
+      "response_data": {
+        "detail": [
+          {
+            "type": "int_parsing",
+            "loc": [
+              "path",
+              "ingrediente_id"
+            ],
+            "msg": "Input should be a valid integer, unable to parse string as an integer",
+            "input": "verduras"
+          }
+        ]
+      },
+      "data_type": "JSON",
+      "data_size": 173,
+      "status": "❌ FALLO",
+      "error": "Esperado 200, obtenido 422"
+    },
+    {
+      "endpoint": "/ingredientes/carnes",
+      "method": "GET",
+      "description": "Obtener carnes",
+      "status_code": 422,
+      "expected_status": 200,
+      "response_time_ms": 4.52,
+      "success": false,
+      "url": "http://localhost:8002/ingredientes/carnes",
+      "timestamp": "2025-09-18T14:10:19.047191",
+      "response_data": {
+        "detail": [
+          {
+            "type": "int_parsing",
+            "loc": [
+              "path",
+              "ingrediente_id"
+            ],
+            "msg": "Input should be a valid integer, unable to parse string as an integer",
+            "input": "carnes"
+          }
+        ]
+      },
+      "data_type": "JSON",
+      "data_size": 171,
+      "status": "❌ FALLO",
+      "error": "Esperado 200, obtenido 422"
+    },
+    {
+      "endpoint": "/ingredientes/frutas",
+      "method": "GET",
+      "description": "Obtener frutas",
+      "status_code": 422,
+      "expected_status": 200,
+      "response_time_ms": 4.1,
+      "success": false,
+      "url": "http://localhost:8002/ingredientes/frutas",
+      "timestamp": "2025-09-18T14:10:19.052288",
+      "response_data": {
+        "detail": [
+          {
+            "type": "int_parsing",
+            "loc": [
+              "path",
+              "ingrediente_id"
+            ],
+            "msg": "Input should be a valid integer, unable to parse string as an integer",
+            "input": "frutas"
+          }
+        ]
+      },
+      "data_type": "JSON",
+      "data_size": 171,
+      "status": "❌ FALLO",
+      "error": "Esperado 200, obtenido 422"
+    },
+    {
+      "endpoint": "/ingredientes/low-stock",
+      "method": "GET",
+      "description": "Ingredientes con stock bajo",
+      "status_code": 422,
+      "expected_status": 200,
+      "response_time_ms": 4.29,
+      "success": false,
+      "url": "http://localhost:8002/ingredientes/low-stock",
+      "timestamp": "2025-09-18T14:10:19.057647",
+      "response_data": {
+        "detail": [
+          {
+            "type": "int_parsing",
+            "loc": [
+              "path",
+              "ingrediente_id"
+            ],
+            "msg": "Input should be a valid integer, unable to parse string as an integer",
+            "input": "low-stock"
+          }
+        ]
+      },
+      "data_type": "JSON",
+      "data_size": 174,
+      "status": "❌ FALLO",
+      "error": "Esperado 200, obtenido 422"
+    },
+    {
+      "endpoint": "/ingredientes/low-stock",
+      "method": "GET",
+      "description": "Stock bajo con umbral",
+      "status_code": 422,
+      "expected_status": 200,
+      "response_time_ms": 5.32,
+      "success": false,
+      "url": "http://localhost:8002/ingredientes/low-stock",
+      "timestamp": "2025-09-18T14:10:19.064162",
+      "response_data": {
+        "detail": [
+          {
+            "type": "int_parsing",
+            "loc": [
+              "path",
+              "ingrediente_id"
+            ],
+            "msg": "Input should be a valid integer, unable to parse string as an integer",
+            "input": "low-stock"
+          }
+        ]
+      },
+      "data_type": "JSON",
+      "data_size": 174,
+      "status": "❌ FALLO",
+      "error": "Esperado 200, obtenido 422"
+    },
+    {
+      "endpoint": "/items/",
+      "method": "GET",
+      "description": "Listar todos los ítems",
+      "status_code": 500,
+      "expected_status": 200,
+      "response_time_ms": 19.64,
+      "success": false,
+      "url": "http://localhost:8002/items/",
+      "timestamp": "2025-09-18T14:10:19.085389",
+      "response_data": {
+        "detail": "Error interno del servidor: 1 validation error for ItemResponseDTO\ntipo\n  Field required [type=missing, input_value=Bebida(id=5, descripcion=....500L, alcoholico=False), input_type=Bebida]\n    For further information visit https://errors.pydantic.dev/2.11/v/missing"
+      },
+      "data_type": "JSON",
+      "data_size": 282,
+      "status": "❌ FALLO",
+      "error": "Esperado 200, obtenido 500"
+    },
+    {
+      "endpoint": "/items/",
+      "method": "GET",
+      "description": "Listar solo ítems disponibles",
+      "status_code": 500,
+      "expected_status": 200,
+      "response_time_ms": 18.3,
+      "success": false,
+      "url": "http://localhost:8002/items/",
+      "timestamp": "2025-09-18T14:10:19.104687",
+      "response_data": {
+        "detail": "Error interno del servidor: 1 validation error for ItemResponseDTO\ntipo\n  Field required [type=missing, input_value=Bebida(id=5, descripcion=....500L, alcoholico=False), input_type=Bebida]\n    For further information visit https://errors.pydantic.dev/2.11/v/missing"
+      },
+      "data_type": "JSON",
+      "data_size": 282,
+      "status": "❌ FALLO",
+      "error": "Esperado 200, obtenido 500"
+    },
+    {
+      "endpoint": "/items/filter/price",
+      "method": "GET",
+      "description": "Filtrar por precio",
+      "status_code": 400,
+      "expected_status": 200,
+      "response_time_ms": 17.0,
+      "success": false,
+      "url": "http://localhost:8002/items/filter/price",
+      "timestamp": "2025-09-18T14:10:19.169491",
+      "response_data": {
+        "detail": "1 validation error for ItemResponseDTO\ntipo\n  Field required [type=missing, input_value=Bebida(id=7, descripcion=...0.200L, alcoholico=True), input_type=Bebida]\n    For further information visit https://errors.pydantic.dev/2.11/v/missing"
+      },
+      "data_type": "JSON",
+      "data_size": 254,
+      "status": "❌ FALLO",
+      "error": "Esperado 200, obtenido 400"
+    },
+    {
+      "endpoint": "/items/filter/etiqueta/SIN_GLUTEN",
+      "method": "GET",
+      "description": "Filtrar por etiqueta SIN_GLUTEN",
+      "status_code": 500,
+      "expected_status": 200,
+      "response_time_ms": 14.0,
+      "success": false,
+      "url": "http://localhost:8002/items/filter/etiqueta/SIN_GLUTEN",
+      "timestamp": "2025-09-18T14:10:19.184491",
+      "response_data": {
+        "detail": "Error interno del servidor: 1 validation error for ItemResponseDTO\ntipo\n  Field required [type=missing, input_value=Bebida(id=5, descripcion=....500L, alcoholico=False), input_type=Bebida]\n    For further information visit https://errors.pydantic.dev/2.11/v/missing"
+      },
+      "data_type": "JSON",
+      "data_size": 282,
+      "status": "❌ FALLO",
+      "error": "Esperado 200, obtenido 500"
+    },
+    {
+      "endpoint": "/seed-data",
+      "method": "POST",
+      "description": "Sembrar datos peruanos",
+      "status_code": 500,
+      "expected_status": 200,
+      "response_time_ms": 6.0,
+      "success": false,
+      "url": "http://localhost:8002/seed-data",
+      "timestamp": "2025-09-18T14:10:19.286549",
+      "response_data": {
+        "detail": "Error al poblar la base de datos: (sqlite3.IntegrityError) UNIQUE constraint failed: ingredientes.nombre\n[SQL: INSERT INTO ingredientes (nombre, stock, peso, tipo) VALUES (?, ?, ?, ?)]\n[parameters: ('Ají Amarillo', 15.0, 0.05, 'VERDURA')]\n(Background on this error at: https://sqlalche.me/e/20/gkpj)"
+      },
+      "data_type": "JSON",
+      "data_size": 316,
+      "status": "❌ FALLO",
+      "error": "Esperado 200, obtenido 500"
+    }
+  ]
+}

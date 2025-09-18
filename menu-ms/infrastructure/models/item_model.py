@@ -77,7 +77,7 @@ class ItemModel(Base):
         etiquetas = [EtiquetaItem(etiqueta.etiqueta) for etiqueta in self.etiquetas]
         
         if self.tipo == 'PLATO':
-            return Plato(
+            plato = Plato(
                 id=self.id,
                 valor_nutricional=self.valor_nutricional or "",
                 precio=self.precio,
@@ -96,8 +96,11 @@ class ItemModel(Base):
                 peso=getattr(self, 'peso', Decimal('0.0')),
                 tipo=EtiquetaPlato(getattr(self, 'tipo_plato', 'FONDO'))
             )
+            # Agregar campo tipo para compatibilidad con DTO
+            plato.tipo = 'PLATO'
+            return plato
         elif self.tipo == 'BEBIDA':
-            return Bebida(
+            bebida = Bebida(
                 id=self.id,
                 valor_nutricional=self.valor_nutricional or "",
                 precio=self.precio,
@@ -116,6 +119,9 @@ class ItemModel(Base):
                 litros=getattr(self, 'litros', Decimal('0.0')),
                 alcoholico=getattr(self, 'alcoholico', False)
             )
+            # Agregar campo tipo para compatibilidad con DTO
+            bebida.tipo = 'BEBIDA'
+            return bebida
         else:
             # Fallback para ítems genéricos
             return Item(

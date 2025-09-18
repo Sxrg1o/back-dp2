@@ -69,6 +69,97 @@ def get_all_ingredientes(
         raise HTTPException(status_code=500, detail=f"Error interno del servidor: {str(e)}")
 
 
+@router.get("/search", response_model=List[IngredienteResponseDTO])
+def search_ingredientes(
+    q: str = Query(..., description="Término de búsqueda"),
+    service: IngredienteService = Depends(get_ingrediente_service)
+):
+    """
+    Busca ingredientes por nombre.
+    """
+    try:
+        ingredientes = service.search_ingredientes(q)
+        return [IngredienteResponseDTO.model_validate(ingrediente) for ingrediente in ingredientes]
+    
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error interno del servidor: {str(e)}")
+
+
+@router.get("/filter/tipo/{tipo}", response_model=List[IngredienteResponseDTO])
+def get_ingredientes_by_tipo(
+    tipo: EtiquetaIngrediente,
+    service: IngredienteService = Depends(get_ingrediente_service)
+):
+    """
+    Obtiene ingredientes por tipo.
+    """
+    try:
+        ingredientes = service.get_ingredientes_by_tipo(tipo)
+        return [IngredienteResponseDTO.model_validate(ingrediente) for ingrediente in ingredientes]
+    
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error interno del servidor: {str(e)}")
+
+
+@router.get("/verduras", response_model=List[IngredienteResponseDTO])
+def get_verduras(service: IngredienteService = Depends(get_ingrediente_service)):
+    """
+    Obtiene todas las verduras.
+    """
+    try:
+        ingredientes = service.get_verduras()
+        return [IngredienteResponseDTO.model_validate(ingrediente) for ingrediente in ingredientes]
+    
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error interno del servidor: {str(e)}")
+
+
+@router.get("/carnes", response_model=List[IngredienteResponseDTO])
+def get_carnes(service: IngredienteService = Depends(get_ingrediente_service)):
+    """
+    Obtiene todas las carnes.
+    """
+    try:
+        ingredientes = service.get_carnes()
+        return [IngredienteResponseDTO.model_validate(ingrediente) for ingrediente in ingredientes]
+    
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error interno del servidor: {str(e)}")
+
+
+@router.get("/frutas", response_model=List[IngredienteResponseDTO])
+def get_frutas(service: IngredienteService = Depends(get_ingrediente_service)):
+    """
+    Obtiene todas las frutas.
+    """
+    try:
+        ingredientes = service.get_frutas()
+        return [IngredienteResponseDTO.model_validate(ingrediente) for ingrediente in ingredientes]
+    
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error interno del servidor: {str(e)}")
+
+
+@router.get("/low-stock", response_model=List[IngredienteResponseDTO])
+def get_ingredientes_low_stock(
+    threshold: Decimal = Query(10.0, ge=0, description="Umbral de stock bajo"),
+    service: IngredienteService = Depends(get_ingrediente_service)
+):
+    """
+    Obtiene ingredientes con stock bajo.
+    """
+    try:
+        ingredientes = service.get_ingredientes_low_stock(threshold)
+        return [IngredienteResponseDTO.model_validate(ingrediente) for ingrediente in ingredientes]
+    
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error interno del servidor: {str(e)}")
+
+
 @router.get("/{ingrediente_id}", response_model=IngredienteResponseDTO)
 def get_ingrediente(
     ingrediente_id: int,
@@ -190,93 +281,3 @@ def delete_ingrediente(
         raise HTTPException(status_code=500, detail=f"Error interno del servidor: {str(e)}")
 
 
-# Endpoints de búsqueda y filtros
-@router.get("/search", response_model=List[IngredienteResponseDTO])
-def search_ingredientes(
-    q: str = Query(..., description="Término de búsqueda"),
-    service: IngredienteService = Depends(get_ingrediente_service)
-):
-    """
-    Busca ingredientes por nombre.
-    """
-    try:
-        ingredientes = service.search_ingredientes(q)
-        return [IngredienteResponseDTO.model_validate(ingrediente) for ingrediente in ingredientes]
-    
-    except ValueError as e:
-        raise HTTPException(status_code=400, detail=str(e))
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error interno del servidor: {str(e)}")
-
-
-@router.get("/filter/tipo/{tipo}", response_model=List[IngredienteResponseDTO])
-def get_ingredientes_by_tipo(
-    tipo: EtiquetaIngrediente,
-    service: IngredienteService = Depends(get_ingrediente_service)
-):
-    """
-    Obtiene ingredientes por tipo.
-    """
-    try:
-        ingredientes = service.get_ingredientes_by_tipo(tipo)
-        return [IngredienteResponseDTO.model_validate(ingrediente) for ingrediente in ingredientes]
-    
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error interno del servidor: {str(e)}")
-
-
-@router.get("/verduras", response_model=List[IngredienteResponseDTO])
-def get_verduras(service: IngredienteService = Depends(get_ingrediente_service)):
-    """
-    Obtiene todas las verduras.
-    """
-    try:
-        ingredientes = service.get_verduras()
-        return [IngredienteResponseDTO.model_validate(ingrediente) for ingrediente in ingredientes]
-    
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error interno del servidor: {str(e)}")
-
-
-@router.get("/carnes", response_model=List[IngredienteResponseDTO])
-def get_carnes(service: IngredienteService = Depends(get_ingrediente_service)):
-    """
-    Obtiene todas las carnes.
-    """
-    try:
-        ingredientes = service.get_carnes()
-        return [IngredienteResponseDTO.model_validate(ingrediente) for ingrediente in ingredientes]
-    
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error interno del servidor: {str(e)}")
-
-
-@router.get("/frutas", response_model=List[IngredienteResponseDTO])
-def get_frutas(service: IngredienteService = Depends(get_ingrediente_service)):
-    """
-    Obtiene todas las frutas.
-    """
-    try:
-        ingredientes = service.get_frutas()
-        return [IngredienteResponseDTO.model_validate(ingrediente) for ingrediente in ingredientes]
-    
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error interno del servidor: {str(e)}")
-
-
-@router.get("/low-stock", response_model=List[IngredienteResponseDTO])
-def get_ingredientes_low_stock(
-    threshold: Decimal = Query(10.0, ge=0, description="Umbral de stock bajo"),
-    service: IngredienteService = Depends(get_ingrediente_service)
-):
-    """
-    Obtiene ingredientes con stock bajo.
-    """
-    try:
-        ingredientes = service.get_ingredientes_low_stock(threshold)
-        return [IngredienteResponseDTO.model_validate(ingrediente) for ingrediente in ingredientes]
-    
-    except ValueError as e:
-        raise HTTPException(status_code=400, detail=str(e))
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error interno del servidor: {str(e)}")
