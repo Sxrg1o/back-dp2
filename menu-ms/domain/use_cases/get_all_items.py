@@ -4,9 +4,9 @@ Caso de uso para obtener todos los ítems del menú.
 
 from typing import List
 from decimal import Decimal
-from ..entities import Item
-from ..entities.enums import EtiquetaItem
-from ..repositories import ItemRepository
+from domain.entities import Item
+from domain.entities.enums import EtiquetaItem
+from domain.repositories import ItemRepository
 
 
 class GetAllItemsUseCase:

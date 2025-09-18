@@ -4,10 +4,10 @@ Servicio de aplicación para gestión de ingredientes.
 
 from typing import List, Optional
 from decimal import Decimal
-from ...domain.entities import Ingrediente
-from ...domain.entities.enums import EtiquetaIngrediente
-from ...domain.repositories import IngredienteRepository
-from ...domain.use_cases import (
+from domain.entities import Ingrediente
+from domain.entities.enums import EtiquetaIngrediente
+from domain.repositories import IngredienteRepository
+from domain.use_cases import (
     CreateIngredienteUseCase,
     GetIngredienteUseCase,
     GetAllIngredientesUseCase,

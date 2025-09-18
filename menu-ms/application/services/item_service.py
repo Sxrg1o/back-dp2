@@ -4,10 +4,10 @@ Servicio de aplicación para gestión de ítems del menú.
 
 from typing import List, Optional, Union
 from decimal import Decimal
-from ...domain.entities import Item, Plato, Bebida
-from ...domain.entities.enums import EtiquetaItem, EtiquetaPlato
-from ...domain.repositories import ItemRepository, PlatoRepository, BebidaRepository
-from ...domain.use_cases import (
+from domain.entities import Item, Plato, Bebida
+from domain.entities.enums import EtiquetaItem, EtiquetaPlato
+from domain.repositories import ItemRepository, PlatoRepository, BebidaRepository
+from domain.use_cases import (
     CreateItemUseCase,
     GetItemUseCase,
     GetAllItemsUseCase,

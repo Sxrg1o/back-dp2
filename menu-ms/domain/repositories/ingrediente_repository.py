@@ -6,8 +6,8 @@ Define el contrato para la persistencia de ingredientes.
 from abc import ABC, abstractmethod
 from typing import List, Optional
 from decimal import Decimal
-from ..entities import Ingrediente
-from ..entities.enums import EtiquetaIngrediente
+from domain.entities import Ingrediente
+from domain.entities.enums import EtiquetaIngrediente
 
 
 class IngredienteRepository(ABC):

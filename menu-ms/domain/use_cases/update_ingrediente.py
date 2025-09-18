@@ -3,8 +3,8 @@ Caso de uso para actualizar un ingrediente.
 """
 
 from decimal import Decimal
-from ..entities import Ingrediente
-from ..repositories import IngredienteRepository
+from domain.entities import Ingrediente
+from domain.repositories import IngredienteRepository
 
 
 class UpdateIngredienteUseCase:

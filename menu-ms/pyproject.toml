@@ -1,1 +1,24 @@
 [build-system]
+requires = ["setuptools>=45", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "menu-ms"
+version = "1.0.0"
+description = "Microservicio de Menú y Carta para el restaurante Domótica"
+authors = [
+    {name = "Equipo de Desarrollo Domótica", email = "dev@domotica.com"}
+]
+readme = "README.md"
+requires-python = ">=3.8"
+dependencies = [
+    "fastapi>=0.116.1",
+    "uvicorn[standard]>=0.35.0",
+    "pydantic>=2.11.9",
+    "sqlalchemy>=2.0.43",
+    "python-multipart>=0.0.12",
+]
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["domain*", "application*", "infrastructure*"]

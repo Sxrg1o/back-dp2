@@ -7,10 +7,10 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 from decimal import Decimal
 
-from ...domain.entities import Ingrediente
-from ...domain.entities.enums import EtiquetaIngrediente
-from ...application.services import IngredienteService
-from ..db import get_db
+from domain.entities import Ingrediente
+from domain.entities.enums import EtiquetaIngrediente
+from application.services import IngredienteService
+from infrastructure.db import get_db
 from .dtos import (
     IngredienteCreateDTO, IngredienteUpdateDTO, IngredienteResponseDTO,
     IngredienteStockUpdateDTO, MessageResponseDTO, LowStockDTO
@@ -23,7 +23,7 @@ def get_ingrediente_service(db: Session = Depends(get_db)) -> IngredienteService
     """
     Obtiene el servicio de ingredientes con las dependencias inyectadas.
     """
-    from ..repositories import IngredienteRepositoryImpl
+    from infrastructure.repositories import IngredienteRepositoryImpl
     
     ingrediente_repository = IngredienteRepositoryImpl(db)
     return IngredienteService(ingrediente_repository)

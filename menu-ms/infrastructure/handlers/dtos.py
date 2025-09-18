@@ -5,7 +5,7 @@ DTOs (Data Transfer Objects) para los endpoints del menú.
 from typing import List, Optional
 from decimal import Decimal
 from pydantic import BaseModel, Field
-from ...domain.entities.enums import EtiquetaItem, EtiquetaIngrediente, EtiquetaPlato
+from domain.entities.enums import EtiquetaItem, EtiquetaIngrediente, EtiquetaPlato
 
 
 # DTOs para ítems

@@ -6,8 +6,8 @@ Define el contrato para la persistencia de ítems.
 from abc import ABC, abstractmethod
 from typing import List, Optional
 from decimal import Decimal
-from ..entities import Item, Plato, Bebida
-from ..entities.enums import EtiquetaItem, EtiquetaPlato
+from domain.entities import Item, Plato, Bebida
+from domain.entities.enums import EtiquetaItem, EtiquetaPlato
 
 
 class ItemRepository(ABC):

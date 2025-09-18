@@ -3,8 +3,8 @@ Caso de uso para obtener un ítem del menú.
 """
 
 from typing import Optional
-from ..entities import Item
-from ..repositories import ItemRepository
+from domain.entities import Item
+from domain.repositories import ItemRepository
 
 
 class GetItemUseCase:

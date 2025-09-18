@@ -66,8 +66,8 @@ class ItemModel(Base):
         """
         Convierte el modelo a entidad de dominio.
         """
-        from ...domain.entities import Item, Plato, Bebida
-        from ...domain.entities.enums import EtiquetaItem, EtiquetaPlato
+        from domain.entities import Item, Plato, Bebida
+        from domain.entities.enums import EtiquetaItem, EtiquetaPlato
         
         # Convertir etiquetas
         etiquetas = [EtiquetaItem(etiqueta.etiqueta) for etiqueta in self.etiquetas]
@@ -178,8 +178,8 @@ class IngredienteModel(Base):
         """
         Convierte el modelo a entidad de dominio.
         """
-        from ...domain.entities import Ingrediente
-        from ...domain.entities.enums import EtiquetaIngrediente
+        from domain.entities import Ingrediente
+        from domain.entities.enums import EtiquetaIngrediente
         
         return Ingrediente(
             id=self.id,

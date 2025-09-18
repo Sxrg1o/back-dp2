@@ -3,8 +3,8 @@ Caso de uso para obtener un ingrediente.
 """
 
 from typing import Optional
-from ..entities import Ingrediente
-from ..repositories import IngredienteRepository
+from domain.entities import Ingrediente
+from domain.repositories import IngredienteRepository
 
 
 class GetIngredienteUseCase:

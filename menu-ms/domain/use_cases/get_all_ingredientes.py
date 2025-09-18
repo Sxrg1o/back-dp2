@@ -4,9 +4,9 @@ Caso de uso para obtener todos los ingredientes.
 
 from typing import List
 from decimal import Decimal
-from ..entities import Ingrediente
-from ..entities.enums import EtiquetaIngrediente
-from ..repositories import IngredienteRepository
+from domain.entities import Ingrediente
+from domain.entities.enums import EtiquetaIngrediente
+from domain.repositories import IngredienteRepository
 
 
 class GetAllIngredientesUseCase:

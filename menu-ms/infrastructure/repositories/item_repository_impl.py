@@ -5,10 +5,10 @@ Implementación concreta del repositorio de ítems.
 from typing import List, Optional
 from decimal import Decimal
 from sqlalchemy.orm import Session
-from ...domain.entities import Item, Plato, Bebida
-from ...domain.entities.enums import EtiquetaItem, EtiquetaPlato
-from ...domain.repositories import ItemRepository, PlatoRepository, BebidaRepository
-from ..models.item_model import ItemModel, PlatoModel, BebidaModel, ItemEtiquetaModel
+from domain.entities import Item, Plato, Bebida
+from domain.entities.enums import EtiquetaItem, EtiquetaPlato
+from domain.repositories import ItemRepository, PlatoRepository, BebidaRepository
+from infrastructure.models.item_model import ItemModel, PlatoModel, BebidaModel, ItemEtiquetaModel
 
 
 class ItemRepositoryImpl(ItemRepository):

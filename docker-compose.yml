@@ -1,11 +1,73 @@
+version: '3.8'
+
 services:
-  users:
+  users-ms:
     build: ./users-ms
-    command: uvicorn main:app --host 0.0.0.0 --port 8000
+    container_name: domotica-users-ms
+    command: uvicorn main:app --host 0.0.0.0 --port 8000 --reload
     ports:
-      - "8501:8000"
-  menu:
+      - "8001:8000"
+    environment:
+      - PORT=8000
+      - HOST=0.0.0.0
+      - RELOAD=true
+    volumes:
+      - ./users-ms:/app
+      - /app/__pycache__
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    networks:
+      - domotica-network
+
+  menu-ms:
     build: ./menu-ms
-    command: uvicorn main:app --host 0.0.0.0 --port 8000
+    container_name: domotica-menu-ms
+    command: python -m uvicorn main:app --host 0.0.0.0 --port 8002 --reload
     ports:
-      - "8502:8000"
+      - "8002:8002"
+    environment:
+      - PORT=8002
+      - HOST=0.0.0.0
+      - RELOAD=true
+      - DATABASE_URL=sqlite:////app/data/menu.db
+    # Persistir solo la base de datos en /app/data (no el código)
+    volumes:
+      - menu-db-data:/app/data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8002/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    networks:
+      - domotica-network
+
+  # Opcional: Base de datos PostgreSQL para producción
+  # postgres:
+  #   image: postgres:15-alpine
+  #   container_name: domotica-postgres
+  #   environment:
+  #     POSTGRES_DB: domotica_db
+  #     POSTGRES_USER: domotica_user
+  #     POSTGRES_PASSWORD: domotica_password
+  #   volumes:
+  #     - postgres_data:/var/lib/postgresql/data
+  #   ports:
+  #     - "5432:5432"
+  #   restart: unless-stopped
+  #   networks:
+  #     - domotica-network
+
+volumes:
+  menu-db-data:
+  # postgres_data:
+
+networks:
+  domotica-network:
+    driver: bridge

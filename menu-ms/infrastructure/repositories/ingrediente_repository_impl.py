@@ -5,10 +5,10 @@ Implementación concreta del repositorio de ingredientes.
 from typing import List, Optional
 from decimal import Decimal
 from sqlalchemy.orm import Session
-from ...domain.entities import Ingrediente
-from ...domain.entities.enums import EtiquetaIngrediente
-from ...domain.repositories import IngredienteRepository
-from ..models.item_model import IngredienteModel
+from domain.entities import Ingrediente
+from domain.entities.enums import EtiquetaIngrediente
+from domain.repositories import IngredienteRepository
+from infrastructure.models.item_model import IngredienteModel
 
 
 class IngredienteRepositoryImpl(IngredienteRepository):

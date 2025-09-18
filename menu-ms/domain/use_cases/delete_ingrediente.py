@@ -2,7 +2,7 @@
 Caso de uso para eliminar un ingrediente.
 """
 
-from ..repositories import IngredienteRepository
+from domain.repositories import IngredienteRepository
 
 
 class DeleteIngredienteUseCase:

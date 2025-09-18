@@ -7,10 +7,10 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 from decimal import Decimal
 
-from ...domain.entities import Item, Plato, Bebida
-from ...domain.entities.enums import EtiquetaItem, EtiquetaPlato
-from ...application.services import ItemService
-from ..db import get_db
+from domain.entities import Item, Plato, Bebida
+from domain.entities.enums import EtiquetaItem, EtiquetaPlato
+from application.services import ItemService
+from infrastructure.db import get_db
 from .dtos import (
     PlatoCreateDTO, PlatoUpdateDTO, PlatoResponseDTO,
     BebidaCreateDTO, BebidaUpdateDTO, BebidaResponseDTO,
@@ -25,7 +25,7 @@ def get_item_service(db: Session = Depends(get_db)) -> ItemService:
     """
     Obtiene el servicio de ítems con las dependencias inyectadas.
     """
-    from ..repositories import ItemRepositoryImpl, PlatoRepositoryImpl, BebidaRepositoryImpl
+    from infrastructure.repositories import ItemRepositoryImpl, PlatoRepositoryImpl, BebidaRepositoryImpl
     
     item_repository = ItemRepositoryImpl(db)
     plato_repository = PlatoRepositoryImpl(db)
@@ -43,7 +43,7 @@ def create_plato(
     Crea un nuevo plato en el menú.
     """
     try:
-        from ...domain.entities import Plato
+        from domain.entities import Plato
         
         plato = Plato(
             valor_nutricional=plato_data.valor_nutricional,
@@ -82,7 +82,7 @@ def create_bebida(
     Crea una nueva bebida en el menú.
     """
     try:
-        from ...domain.entities import Bebida
+        from domain.entities import Bebida
         
         bebida = Bebida(
             valor_nutricional=bebida_data.valor_nutricional,
@@ -161,7 +161,7 @@ def update_plato(
     Actualiza un plato existente.
     """
     try:
-        from ...domain.entities import Plato
+        from domain.entities import Plato
         
         # Verificar que el ítem existe y es un plato
         existing_item = service.get_item(item_id)
@@ -212,7 +212,7 @@ def update_bebida(
     Actualiza una bebida existente.
     """
     try:
-        from ...domain.entities import Bebida
+        from domain.entities import Bebida
         
         # Verificar que el ítem existe y es una bebida
         existing_item = service.get_item(item_id)

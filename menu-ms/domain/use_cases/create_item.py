@@ -4,8 +4,8 @@ Caso de uso para crear un ítem del menú.
 
 from typing import Union
 from decimal import Decimal
-from ..entities import Item, Plato, Bebida
-from ..repositories import ItemRepository
+from domain.entities import Item, Plato, Bebida
+from domain.repositories import ItemRepository
 
 
 class CreateItemUseCase:

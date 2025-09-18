@@ -2,7 +2,7 @@
 Caso de uso para eliminar un ítem del menú.
 """
 
-from ..repositories import ItemRepository
+from domain.repositories import ItemRepository
 
 
 class DeleteItemUseCase:
