@@ -1,0 +1,37 @@
+version: '3.8'
+
+services:
+  menu-ms:
+    build: .
+    ports:
+      - "8002:8002"
+    environment:
+      - DATABASE_URL=sqlite:///./menu.db
+      - PORT=8002
+      - HOST=0.0.0.0
+      - RELOAD=false
+    volumes:
+      - ./menu.db:/app/menu.db
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8002/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # Opcional: Base de datos PostgreSQL para producción
+  # postgres:
+  #   image: postgres:15-alpine
+  #   environment:
+  #     POSTGRES_DB: menu_db
+  #     POSTGRES_USER: menu_user
+  #     POSTGRES_PASSWORD: menu_password
+  #   volumes:
+  #     - postgres_data:/var/lib/postgresql/data
+  #   ports:
+  #     - "5432:5432"
+  #   restart: unless-stopped
+
+# volumes:
+#   postgres_data:
