@@ -6,6 +6,7 @@ WORKDIR /app
 RUN apt-get update && apt-get install -y \
     curl \
     supervisor \
+    nginx \
     && rm -rf /var/lib/apt/lists/*
 
 # Copiar los requisitos de ambos microservicios
@@ -16,8 +17,9 @@ COPY menu-ms/requirements.txt /app/menu-ms-requirements.txt
 RUN pip install --no-cache-dir -r /app/users-ms-requirements.txt
 RUN pip install --no-cache-dir -r /app/menu-ms-requirements.txt
 
-# Copiar supervisord.conf
+# Copiar configuración
 COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
+COPY nginx.conf /etc/nginx/nginx.conf
 
 # Copiar código fuente de ambos microservicios
 COPY users-ms/ /app/users-ms/
@@ -29,8 +31,8 @@ RUN mkdir -p /app/menu-ms/data
 # Crear directorios para logs
 RUN mkdir -p /var/log
 
-# Exponer puertos
-EXPOSE 8001 8002
+# Exponer puerto 80 para Nginx que funcionará como proxy reverso
+EXPOSE 80
 
 # Comando de inicio para supervisord con configuración explícita
 CMD ["/usr/bin/supervisord", "-c", "/etc/supervisor/conf.d/supervisord.conf"]
