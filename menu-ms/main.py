@@ -63,7 +63,11 @@ app = FastAPI(
         "name": "MIT",
         "url": "https://opensource.org/licenses/MIT",
     },
-    lifespan=lifespan
+    lifespan=lifespan,
+    # Configuración para OpenAPI cuando está detrás de un proxy
+    root_path="/api/menu",
+    openapi_url="/openapi.json",
+    docs_url="/docs",
 )
 
 # Configurar CORS
