@@ -124,7 +124,7 @@ class ItemModel(Base):
             return bebida
         else:
             # Fallback para ítems genéricos
-            return Item(
+            item = Item(
                 id=self.id,
                 valor_nutricional=self.valor_nutricional or "",
                 precio=self.precio,
@@ -141,6 +141,9 @@ class ItemModel(Base):
                 descripcion=self.descripcion,
                 etiquetas=etiquetas
             )
+            # Agregar campo tipo para compatibilidad con DTO
+            item.tipo = self.tipo or 'ITEM'
+            return item
 
 
 class PlatoModel(ItemModel):

@@ -552,21 +552,48 @@ def seed_database():
         
         # Crear ingredientes
         ingredientes = create_peruvian_ingredients()
+        created_count = 0
         for ingrediente in ingredientes:
-            ingrediente_service.create_ingrediente(ingrediente)
-        print(f"✅ {len(ingredientes)} ingredientes creados")
+            try:
+                ingrediente_service.create_ingrediente(ingrediente)
+                created_count += 1
+            except Exception as e:
+                if "UNIQUE constraint failed" in str(e) or "already exists" in str(e):
+                    print(f"⚠️ Ingrediente '{ingrediente.nombre}' ya existe, omitiendo...")
+                    continue
+                else:
+                    raise e
+        print(f"✅ {created_count}/{len(ingredientes)} ingredientes creados (algunos ya existían)")
         
         # Crear platos
         platos = create_peruvian_platos()
+        created_platos = 0
         for plato in platos:
-            item_service.create_item(plato)
-        print(f"✅ {len(platos)} platos creados")
-        
+            try:
+                item_service.create_item(plato)
+                created_platos += 1
+            except Exception as e:
+                if "UNIQUE constraint failed" in str(e) or "already exists" in str(e):
+                    print(f"⚠️ Plato '{plato.descripcion}' ya existe, omitiendo...")
+                    continue
+                else:
+                    raise e
+        print(f"✅ {created_platos}/{len(platos)} platos creados (algunos ya existían)")
+
         # Crear bebidas
         bebidas = create_peruvian_bebidas()
+        created_bebidas = 0
         for bebida in bebidas:
-            item_service.create_item(bebida)
-        print(f"✅ {len(bebidas)} bebidas creadas")
+            try:
+                item_service.create_item(bebida)
+                created_bebidas += 1
+            except Exception as e:
+                if "UNIQUE constraint failed" in str(e) or "already exists" in str(e):
+                    print(f"⚠️ Bebida '{bebida.descripcion}' ya existe, omitiendo...")
+                    continue
+                else:
+                    raise e
+        print(f"✅ {created_bebidas}/{len(bebidas)} bebidas creadas (algunas ya existían)")
         
         print("\n" + "=" * 60)
         print("🎉 ¡Base de datos poblada exitosamente con datos peruanos!")
