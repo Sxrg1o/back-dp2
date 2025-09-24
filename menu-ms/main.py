@@ -11,6 +11,8 @@ import os
 
 from infrastructure.db import create_tables
 from infrastructure.handlers import item_router, ingrediente_router
+from infrastructure.handlers.platos_handler import router as platos_router
+from infrastructure.handlers.bebidas_handler import router as bebidas_router
 
 
 @asynccontextmanager
@@ -78,6 +80,8 @@ app.add_middleware(
 # Incluir routers
 app.include_router(item_router)
 app.include_router(ingrediente_router)
+app.include_router(platos_router)
+app.include_router(bebidas_router)
 
 
 @app.get("/health", tags=["health"])
@@ -136,6 +140,8 @@ def service_info():
         ],
         "endpoints": {
             "items": "/items/",
+            "platos": "/platos/",
+            "bebidas": "/bebidas/",
             "ingredientes": "/ingredientes/",
             "health": "/health",
             "docs": "/docs"
