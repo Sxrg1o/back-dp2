@@ -1,0 +1,3017 @@
+{
+  "summary": {
+    "total_tests": 35,
+    "working": 30,
+    "failing": 5,
+    "success_rate": 85.71428571428571,
+    "start_time": "2025-09-18T20:58:45.502267",
+    "end_time": "2025-09-18T20:58:46.057622",
+    "duration_seconds": 0.555355
+  },
+  "working_endpoints": [
+    {
+      "endpoint": "/health",
+      "method": "GET",
+      "description": "Health Check",
+      "status_code": 200,
+      "expected_status": 200,
+      "response_time_ms": 7.87,
+      "success": true,
+      "url": "http://localhost:8002/health",
+      "timestamp": "2025-09-18T20:58:45.529674",
+      "response_data": {
+        "status": "healthy",
+        "service": "menu-ms",
+        "version": "1.0.0",
+        "message": "Microservicio de Menú y Carta funcionando correctamente"
+      },
+      "data_type": "JSON",
+      "data_size": 133,
+      "status": "✅ ÉXITO"
+    },
+    {
+      "endpoint": "/",
+      "method": "GET",
+      "description": "Root endpoint",
+      "status_code": 200,
+      "expected_status": 200,
+      "response_time_ms": 5.0,
+      "success": true,
+      "url": "http://localhost:8002/",
+      "timestamp": "2025-09-18T20:58:45.536670",
+      "response_data": {
+        "message": "🍽️ API de Menú y Carta funcionando 🚀",
+        "service": "menu-ms",
+        "version": "1.0.0",
+        "docs": "/docs",
+        "health": "/health"
+      },
+      "data_type": "JSON",
+      "data_size": 131,
+      "status": "✅ ÉXITO"
+    },
+    {
+      "endpoint": "/info",
+      "method": "GET",
+      "description": "Información del servicio",
+      "status_code": 200,
+      "expected_status": 200,
+      "response_time_ms": 4.0,
+      "success": true,
+      "url": "http://localhost:8002/info",
+      "timestamp": "2025-09-18T20:58:45.543367",
+      "response_data": {
+        "service": "menu-ms",
+        "version": "1.0.0",
+        "description": "Microservicio de Menú y Carta para el restaurante Domótica",
+        "features": [
+          "Gestión de platos (entradas, principales, postres)",
+          "Gestión de bebidas (alcohólicas y no alcohólicas)",
+          "Control de ingredientes e inventario",
+          "Información nutricional completa",
+          "Sistema de etiquetas y filtros",
+          "Búsqueda avanzada",
+          "Arquitectura hexagonal"
+        ],
+        "endpoints": {
+          "items": "/items/",
+          "ingredientes": "/ingredientes/",
+          "health": "/health",
+          "docs": "/docs"
+        },
+        "database": "SQLite (desarrollo) / PostgreSQL (producción)"
+      },
+      "data_type": "JSON",
+      "data_size": 565,
+      "status": "✅ ÉXITO"
+    },
+    {
+      "endpoint": "/docs",
+      "method": "GET",
+      "description": "Documentación Swagger",
+      "status_code": 200,
+      "expected_status": 200,
+      "response_time_ms": 3.0,
+      "success": true,
+      "url": "http://localhost:8002/docs",
+      "timestamp": "2025-09-18T20:58:45.547367",
+      "response_text": "\n    <!DOCTYPE html>\n    <html>\n    <head>\n    <link type=\"text/css\" rel=\"stylesheet\" href=\"https://cdn.jsdelivr.net/npm/swagger-ui-dist@5/swagger-ui.css\">\n    <link rel=\"shortcut icon\" href=\"https://fastapi.tiangolo.com/img/favicon.png\">\n    <title>Menú y Carta API - Swagger UI</title>\n    </head>\n    <body>\n    <div id=\"swagger-ui\">\n    </div>\n    <script src=\"https://cdn.jsdelivr.net/npm/swagger-ui-dist@5/swagger-ui-bundle.js\"></script>\n    <!-- `SwaggerUIBundle` is now available on the page ",
+      "data_type": "TEXT",
+      "data_size": 958,
+      "status": "✅ ÉXITO"
+    },
+    {
+      "endpoint": "/redoc",
+      "method": "GET",
+      "description": "Documentación ReDoc",
+      "status_code": 200,
+      "expected_status": 200,
+      "response_time_ms": 2.95,
+      "success": true,
+      "url": "http://localhost:8002/redoc",
+      "timestamp": "2025-09-18T20:58:45.551887",
+      "response_text": "\n    <!DOCTYPE html>\n    <html>\n    <head>\n    <title>Menú y Carta API - ReDoc</title>\n    <!-- needed for adaptive design -->\n    <meta charset=\"utf-8\"/>\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">\n    \n    <link href=\"https://fonts.googleapis.com/css?family=Montserrat:300,400,700|Roboto:300,400,700\" rel=\"stylesheet\">\n    \n    <link rel=\"shortcut icon\" href=\"https://fastapi.tiangolo.com/img/favicon.png\">\n    <!--\n    ReDoc doesn't change outer page styles\n    -->\n  ",
+      "data_type": "TEXT",
+      "data_size": 906,
+      "status": "✅ ÉXITO"
+    },
+    {
+      "endpoint": "/ingredientes/",
+      "method": "GET",
+      "description": "Listar todos los ingredientes",
+      "status_code": 200,
+      "expected_status": 200,
+      "response_time_ms": 7.0,
+      "success": true,
+      "url": "http://localhost:8002/ingredientes/",
+      "timestamp": "2025-09-18T20:58:45.563594",
+      "response_data": [
+        {
+          "nombre": "Ají Amarillo",
+          "stock": "15.000",
+          "peso": "0.050",
+          "tipo": "VERDURA",
+          "id": 1
+        },
+        {
+          "nombre": "Rocoto",
+          "stock": "8.000",
+          "peso": "0.030",
+          "tipo": "VERDURA",
+          "id": 2
+        },
+        {
+          "nombre": "Cebolla Morada",
+          "stock": "20.000",
+          "peso": "0.200",
+          "tipo": "VERDURA",
+          "id": 3
+        },
+        {
+          "nombre": "Culantro",
+          "stock": "12.000",
+          "peso": "0.010",
+          "tipo": "VERDURA",
+          "id": 4
+        },
+        {
+          "nombre": "Huacatay",
+          "stock": "5.000",
+          "peso": "0.010",
+          "tipo": "VERDURA",
+          "id": 5
+        },
+        {
+          "nombre": "Papa Amarilla",
+          "stock": "30.000",
+          "peso": "0.300",
+          "tipo": "VERDURA",
+          "id": 6
+        },
+        {
+          "nombre": "Camote",
+          "stock": "25.000",
+          "peso": "0.400",
+          "tipo": "VERDURA",
+          "id": 7
+        },
+        {
+          "nombre": "Yuca",
+          "stock": "18.000",
+          "peso": "0.500",
+          "tipo": "VERDURA",
+          "id": 8
+        },
+        {
+          "nombre": "Cuy",
+          "stock": "6.000",
+          "peso": "0.800",
+          "tipo": "CARNE",
+          "id": 9
+        },
+        {
+          "nombre": "Alpaca",
+          "stock": "4.000",
+          "peso": "1.000",
+          "tipo": "CARNE",
+          "id": 10
+        },
+        {
+          "nombre": "Pollo Criollo",
+          "stock": "15.000",
+          "peso": "1.200",
+          "tipo": "CARNE",
+          "id": 11
+        },
+        {
+          "nombre": "Pescado de Mar",
+          "stock": "12.000",
+          "peso": "0.600",
+          "tipo": "CARNE",
+          "id": 12
+        },
+        {
+          "nombre": "Cerdo",
+          "stock": "10.000",
+          "peso": "0.800",
+          "tipo": "CARNE",
+          "id": 13
+        },
+        {
+          "nombre": "Lúcuma",
+          "stock": "8.000",
+          "peso": "0.200",
+          "tipo": "FRUTA",
+          "id": 14
+        },
+        {
+          "nombre": "Chirimoya",
+          "stock": "6.000",
+          "peso": "0.300",
+          "tipo": "FRUTA",
+          "id": 15
+        },
+        {
+          "nombre": "Granadilla",
+          "stock": "10.000",
+          "peso": "0.100",
+          "tipo": "FRUTA",
+          "id": 16
+        },
+        {
+          "nombre": "Aguaymanto",
+          "stock": "5.000",
+          "peso": "0.020",
+          "tipo": "FRUTA",
+          "id": 17
+        },
+        {
+          "nombre": "Maracuyá",
+          "stock": "7.000",
+          "peso": "0.150",
+          "tipo": "FRUTA",
+          "id": 18
+        },
+        {
+          "nombre": "Plátano de la Isla",
+          "stock": "20.000",
+          "peso": "0.250",
+          "tipo": "FRUTA",
+          "id": 19
+        }
+      ],
+      "data_type": "JSON",
+      "data_size": 1673,
+      "status": "✅ ÉXITO"
+    },
+    {
+      "endpoint": "/ingredientes/1",
+      "method": "GET",
+      "description": "Obtener ingrediente por ID",
+      "status_code": 200,
+      "expected_status": 200,
+      "response_time_ms": 8.8,
+      "success": true,
+      "url": "http://localhost:8002/ingredientes/1",
+      "timestamp": "2025-09-18T20:58:45.573395",
+      "response_data": {
+        "nombre": "Ají Amarillo",
+        "stock": "15.000",
+        "peso": "0.050",
+        "tipo": "VERDURA",
+        "id": 1
+      },
+      "data_type": "JSON",
+      "data_size": 90,
+      "status": "✅ ÉXITO"
+    },
+    {
+      "endpoint": "/ingredientes/999",
+      "method": "GET",
+      "description": "Obtener ingrediente inexistente",
+      "status_code": 404,
+      "expected_status": 404,
+      "response_time_ms": 6.52,
+      "success": true,
+      "url": "http://localhost:8002/ingredientes/999",
+      "timestamp": "2025-09-18T20:58:45.581915",
+      "response_data": {
+        "detail": "Ingrediente no encontrado"
+      },
+      "data_type": "JSON",
+      "data_size": 39,
+      "status": "✅ ÉXITO"
+    },
+    {
+      "endpoint": "/ingredientes/filter/tipo/VERDURA",
+      "method": "GET",
+      "description": "Filtrar por tipo VERDURA",
+      "status_code": 200,
+      "expected_status": 200,
+      "response_time_ms": 9.34,
+      "success": true,
+      "url": "http://localhost:8002/ingredientes/filter/tipo/VERDURA",
+      "timestamp": "2025-09-18T20:58:45.606449",
+      "response_data": [
+        {
+          "nombre": "Ají Amarillo",
+          "stock": "15.000",
+          "peso": "0.050",
+          "tipo": "VERDURA",
+          "id": 1
+        },
+        {
+          "nombre": "Rocoto",
+          "stock": "8.000",
+          "peso": "0.030",
+          "tipo": "VERDURA",
+          "id": 2
+        },
+        {
+          "nombre": "Cebolla Morada",
+          "stock": "20.000",
+          "peso": "0.200",
+          "tipo": "VERDURA",
+          "id": 3
+        },
+        {
+          "nombre": "Culantro",
+          "stock": "12.000",
+          "peso": "0.010",
+          "tipo": "VERDURA",
+          "id": 4
+        },
+        {
+          "nombre": "Huacatay",
+          "stock": "5.000",
+          "peso": "0.010",
+          "tipo": "VERDURA",
+          "id": 5
+        },
+        {
+          "nombre": "Papa Amarilla",
+          "stock": "30.000",
+          "peso": "0.300",
+          "tipo": "VERDURA",
+          "id": 6
+        },
+        {
+          "nombre": "Camote",
+          "stock": "25.000",
+          "peso": "0.400",
+          "tipo": "VERDURA",
+          "id": 7
+        },
+        {
+          "nombre": "Yuca",
+          "stock": "18.000",
+          "peso": "0.500",
+          "tipo": "VERDURA",
+          "id": 8
+        }
+      ],
+      "data_type": "JSON",
+      "data_size": 709,
+      "status": "✅ ÉXITO"
+    },
+    {
+      "endpoint": "/ingredientes/filter/tipo/CARNE",
+      "method": "GET",
+      "description": "Filtrar por tipo CARNE",
+      "status_code": 200,
+      "expected_status": 200,
+      "response_time_ms": 8.84,
+      "success": true,
+      "url": "http://localhost:8002/ingredientes/filter/tipo/CARNE",
+      "timestamp": "2025-09-18T20:58:45.616289",
+      "response_data": [
+        {
+          "nombre": "Cuy",
+          "stock": "6.000",
+          "peso": "0.800",
+          "tipo": "CARNE",
+          "id": 9
+        },
+        {
+          "nombre": "Alpaca",
+          "stock": "4.000",
+          "peso": "1.000",
+          "tipo": "CARNE",
+          "id": 10
+        },
+        {
+          "nombre": "Pollo Criollo",
+          "stock": "15.000",
+          "peso": "1.200",
+          "tipo": "CARNE",
+          "id": 11
+        },
+        {
+          "nombre": "Pescado de Mar",
+          "stock": "12.000",
+          "peso": "0.600",
+          "tipo": "CARNE",
+          "id": 12
+        },
+        {
+          "nombre": "Cerdo",
+          "stock": "10.000",
+          "peso": "0.800",
+          "tipo": "CARNE",
+          "id": 13
+        }
+      ],
+      "data_type": "JSON",
+      "data_size": 433,
+      "status": "✅ ÉXITO"
+    },
+    {
+      "endpoint": "/ingredientes/filter/tipo/FRUTA",
+      "method": "GET",
+      "description": "Filtrar por tipo FRUTA",
+      "status_code": 200,
+      "expected_status": 200,
+      "response_time_ms": 7.0,
+      "success": true,
+      "url": "http://localhost:8002/ingredientes/filter/tipo/FRUTA",
+      "timestamp": "2025-09-18T20:58:45.624289",
+      "response_data": [
+        {
+          "nombre": "Lúcuma",
+          "stock": "8.000",
+          "peso": "0.200",
+          "tipo": "FRUTA",
+          "id": 14
+        },
+        {
+          "nombre": "Chirimoya",
+          "stock": "6.000",
+          "peso": "0.300",
+          "tipo": "FRUTA",
+          "id": 15
+        },
+        {
+          "nombre": "Granadilla",
+          "stock": "10.000",
+          "peso": "0.100",
+          "tipo": "FRUTA",
+          "id": 16
+        },
+        {
+          "nombre": "Aguaymanto",
+          "stock": "5.000",
+          "peso": "0.020",
+          "tipo": "FRUTA",
+          "id": 17
+        },
+        {
+          "nombre": "Maracuyá",
+          "stock": "7.000",
+          "peso": "0.150",
+          "tipo": "FRUTA",
+          "id": 18
+        },
+        {
+          "nombre": "Plátano de la Isla",
+          "stock": "20.000",
+          "peso": "0.250",
+          "tipo": "FRUTA",
+          "id": 19
+        }
+      ],
+      "data_type": "JSON",
+      "data_size": 531,
+      "status": "✅ ÉXITO"
+    },
+    {
+      "endpoint": "/ingredientes/verduras",
+      "method": "GET",
+      "description": "Obtener verduras",
+      "status_code": 200,
+      "expected_status": 200,
+      "response_time_ms": 7.47,
+      "success": true,
+      "url": "http://localhost:8002/ingredientes/verduras",
+      "timestamp": "2025-09-18T20:58:45.633760",
+      "response_data": [
+        {
+          "nombre": "Ají Amarillo",
+          "stock": "15.000",
+          "peso": "0.050",
+          "tipo": "VERDURA",
+          "id": 1
+        },
+        {
+          "nombre": "Rocoto",
+          "stock": "8.000",
+          "peso": "0.030",
+          "tipo": "VERDURA",
+          "id": 2
+        },
+        {
+          "nombre": "Cebolla Morada",
+          "stock": "20.000",
+          "peso": "0.200",
+          "tipo": "VERDURA",
+          "id": 3
+        },
+        {
+          "nombre": "Culantro",
+          "stock": "12.000",
+          "peso": "0.010",
+          "tipo": "VERDURA",
+          "id": 4
+        },
+        {
+          "nombre": "Huacatay",
+          "stock": "5.000",
+          "peso": "0.010",
+          "tipo": "VERDURA",
+          "id": 5
+        },
+        {
+          "nombre": "Papa Amarilla",
+          "stock": "30.000",
+          "peso": "0.300",
+          "tipo": "VERDURA",
+          "id": 6
+        },
+        {
+          "nombre": "Camote",
+          "stock": "25.000",
+          "peso": "0.400",
+          "tipo": "VERDURA",
+          "id": 7
+        },
+        {
+          "nombre": "Yuca",
+          "stock": "18.000",
+          "peso": "0.500",
+          "tipo": "VERDURA",
+          "id": 8
+        }
+      ],
+      "data_type": "JSON",
+      "data_size": 709,
+      "status": "✅ ÉXITO"
+    },
+    {
+      "endpoint": "/ingredientes/carnes",
+      "method": "GET",
+      "description": "Obtener carnes",
+      "status_code": 200,
+      "expected_status": 200,
+      "response_time_ms": 7.0,
+      "success": true,
+      "url": "http://localhost:8002/ingredientes/carnes",
+      "timestamp": "2025-09-18T20:58:45.642759",
+      "response_data": [
+        {
+          "nombre": "Cuy",
+          "stock": "6.000",
+          "peso": "0.800",
+          "tipo": "CARNE",
+          "id": 9
+        },
+        {
+          "nombre": "Alpaca",
+          "stock": "4.000",
+          "peso": "1.000",
+          "tipo": "CARNE",
+          "id": 10
+        },
+        {
+          "nombre": "Pollo Criollo",
+          "stock": "15.000",
+          "peso": "1.200",
+          "tipo": "CARNE",
+          "id": 11
+        },
+        {
+          "nombre": "Pescado de Mar",
+          "stock": "12.000",
+          "peso": "0.600",
+          "tipo": "CARNE",
+          "id": 12
+        },
+        {
+          "nombre": "Cerdo",
+          "stock": "10.000",
+          "peso": "0.800",
+          "tipo": "CARNE",
+          "id": 13
+        }
+      ],
+      "data_type": "JSON",
+      "data_size": 433,
+      "status": "✅ ÉXITO"
+    },
+    {
+      "endpoint": "/ingredientes/frutas",
+      "method": "GET",
+      "description": "Obtener frutas",
+      "status_code": 200,
+      "expected_status": 200,
+      "response_time_ms": 7.33,
+      "success": true,
+      "url": "http://localhost:8002/ingredientes/frutas",
+      "timestamp": "2025-09-18T20:58:45.651084",
+      "response_data": [
+        {
+          "nombre": "Lúcuma",
+          "stock": "8.000",
+          "peso": "0.200",
+          "tipo": "FRUTA",
+          "id": 14
+        },
+        {
+          "nombre": "Chirimoya",
+          "stock": "6.000",
+          "peso": "0.300",
+          "tipo": "FRUTA",
+          "id": 15
+        },
+        {
+          "nombre": "Granadilla",
+          "stock": "10.000",
+          "peso": "0.100",
+          "tipo": "FRUTA",
+          "id": 16
+        },
+        {
+          "nombre": "Aguaymanto",
+          "stock": "5.000",
+          "peso": "0.020",
+          "tipo": "FRUTA",
+          "id": 17
+        },
+        {
+          "nombre": "Maracuyá",
+          "stock": "7.000",
+          "peso": "0.150",
+          "tipo": "FRUTA",
+          "id": 18
+        },
+        {
+          "nombre": "Plátano de la Isla",
+          "stock": "20.000",
+          "peso": "0.250",
+          "tipo": "FRUTA",
+          "id": 19
+        }
+      ],
+      "data_type": "JSON",
+      "data_size": 531,
+      "status": "✅ ÉXITO"
+    },
+    {
+      "endpoint": "/ingredientes/low-stock",
+      "method": "GET",
+      "description": "Ingredientes con stock bajo",
+      "status_code": 200,
+      "expected_status": 200,
+      "response_time_ms": 10.27,
+      "success": true,
+      "url": "http://localhost:8002/ingredientes/low-stock",
+      "timestamp": "2025-09-18T20:58:45.662350",
+      "response_data": [
+        {
+          "nombre": "Rocoto",
+          "stock": "8.000",
+          "peso": "0.030",
+          "tipo": "VERDURA",
+          "id": 2
+        },
+        {
+          "nombre": "Huacatay",
+          "stock": "5.000",
+          "peso": "0.010",
+          "tipo": "VERDURA",
+          "id": 5
+        },
+        {
+          "nombre": "Cuy",
+          "stock": "6.000",
+          "peso": "0.800",
+          "tipo": "CARNE",
+          "id": 9
+        },
+        {
+          "nombre": "Alpaca",
+          "stock": "4.000",
+          "peso": "1.000",
+          "tipo": "CARNE",
+          "id": 10
+        },
+        {
+          "nombre": "Cerdo",
+          "stock": "10.000",
+          "peso": "0.800",
+          "tipo": "CARNE",
+          "id": 13
+        },
+        {
+          "nombre": "Lúcuma",
+          "stock": "8.000",
+          "peso": "0.200",
+          "tipo": "FRUTA",
+          "id": 14
+        },
+        {
+          "nombre": "Chirimoya",
+          "stock": "6.000",
+          "peso": "0.300",
+          "tipo": "FRUTA",
+          "id": 15
+        },
+        {
+          "nombre": "Granadilla",
+          "stock": "10.000",
+          "peso": "0.100",
+          "tipo": "FRUTA",
+          "id": 16
+        },
+        {
+          "nombre": "Aguaymanto",
+          "stock": "5.000",
+          "peso": "0.020",
+          "tipo": "FRUTA",
+          "id": 17
+        },
+        {
+          "nombre": "Maracuyá",
+          "stock": "7.000",
+          "peso": "0.150",
+          "tipo": "FRUTA",
+          "id": 18
+        }
+      ],
+      "data_type": "JSON",
+      "data_size": 854,
+      "status": "✅ ÉXITO"
+    },
+    {
+      "endpoint": "/ingredientes/low-stock",
+      "method": "GET",
+      "description": "Stock bajo con umbral",
+      "status_code": 200,
+      "expected_status": 200,
+      "response_time_ms": 9.0,
+      "success": true,
+      "url": "http://localhost:8002/ingredientes/low-stock",
+      "timestamp": "2025-09-18T20:58:45.672349",
+      "response_data": [
+        {
+          "nombre": "Huacatay",
+          "stock": "5.000",
+          "peso": "0.010",
+          "tipo": "VERDURA",
+          "id": 5
+        },
+        {
+          "nombre": "Alpaca",
+          "stock": "4.000",
+          "peso": "1.000",
+          "tipo": "CARNE",
+          "id": 10
+        },
+        {
+          "nombre": "Aguaymanto",
+          "stock": "5.000",
+          "peso": "0.020",
+          "tipo": "FRUTA",
+          "id": 17
+        }
+      ],
+      "data_type": "JSON",
+      "data_size": 259,
+      "status": "✅ ÉXITO"
+    },
+    {
+      "endpoint": "/items/",
+      "method": "GET",
+      "description": "Listar todos los ítems",
+      "status_code": 200,
+      "expected_status": 200,
+      "response_time_ms": 44.91,
+      "success": true,
+      "url": "http://localhost:8002/items/",
+      "timestamp": "2025-09-18T20:58:45.719254",
+      "response_data": [
+        {
+          "valor_nutricional": "Rica en carbohidratos, proteínas y vitaminas A y C",
+          "precio": "18.50",
+          "tiempo_preparacion": "30.00",
+          "comentarios": "Plato tradicional de la gastronomía peruana",
+          "receta": "Cocinar papa amarilla, hacer puré, mezclar con ají amarillo, rellenar con pollo deshilachado",
+          "disponible": true,
+          "unidades_disponibles": 12,
+          "num_ingredientes": 6,
+          "kcal": 320,
+          "calorias": "320.00",
+          "proteinas": "18.00",
+          "azucares": "8.00",
+          "descripcion": "Causa Limeña de Pollo",
+          "etiquetas": [
+            "FRIO",
+            "SIN_GLUTEN"
+          ],
+          "ingredientes_ids": [],
+          "id": 1,
+          "tipo": "PLATO"
+        },
+        {
+          "valor_nutricional": "Alto en proteínas y hierro",
+          "precio": "22.00",
+          "tiempo_preparacion": "45.00",
+          "comentarios": "Brochetas de corazón de res marinadas en ají panca",
+          "receta": "Marinar corazón en ají panca, vinagre y especias, asar a la parrilla",
+          "disponible": true,
+          "unidades_disponibles": 8,
+          "num_ingredientes": 5,
+          "kcal": 280,
+          "calorias": "280.00",
+          "proteinas": "25.00",
+          "azucares": "3.00",
+          "descripcion": "Anticuchos de Corazón",
+          "etiquetas": [
+            "CALIENTE",
+            "PICANTE"
+          ],
+          "ingredientes_ids": [],
+          "id": 2,
+          "tipo": "PLATO"
+        },
+        {
+          "valor_nutricional": "Rico en proteínas, omega-3 y vitamina C",
+          "precio": "28.00",
+          "tiempo_preparacion": "20.00",
+          "comentarios": "Plato bandera del Perú, pescado fresco marinado en leche de tigre",
+          "receta": "Cortar pescado fresco, marinar en limón, ají, cebolla morada y culantro",
+          "disponible": true,
+          "unidades_disponibles": 15,
+          "num_ingredientes": 7,
+          "kcal": 250,
+          "calorias": "250.00",
+          "proteinas": "30.00",
+          "azucares": "5.00",
+          "descripcion": "Ceviche de Pescado",
+          "etiquetas": [
+            "FRIO",
+            "ACIDO",
+            "SIN_GLUTEN"
+          ],
+          "ingredientes_ids": [],
+          "id": 3,
+          "tipo": "PLATO"
+        },
+        {
+          "valor_nutricional": "Alto en proteínas, carbohidratos y vitaminas",
+          "precio": "32.50",
+          "tiempo_preparacion": "25.00",
+          "comentarios": "Fusión peruano-china, lomo de res salteado con verduras",
+          "receta": "Saltear lomo con cebolla, tomate, ají amarillo, servir con papas fritas y arroz",
+          "disponible": true,
+          "unidades_disponibles": 10,
+          "num_ingredientes": 8,
+          "kcal": 580,
+          "calorias": "580.00",
+          "proteinas": "35.00",
+          "azucares": "12.00",
+          "descripcion": "Lomo Saltado",
+          "etiquetas": [
+            "CALIENTE",
+            "CON_GLUTEN"
+          ],
+          "ingredientes_ids": [],
+          "id": 4,
+          "tipo": "PLATO"
+        },
+        {
+          "valor_nutricional": "Rico en proteínas y carbohidratos",
+          "precio": "26.00",
+          "tiempo_preparacion": "40.00",
+          "comentarios": "Pollo deshilachado en crema de ají amarillo",
+          "receta": "Cocinar pollo, deshilachar, preparar crema con ají amarillo, leche y pan",
+          "disponible": true,
+          "unidades_disponibles": 12,
+          "num_ingredientes": 6,
+          "kcal": 450,
+          "calorias": "450.00",
+          "proteinas": "28.00",
+          "azucares": "8.00",
+          "descripcion": "Aji de Gallina",
+          "etiquetas": [
+            "CALIENTE",
+            "PICANTE",
+            "CON_GLUTEN"
+          ],
+          "ingredientes_ids": [],
+          "id": 5,
+          "tipo": "PLATO"
+        },
+        {
+          "valor_nutricional": "Completo en proteínas, carbohidratos y minerales",
+          "precio": "45.00",
+          "tiempo_preparacion": "120.00",
+          "comentarios": "Cocción tradicional en piedras calientes bajo tierra",
+          "receta": "Cocinar carnes, papas, camotes y habas en piedras calientes bajo tierra",
+          "disponible": true,
+          "unidades_disponibles": 6,
+          "num_ingredientes": 10,
+          "kcal": 650,
+          "calorias": "650.00",
+          "proteinas": "40.00",
+          "azucares": "15.00",
+          "descripcion": "Pachamanca",
+          "etiquetas": [
+            "CALIENTE",
+            "SIN_GLUTEN"
+          ],
+          "ingredientes_ids": [],
+          "id": 6,
+          "tipo": "PLATO"
+        },
+        {
+          "valor_nutricional": "Balanceado en carbohidratos y proteínas",
+          "precio": "24.00",
+          "tiempo_preparacion": "35.00",
+          "comentarios": "Arroz verde con pollo, típico de la costa peruana",
+          "receta": "Cocinar arroz con culantro, agregar pollo, arvejas y zanahoria",
+          "disponible": true,
+          "unidades_disponibles": 14,
+          "num_ingredientes": 7,
+          "kcal": 520,
+          "calorias": "520.00",
+          "proteinas": "32.00",
+          "azucares": "10.00",
+          "descripcion": "Arroz con Pollo",
+          "etiquetas": [
+            "CALIENTE",
+            "CON_GLUTEN"
+          ],
+          "ingredientes_ids": [],
+          "id": 7,
+          "tipo": "PLATO"
+        },
+        {
+          "valor_nutricional": "Rico en azúcares y grasas",
+          "precio": "12.00",
+          "tiempo_preparacion": "30.00",
+          "comentarios": "Postre tradicional de Lima, manjar blanco con merengue",
+          "receta": "Preparar manjar blanco, cubrir con merengue italiano, espolvorear canela",
+          "disponible": true,
+          "unidades_disponibles": 10,
+          "num_ingredientes": 5,
+          "kcal": 380,
+          "calorias": "380.00",
+          "proteinas": "8.00",
+          "azucares": "45.00",
+          "descripcion": "Suspiro a la Limeña",
+          "etiquetas": [
+            "FRIO",
+            "CON_GLUTEN"
+          ],
+          "ingredientes_ids": [],
+          "id": 8,
+          "tipo": "PLATO"
+        },
+        {
+          "valor_nutricional": "Rica en antioxidantes y fibra",
+          "precio": "8.50",
+          "tiempo_preparacion": "45.00",
+          "comentarios": "Postre de maíz morado con frutas",
+          "receta": "Cocinar maíz morado con canela, agregar frutas y azúcar",
+          "disponible": true,
+          "unidades_disponibles": 15,
+          "num_ingredientes": 6,
+          "kcal": 250,
+          "calorias": "250.00",
+          "proteinas": "3.00",
+          "azucares": "35.00",
+          "descripcion": "Mazamorra Morada",
+          "etiquetas": [
+            "FRIO",
+            "SIN_GLUTEN"
+          ],
+          "ingredientes_ids": [],
+          "id": 9,
+          "tipo": "PLATO"
+        },
+        {
+          "valor_nutricional": "Alto en carbohidratos y grasas",
+          "precio": "10.00",
+          "tiempo_preparacion": "25.00",
+          "comentarios": "Donas peruanas de camote con miel de chancaca",
+          "receta": "Preparar masa con camote y harina, freír, bañar con miel de chancaca",
+          "disponible": true,
+          "unidades_disponibles": 12,
+          "num_ingredientes": 4,
+          "kcal": 320,
+          "calorias": "320.00",
+          "proteinas": "4.00",
+          "azucares": "40.00",
+          "descripcion": "Picarones",
+          "etiquetas": [
+            "CALIENTE",
+            "CON_GLUTEN"
+          ],
+          "ingredientes_ids": [],
+          "id": 10,
+          "tipo": "PLATO"
+        },
+        {
+          "valor_nutricional": "Rica en antioxidantes y vitamina C",
+          "precio": "6.50",
+          "tiempo_preparacion": "15.00",
+          "comentarios": "Bebida tradicional de maíz morado",
+          "receta": "Cocinar maíz morado con canela y clavo, endulzar y servir frío",
+          "disponible": true,
+          "unidades_disponibles": 25,
+          "num_ingredientes": 3,
+          "kcal": 120,
+          "calorias": "120.00",
+          "proteinas": "1.00",
+          "azucares": "28.00",
+          "descripcion": "Chicha Morada",
+          "etiquetas": [
+            "FRIO",
+            "SIN_GLUTEN"
+          ],
+          "ingredientes_ids": [],
+          "id": 11,
+          "tipo": "BEBIDA"
+        },
+        {
+          "valor_nutricional": "Rico en vitaminas A y C, fibra",
+          "precio": "8.00",
+          "tiempo_preparacion": "10.00",
+          "comentarios": "Jugo de la fruta nacional del Perú",
+          "receta": "Licuar lúcuma con leche y azúcar, servir frío",
+          "disponible": true,
+          "unidades_disponibles": 20,
+          "num_ingredientes": 3,
+          "kcal": 180,
+          "calorias": "180.00",
+          "proteinas": "4.00",
+          "azucares": "35.00",
+          "descripcion": "Jugo de Lúcuma",
+          "etiquetas": [
+            "FRIO",
+            "SIN_GLUTEN"
+          ],
+          "ingredientes_ids": [],
+          "id": 12,
+          "tipo": "BEBIDA"
+        },
+        {
+          "valor_nutricional": "Alto en vitamina C y antioxidantes",
+          "precio": "7.50",
+          "tiempo_preparacion": "8.00",
+          "comentarios": "Jugo ácido y refrescante",
+          "receta": "Extraer pulpa de maracuyá, mezclar con agua y azúcar",
+          "disponible": true,
+          "unidades_disponibles": 18,
+          "num_ingredientes": 3,
+          "kcal": 90,
+          "calorias": "90.00",
+          "proteinas": "1.50",
+          "azucares": "20.00",
+          "descripcion": "Jugo de Maracuyá",
+          "etiquetas": [
+            "FRIO",
+            "ACIDO",
+            "SIN_GLUTEN"
+          ],
+          "ingredientes_ids": [],
+          "id": 13,
+          "tipo": "BEBIDA"
+        },
+        {
+          "valor_nutricional": "Bebida gaseosa con sabor a hierba luisa",
+          "precio": "4.50",
+          "tiempo_preparacion": "0.00",
+          "comentarios": "La bebida nacional del Perú",
+          "receta": "Servir fría",
+          "disponible": true,
+          "unidades_disponibles": 30,
+          "num_ingredientes": 1,
+          "kcal": 150,
+          "calorias": "150.00",
+          "proteinas": "0.00",
+          "azucares": "35.00",
+          "descripcion": "Inca Kola",
+          "etiquetas": [
+            "FRIO"
+          ],
+          "ingredientes_ids": [],
+          "id": 14,
+          "tipo": "BEBIDA"
+        },
+        {
+          "valor_nutricional": "Infusión digestiva y relajante",
+          "precio": "3.00",
+          "tiempo_preparacion": "5.00",
+          "comentarios": "Infusión tradicional peruana",
+          "receta": "Infusionar hojas de hierba luisa en agua caliente, endulzar",
+          "disponible": true,
+          "unidades_disponibles": 20,
+          "num_ingredientes": 2,
+          "kcal": 5,
+          "calorias": "5.00",
+          "proteinas": "0.00",
+          "azucares": "1.00",
+          "descripcion": "Agua de Hierba Luisa",
+          "etiquetas": [
+            "CALIENTE",
+            "SIN_GLUTEN"
+          ],
+          "ingredientes_ids": [],
+          "id": 15,
+          "tipo": "BEBIDA"
+        },
+        {
+          "valor_nutricional": "Cóctel nacional del Perú",
+          "precio": "18.00",
+          "tiempo_preparacion": "8.00",
+          "comentarios": "Cóctel emblemático con pisco, limón y clara de huevo",
+          "receta": "Mezclar pisco, jugo de limón, jarabe de goma y clara de huevo, batir con hielo",
+          "disponible": true,
+          "unidades_disponibles": 15,
+          "num_ingredientes": 5,
+          "kcal": 200,
+          "calorias": "200.00",
+          "proteinas": "2.00",
+          "azucares": "8.00",
+          "descripcion": "Pisco Sour",
+          "etiquetas": [
+            "FRIO",
+            "ACIDO"
+          ],
+          "ingredientes_ids": [],
+          "id": 16,
+          "tipo": "BEBIDA"
+        },
+        {
+          "valor_nutricional": "Cóctel refrescante con pisco",
+          "precio": "15.00",
+          "tiempo_preparacion": "5.00",
+          "comentarios": "Cóctel simple con pisco, ginger ale y limón",
+          "receta": "Mezclar pisco con ginger ale, agregar hielo y limón",
+          "disponible": true,
+          "unidades_disponibles": 12,
+          "num_ingredientes": 4,
+          "kcal": 150,
+          "calorias": "150.00",
+          "proteinas": "0.50",
+          "azucares": "12.00",
+          "descripcion": "Chilcano de Pisco",
+          "etiquetas": [
+            "FRIO"
+          ],
+          "ingredientes_ids": [],
+          "id": 17,
+          "tipo": "BEBIDA"
+        },
+        {
+          "valor_nutricional": "Bebida ancestral de maíz fermentado",
+          "precio": "12.00",
+          "tiempo_preparacion": "0.00",
+          "comentarios": "Bebida tradicional andina fermentada",
+          "receta": "Fermentar maíz jora con agua, endulzar y servir",
+          "disponible": true,
+          "unidades_disponibles": 10,
+          "num_ingredientes": 2,
+          "kcal": 120,
+          "calorias": "120.00",
+          "proteinas": "2.00",
+          "azucares": "15.00",
+          "descripcion": "Chicha de Jora",
+          "etiquetas": [
+            "FRIO",
+            "SIN_GLUTEN"
+          ],
+          "ingredientes_ids": [],
+          "id": 18,
+          "tipo": "BEBIDA"
+        },
+        {
+          "valor_nutricional": "Cerveza peruana premium",
+          "precio": "8.50",
+          "tiempo_preparacion": "0.00",
+          "comentarios": "Cerveza artesanal de la ciudad imperial",
+          "receta": "Servir fría",
+          "disponible": true,
+          "unidades_disponibles": 20,
+          "num_ingredientes": 1,
+          "kcal": 140,
+          "calorias": "140.00",
+          "proteinas": "1.50",
+          "azucares": "3.00",
+          "descripcion": "Cerveza Cusqueña",
+          "etiquetas": [
+            "FRIO"
+          ],
+          "ingredientes_ids": [],
+          "id": 19,
+          "tipo": "BEBIDA"
+        }
+      ],
+      "data_type": "JSON",
+      "data_size": 9776,
+      "status": "✅ ÉXITO"
+    },
+    {
+      "endpoint": "/items/",
+      "method": "GET",
+      "description": "Listar solo ítems disponibles",
+      "status_code": 200,
+      "expected_status": 200,
+      "response_time_ms": 43.01,
+      "success": true,
+      "url": "http://localhost:8002/items/",
+      "timestamp": "2025-09-18T20:58:45.764260",
+      "response_data": [
+        {
+          "valor_nutricional": "Rica en carbohidratos, proteínas y vitaminas A y C",
+          "precio": "18.50",
+          "tiempo_preparacion": "30.00",
+          "comentarios": "Plato tradicional de la gastronomía peruana",
+          "receta": "Cocinar papa amarilla, hacer puré, mezclar con ají amarillo, rellenar con pollo deshilachado",
+          "disponible": true,
+          "unidades_disponibles": 12,
+          "num_ingredientes": 6,
+          "kcal": 320,
+          "calorias": "320.00",
+          "proteinas": "18.00",
+          "azucares": "8.00",
+          "descripcion": "Causa Limeña de Pollo",
+          "etiquetas": [
+            "FRIO",
+            "SIN_GLUTEN"
+          ],
+          "ingredientes_ids": [],
+          "id": 1,
+          "tipo": "PLATO"
+        },
+        {
+          "valor_nutricional": "Alto en proteínas y hierro",
+          "precio": "22.00",
+          "tiempo_preparacion": "45.00",
+          "comentarios": "Brochetas de corazón de res marinadas en ají panca",
+          "receta": "Marinar corazón en ají panca, vinagre y especias, asar a la parrilla",
+          "disponible": true,
+          "unidades_disponibles": 8,
+          "num_ingredientes": 5,
+          "kcal": 280,
+          "calorias": "280.00",
+          "proteinas": "25.00",
+          "azucares": "3.00",
+          "descripcion": "Anticuchos de Corazón",
+          "etiquetas": [
+            "CALIENTE",
+            "PICANTE"
+          ],
+          "ingredientes_ids": [],
+          "id": 2,
+          "tipo": "PLATO"
+        },
+        {
+          "valor_nutricional": "Rico en proteínas, omega-3 y vitamina C",
+          "precio": "28.00",
+          "tiempo_preparacion": "20.00",
+          "comentarios": "Plato bandera del Perú, pescado fresco marinado en leche de tigre",
+          "receta": "Cortar pescado fresco, marinar en limón, ají, cebolla morada y culantro",
+          "disponible": true,
+          "unidades_disponibles": 15,
+          "num_ingredientes": 7,
+          "kcal": 250,
+          "calorias": "250.00",
+          "proteinas": "30.00",
+          "azucares": "5.00",
+          "descripcion": "Ceviche de Pescado",
+          "etiquetas": [
+            "FRIO",
+            "ACIDO",
+            "SIN_GLUTEN"
+          ],
+          "ingredientes_ids": [],
+          "id": 3,
+          "tipo": "PLATO"
+        },
+        {
+          "valor_nutricional": "Alto en proteínas, carbohidratos y vitaminas",
+          "precio": "32.50",
+          "tiempo_preparacion": "25.00",
+          "comentarios": "Fusión peruano-china, lomo de res salteado con verduras",
+          "receta": "Saltear lomo con cebolla, tomate, ají amarillo, servir con papas fritas y arroz",
+          "disponible": true,
+          "unidades_disponibles": 10,
+          "num_ingredientes": 8,
+          "kcal": 580,
+          "calorias": "580.00",
+          "proteinas": "35.00",
+          "azucares": "12.00",
+          "descripcion": "Lomo Saltado",
+          "etiquetas": [
+            "CALIENTE",
+            "CON_GLUTEN"
+          ],
+          "ingredientes_ids": [],
+          "id": 4,
+          "tipo": "PLATO"
+        },
+        {
+          "valor_nutricional": "Rico en proteínas y carbohidratos",
+          "precio": "26.00",
+          "tiempo_preparacion": "40.00",
+          "comentarios": "Pollo deshilachado en crema de ají amarillo",
+          "receta": "Cocinar pollo, deshilachar, preparar crema con ají amarillo, leche y pan",
+          "disponible": true,
+          "unidades_disponibles": 12,
+          "num_ingredientes": 6,
+          "kcal": 450,
+          "calorias": "450.00",
+          "proteinas": "28.00",
+          "azucares": "8.00",
+          "descripcion": "Aji de Gallina",
+          "etiquetas": [
+            "CALIENTE",
+            "PICANTE",
+            "CON_GLUTEN"
+          ],
+          "ingredientes_ids": [],
+          "id": 5,
+          "tipo": "PLATO"
+        },
+        {
+          "valor_nutricional": "Completo en proteínas, carbohidratos y minerales",
+          "precio": "45.00",
+          "tiempo_preparacion": "120.00",
+          "comentarios": "Cocción tradicional en piedras calientes bajo tierra",
+          "receta": "Cocinar carnes, papas, camotes y habas en piedras calientes bajo tierra",
+          "disponible": true,
+          "unidades_disponibles": 6,
+          "num_ingredientes": 10,
+          "kcal": 650,
+          "calorias": "650.00",
+          "proteinas": "40.00",
+          "azucares": "15.00",
+          "descripcion": "Pachamanca",
+          "etiquetas": [
+            "CALIENTE",
+            "SIN_GLUTEN"
+          ],
+          "ingredientes_ids": [],
+          "id": 6,
+          "tipo": "PLATO"
+        },
+        {
+          "valor_nutricional": "Balanceado en carbohidratos y proteínas",
+          "precio": "24.00",
+          "tiempo_preparacion": "35.00",
+          "comentarios": "Arroz verde con pollo, típico de la costa peruana",
+          "receta": "Cocinar arroz con culantro, agregar pollo, arvejas y zanahoria",
+          "disponible": true,
+          "unidades_disponibles": 14,
+          "num_ingredientes": 7,
+          "kcal": 520,
+          "calorias": "520.00",
+          "proteinas": "32.00",
+          "azucares": "10.00",
+          "descripcion": "Arroz con Pollo",
+          "etiquetas": [
+            "CALIENTE",
+            "CON_GLUTEN"
+          ],
+          "ingredientes_ids": [],
+          "id": 7,
+          "tipo": "PLATO"
+        },
+        {
+          "valor_nutricional": "Rico en azúcares y grasas",
+          "precio": "12.00",
+          "tiempo_preparacion": "30.00",
+          "comentarios": "Postre tradicional de Lima, manjar blanco con merengue",
+          "receta": "Preparar manjar blanco, cubrir con merengue italiano, espolvorear canela",
+          "disponible": true,
+          "unidades_disponibles": 10,
+          "num_ingredientes": 5,
+          "kcal": 380,
+          "calorias": "380.00",
+          "proteinas": "8.00",
+          "azucares": "45.00",
+          "descripcion": "Suspiro a la Limeña",
+          "etiquetas": [
+            "FRIO",
+            "CON_GLUTEN"
+          ],
+          "ingredientes_ids": [],
+          "id": 8,
+          "tipo": "PLATO"
+        },
+        {
+          "valor_nutricional": "Rica en antioxidantes y fibra",
+          "precio": "8.50",
+          "tiempo_preparacion": "45.00",
+          "comentarios": "Postre de maíz morado con frutas",
+          "receta": "Cocinar maíz morado con canela, agregar frutas y azúcar",
+          "disponible": true,
+          "unidades_disponibles": 15,
+          "num_ingredientes": 6,
+          "kcal": 250,
+          "calorias": "250.00",
+          "proteinas": "3.00",
+          "azucares": "35.00",
+          "descripcion": "Mazamorra Morada",
+          "etiquetas": [
+            "FRIO",
+            "SIN_GLUTEN"
+          ],
+          "ingredientes_ids": [],
+          "id": 9,
+          "tipo": "PLATO"
+        },
+        {
+          "valor_nutricional": "Alto en carbohidratos y grasas",
+          "precio": "10.00",
+          "tiempo_preparacion": "25.00",
+          "comentarios": "Donas peruanas de camote con miel de chancaca",
+          "receta": "Preparar masa con camote y harina, freír, bañar con miel de chancaca",
+          "disponible": true,
+          "unidades_disponibles": 12,
+          "num_ingredientes": 4,
+          "kcal": 320,
+          "calorias": "320.00",
+          "proteinas": "4.00",
+          "azucares": "40.00",
+          "descripcion": "Picarones",
+          "etiquetas": [
+            "CALIENTE",
+            "CON_GLUTEN"
+          ],
+          "ingredientes_ids": [],
+          "id": 10,
+          "tipo": "PLATO"
+        },
+        {
+          "valor_nutricional": "Rica en antioxidantes y vitamina C",
+          "precio": "6.50",
+          "tiempo_preparacion": "15.00",
+          "comentarios": "Bebida tradicional de maíz morado",
+          "receta": "Cocinar maíz morado con canela y clavo, endulzar y servir frío",
+          "disponible": true,
+          "unidades_disponibles": 25,
+          "num_ingredientes": 3,
+          "kcal": 120,
+          "calorias": "120.00",
+          "proteinas": "1.00",
+          "azucares": "28.00",
+          "descripcion": "Chicha Morada",
+          "etiquetas": [
+            "FRIO",
+            "SIN_GLUTEN"
+          ],
+          "ingredientes_ids": [],
+          "id": 11,
+          "tipo": "BEBIDA"
+        },
+        {
+          "valor_nutricional": "Rico en vitaminas A y C, fibra",
+          "precio": "8.00",
+          "tiempo_preparacion": "10.00",
+          "comentarios": "Jugo de la fruta nacional del Perú",
+          "receta": "Licuar lúcuma con leche y azúcar, servir frío",
+          "disponible": true,
+          "unidades_disponibles": 20,
+          "num_ingredientes": 3,
+          "kcal": 180,
+          "calorias": "180.00",
+          "proteinas": "4.00",
+          "azucares": "35.00",
+          "descripcion": "Jugo de Lúcuma",
+          "etiquetas": [
+            "FRIO",
+            "SIN_GLUTEN"
+          ],
+          "ingredientes_ids": [],
+          "id": 12,
+          "tipo": "BEBIDA"
+        },
+        {
+          "valor_nutricional": "Alto en vitamina C y antioxidantes",
+          "precio": "7.50",
+          "tiempo_preparacion": "8.00",
+          "comentarios": "Jugo ácido y refrescante",
+          "receta": "Extraer pulpa de maracuyá, mezclar con agua y azúcar",
+          "disponible": true,
+          "unidades_disponibles": 18,
+          "num_ingredientes": 3,
+          "kcal": 90,
+          "calorias": "90.00",
+          "proteinas": "1.50",
+          "azucares": "20.00",
+          "descripcion": "Jugo de Maracuyá",
+          "etiquetas": [
+            "FRIO",
+            "ACIDO",
+            "SIN_GLUTEN"
+          ],
+          "ingredientes_ids": [],
+          "id": 13,
+          "tipo": "BEBIDA"
+        },
+        {
+          "valor_nutricional": "Bebida gaseosa con sabor a hierba luisa",
+          "precio": "4.50",
+          "tiempo_preparacion": "0.00",
+          "comentarios": "La bebida nacional del Perú",
+          "receta": "Servir fría",
+          "disponible": true,
+          "unidades_disponibles": 30,
+          "num_ingredientes": 1,
+          "kcal": 150,
+          "calorias": "150.00",
+          "proteinas": "0.00",
+          "azucares": "35.00",
+          "descripcion": "Inca Kola",
+          "etiquetas": [
+            "FRIO"
+          ],
+          "ingredientes_ids": [],
+          "id": 14,
+          "tipo": "BEBIDA"
+        },
+        {
+          "valor_nutricional": "Infusión digestiva y relajante",
+          "precio": "3.00",
+          "tiempo_preparacion": "5.00",
+          "comentarios": "Infusión tradicional peruana",
+          "receta": "Infusionar hojas de hierba luisa en agua caliente, endulzar",
+          "disponible": true,
+          "unidades_disponibles": 20,
+          "num_ingredientes": 2,
+          "kcal": 5,
+          "calorias": "5.00",
+          "proteinas": "0.00",
+          "azucares": "1.00",
+          "descripcion": "Agua de Hierba Luisa",
+          "etiquetas": [
+            "CALIENTE",
+            "SIN_GLUTEN"
+          ],
+          "ingredientes_ids": [],
+          "id": 15,
+          "tipo": "BEBIDA"
+        },
+        {
+          "valor_nutricional": "Cóctel nacional del Perú",
+          "precio": "18.00",
+          "tiempo_preparacion": "8.00",
+          "comentarios": "Cóctel emblemático con pisco, limón y clara de huevo",
+          "receta": "Mezclar pisco, jugo de limón, jarabe de goma y clara de huevo, batir con hielo",
+          "disponible": true,
+          "unidades_disponibles": 15,
+          "num_ingredientes": 5,
+          "kcal": 200,
+          "calorias": "200.00",
+          "proteinas": "2.00",
+          "azucares": "8.00",
+          "descripcion": "Pisco Sour",
+          "etiquetas": [
+            "FRIO",
+            "ACIDO"
+          ],
+          "ingredientes_ids": [],
+          "id": 16,
+          "tipo": "BEBIDA"
+        },
+        {
+          "valor_nutricional": "Cóctel refrescante con pisco",
+          "precio": "15.00",
+          "tiempo_preparacion": "5.00",
+          "comentarios": "Cóctel simple con pisco, ginger ale y limón",
+          "receta": "Mezclar pisco con ginger ale, agregar hielo y limón",
+          "disponible": true,
+          "unidades_disponibles": 12,
+          "num_ingredientes": 4,
+          "kcal": 150,
+          "calorias": "150.00",
+          "proteinas": "0.50",
+          "azucares": "12.00",
+          "descripcion": "Chilcano de Pisco",
+          "etiquetas": [
+            "FRIO"
+          ],
+          "ingredientes_ids": [],
+          "id": 17,
+          "tipo": "BEBIDA"
+        },
+        {
+          "valor_nutricional": "Bebida ancestral de maíz fermentado",
+          "precio": "12.00",
+          "tiempo_preparacion": "0.00",
+          "comentarios": "Bebida tradicional andina fermentada",
+          "receta": "Fermentar maíz jora con agua, endulzar y servir",
+          "disponible": true,
+          "unidades_disponibles": 10,
+          "num_ingredientes": 2,
+          "kcal": 120,
+          "calorias": "120.00",
+          "proteinas": "2.00",
+          "azucares": "15.00",
+          "descripcion": "Chicha de Jora",
+          "etiquetas": [
+            "FRIO",
+            "SIN_GLUTEN"
+          ],
+          "ingredientes_ids": [],
+          "id": 18,
+          "tipo": "BEBIDA"
+        },
+        {
+          "valor_nutricional": "Cerveza peruana premium",
+          "precio": "8.50",
+          "tiempo_preparacion": "0.00",
+          "comentarios": "Cerveza artesanal de la ciudad imperial",
+          "receta": "Servir fría",
+          "disponible": true,
+          "unidades_disponibles": 20,
+          "num_ingredientes": 1,
+          "kcal": 140,
+          "calorias": "140.00",
+          "proteinas": "1.50",
+          "azucares": "3.00",
+          "descripcion": "Cerveza Cusqueña",
+          "etiquetas": [
+            "FRIO"
+          ],
+          "ingredientes_ids": [],
+          "id": 19,
+          "tipo": "BEBIDA"
+        }
+      ],
+      "data_type": "JSON",
+      "data_size": 9776,
+      "status": "✅ ÉXITO"
+    },
+    {
+      "endpoint": "/items/1",
+      "method": "GET",
+      "description": "Obtener ítem por ID",
+      "status_code": 200,
+      "expected_status": 200,
+      "response_time_ms": 12.21,
+      "success": true,
+      "url": "http://localhost:8002/items/1",
+      "timestamp": "2025-09-18T20:58:45.778469",
+      "response_data": {
+        "valor_nutricional": "Rica en carbohidratos, proteínas y vitaminas A y C",
+        "precio": "18.50",
+        "tiempo_preparacion": "30.00",
+        "comentarios": "Plato tradicional de la gastronomía peruana",
+        "receta": "Cocinar papa amarilla, hacer puré, mezclar con ají amarillo, rellenar con pollo deshilachado",
+        "disponible": true,
+        "unidades_disponibles": 12,
+        "num_ingredientes": 6,
+        "kcal": 320,
+        "calorias": "320.00",
+        "proteinas": "18.00",
+        "azucares": "8.00",
+        "descripcion": "Causa Limeña de Pollo",
+        "etiquetas": [
+          "FRIO",
+          "SIN_GLUTEN"
+        ],
+        "ingredientes_ids": [],
+        "id": 1,
+        "tipo": "PLATO"
+      },
+      "data_type": "JSON",
+      "data_size": 568,
+      "status": "✅ ÉXITO"
+    },
+    {
+      "endpoint": "/items/999",
+      "method": "GET",
+      "description": "Obtener ítem inexistente",
+      "status_code": 404,
+      "expected_status": 404,
+      "response_time_ms": 6.39,
+      "success": true,
+      "url": "http://localhost:8002/items/999",
+      "timestamp": "2025-09-18T20:58:45.785857",
+      "response_data": {
+        "detail": "Ítem no encontrado"
+      },
+      "data_type": "JSON",
+      "data_size": 32,
+      "status": "✅ ÉXITO"
+    },
+    {
+      "endpoint": "/items/search",
+      "method": "GET",
+      "description": "Buscar ítems",
+      "status_code": 422,
+      "expected_status": 422,
+      "response_time_ms": 5.0,
+      "success": true,
+      "url": "http://localhost:8002/items/search",
+      "timestamp": "2025-09-18T20:58:45.805854",
+      "response_data": {
+        "detail": [
+          {
+            "type": "int_parsing",
+            "loc": [
+              "path",
+              "item_id"
+            ],
+            "msg": "Input should be a valid integer, unable to parse string as an integer",
+            "input": "search"
+          }
+        ]
+      },
+      "data_type": "JSON",
+      "data_size": 164,
+      "status": "✅ ÉXITO"
+    },
+    {
+      "endpoint": "/items/filter/price",
+      "method": "GET",
+      "description": "Filtrar por precio",
+      "status_code": 200,
+      "expected_status": 200,
+      "response_time_ms": 35.52,
+      "success": true,
+      "url": "http://localhost:8002/items/filter/price",
+      "timestamp": "2025-09-18T20:58:45.842378",
+      "response_data": [
+        {
+          "valor_nutricional": "Rica en carbohidratos, proteínas y vitaminas A y C",
+          "precio": "18.50",
+          "tiempo_preparacion": "30.00",
+          "comentarios": "Plato tradicional de la gastronomía peruana",
+          "receta": "Cocinar papa amarilla, hacer puré, mezclar con ají amarillo, rellenar con pollo deshilachado",
+          "disponible": true,
+          "unidades_disponibles": 12,
+          "num_ingredientes": 6,
+          "kcal": 320,
+          "calorias": "320.00",
+          "proteinas": "18.00",
+          "azucares": "8.00",
+          "descripcion": "Causa Limeña de Pollo",
+          "etiquetas": [
+            "FRIO",
+            "SIN_GLUTEN"
+          ],
+          "ingredientes_ids": [],
+          "id": 1,
+          "tipo": "PLATO"
+        },
+        {
+          "valor_nutricional": "Alto en proteínas y hierro",
+          "precio": "22.00",
+          "tiempo_preparacion": "45.00",
+          "comentarios": "Brochetas de corazón de res marinadas en ají panca",
+          "receta": "Marinar corazón en ají panca, vinagre y especias, asar a la parrilla",
+          "disponible": true,
+          "unidades_disponibles": 8,
+          "num_ingredientes": 5,
+          "kcal": 280,
+          "calorias": "280.00",
+          "proteinas": "25.00",
+          "azucares": "3.00",
+          "descripcion": "Anticuchos de Corazón",
+          "etiquetas": [
+            "CALIENTE",
+            "PICANTE"
+          ],
+          "ingredientes_ids": [],
+          "id": 2,
+          "tipo": "PLATO"
+        },
+        {
+          "valor_nutricional": "Rico en proteínas, omega-3 y vitamina C",
+          "precio": "28.00",
+          "tiempo_preparacion": "20.00",
+          "comentarios": "Plato bandera del Perú, pescado fresco marinado en leche de tigre",
+          "receta": "Cortar pescado fresco, marinar en limón, ají, cebolla morada y culantro",
+          "disponible": true,
+          "unidades_disponibles": 15,
+          "num_ingredientes": 7,
+          "kcal": 250,
+          "calorias": "250.00",
+          "proteinas": "30.00",
+          "azucares": "5.00",
+          "descripcion": "Ceviche de Pescado",
+          "etiquetas": [
+            "FRIO",
+            "ACIDO",
+            "SIN_GLUTEN"
+          ],
+          "ingredientes_ids": [],
+          "id": 3,
+          "tipo": "PLATO"
+        },
+        {
+          "valor_nutricional": "Alto en proteínas, carbohidratos y vitaminas",
+          "precio": "32.50",
+          "tiempo_preparacion": "25.00",
+          "comentarios": "Fusión peruano-china, lomo de res salteado con verduras",
+          "receta": "Saltear lomo con cebolla, tomate, ají amarillo, servir con papas fritas y arroz",
+          "disponible": true,
+          "unidades_disponibles": 10,
+          "num_ingredientes": 8,
+          "kcal": 580,
+          "calorias": "580.00",
+          "proteinas": "35.00",
+          "azucares": "12.00",
+          "descripcion": "Lomo Saltado",
+          "etiquetas": [
+            "CALIENTE",
+            "CON_GLUTEN"
+          ],
+          "ingredientes_ids": [],
+          "id": 4,
+          "tipo": "PLATO"
+        },
+        {
+          "valor_nutricional": "Rico en proteínas y carbohidratos",
+          "precio": "26.00",
+          "tiempo_preparacion": "40.00",
+          "comentarios": "Pollo deshilachado en crema de ají amarillo",
+          "receta": "Cocinar pollo, deshilachar, preparar crema con ají amarillo, leche y pan",
+          "disponible": true,
+          "unidades_disponibles": 12,
+          "num_ingredientes": 6,
+          "kcal": 450,
+          "calorias": "450.00",
+          "proteinas": "28.00",
+          "azucares": "8.00",
+          "descripcion": "Aji de Gallina",
+          "etiquetas": [
+            "CALIENTE",
+            "PICANTE",
+            "CON_GLUTEN"
+          ],
+          "ingredientes_ids": [],
+          "id": 5,
+          "tipo": "PLATO"
+        },
+        {
+          "valor_nutricional": "Completo en proteínas, carbohidratos y minerales",
+          "precio": "45.00",
+          "tiempo_preparacion": "120.00",
+          "comentarios": "Cocción tradicional en piedras calientes bajo tierra",
+          "receta": "Cocinar carnes, papas, camotes y habas en piedras calientes bajo tierra",
+          "disponible": true,
+          "unidades_disponibles": 6,
+          "num_ingredientes": 10,
+          "kcal": 650,
+          "calorias": "650.00",
+          "proteinas": "40.00",
+          "azucares": "15.00",
+          "descripcion": "Pachamanca",
+          "etiquetas": [
+            "CALIENTE",
+            "SIN_GLUTEN"
+          ],
+          "ingredientes_ids": [],
+          "id": 6,
+          "tipo": "PLATO"
+        },
+        {
+          "valor_nutricional": "Balanceado en carbohidratos y proteínas",
+          "precio": "24.00",
+          "tiempo_preparacion": "35.00",
+          "comentarios": "Arroz verde con pollo, típico de la costa peruana",
+          "receta": "Cocinar arroz con culantro, agregar pollo, arvejas y zanahoria",
+          "disponible": true,
+          "unidades_disponibles": 14,
+          "num_ingredientes": 7,
+          "kcal": 520,
+          "calorias": "520.00",
+          "proteinas": "32.00",
+          "azucares": "10.00",
+          "descripcion": "Arroz con Pollo",
+          "etiquetas": [
+            "CALIENTE",
+            "CON_GLUTEN"
+          ],
+          "ingredientes_ids": [],
+          "id": 7,
+          "tipo": "PLATO"
+        },
+        {
+          "valor_nutricional": "Rico en azúcares y grasas",
+          "precio": "12.00",
+          "tiempo_preparacion": "30.00",
+          "comentarios": "Postre tradicional de Lima, manjar blanco con merengue",
+          "receta": "Preparar manjar blanco, cubrir con merengue italiano, espolvorear canela",
+          "disponible": true,
+          "unidades_disponibles": 10,
+          "num_ingredientes": 5,
+          "kcal": 380,
+          "calorias": "380.00",
+          "proteinas": "8.00",
+          "azucares": "45.00",
+          "descripcion": "Suspiro a la Limeña",
+          "etiquetas": [
+            "FRIO",
+            "CON_GLUTEN"
+          ],
+          "ingredientes_ids": [],
+          "id": 8,
+          "tipo": "PLATO"
+        },
+        {
+          "valor_nutricional": "Alto en carbohidratos y grasas",
+          "precio": "10.00",
+          "tiempo_preparacion": "25.00",
+          "comentarios": "Donas peruanas de camote con miel de chancaca",
+          "receta": "Preparar masa con camote y harina, freír, bañar con miel de chancaca",
+          "disponible": true,
+          "unidades_disponibles": 12,
+          "num_ingredientes": 4,
+          "kcal": 320,
+          "calorias": "320.00",
+          "proteinas": "4.00",
+          "azucares": "40.00",
+          "descripcion": "Picarones",
+          "etiquetas": [
+            "CALIENTE",
+            "CON_GLUTEN"
+          ],
+          "ingredientes_ids": [],
+          "id": 10,
+          "tipo": "PLATO"
+        },
+        {
+          "valor_nutricional": "Cóctel nacional del Perú",
+          "precio": "18.00",
+          "tiempo_preparacion": "8.00",
+          "comentarios": "Cóctel emblemático con pisco, limón y clara de huevo",
+          "receta": "Mezclar pisco, jugo de limón, jarabe de goma y clara de huevo, batir con hielo",
+          "disponible": true,
+          "unidades_disponibles": 15,
+          "num_ingredientes": 5,
+          "kcal": 200,
+          "calorias": "200.00",
+          "proteinas": "2.00",
+          "azucares": "8.00",
+          "descripcion": "Pisco Sour",
+          "etiquetas": [
+            "FRIO",
+            "ACIDO"
+          ],
+          "ingredientes_ids": [],
+          "id": 16,
+          "tipo": "BEBIDA"
+        },
+        {
+          "valor_nutricional": "Cóctel refrescante con pisco",
+          "precio": "15.00",
+          "tiempo_preparacion": "5.00",
+          "comentarios": "Cóctel simple con pisco, ginger ale y limón",
+          "receta": "Mezclar pisco con ginger ale, agregar hielo y limón",
+          "disponible": true,
+          "unidades_disponibles": 12,
+          "num_ingredientes": 4,
+          "kcal": 150,
+          "calorias": "150.00",
+          "proteinas": "0.50",
+          "azucares": "12.00",
+          "descripcion": "Chilcano de Pisco",
+          "etiquetas": [
+            "FRIO"
+          ],
+          "ingredientes_ids": [],
+          "id": 17,
+          "tipo": "BEBIDA"
+        },
+        {
+          "valor_nutricional": "Bebida ancestral de maíz fermentado",
+          "precio": "12.00",
+          "tiempo_preparacion": "0.00",
+          "comentarios": "Bebida tradicional andina fermentada",
+          "receta": "Fermentar maíz jora con agua, endulzar y servir",
+          "disponible": true,
+          "unidades_disponibles": 10,
+          "num_ingredientes": 2,
+          "kcal": 120,
+          "calorias": "120.00",
+          "proteinas": "2.00",
+          "azucares": "15.00",
+          "descripcion": "Chicha de Jora",
+          "etiquetas": [
+            "FRIO",
+            "SIN_GLUTEN"
+          ],
+          "ingredientes_ids": [],
+          "id": 18,
+          "tipo": "BEBIDA"
+        }
+      ],
+      "data_type": "JSON",
+      "data_size": 6415,
+      "status": "✅ ÉXITO"
+    },
+    {
+      "endpoint": "/items/filter/etiqueta/SIN_GLUTEN",
+      "method": "GET",
+      "description": "Filtrar por etiqueta SIN_GLUTEN",
+      "status_code": 200,
+      "expected_status": 200,
+      "response_time_ms": 27.72,
+      "success": true,
+      "url": "http://localhost:8002/items/filter/etiqueta/SIN_GLUTEN",
+      "timestamp": "2025-09-18T20:58:45.872095",
+      "response_data": [
+        {
+          "valor_nutricional": "Rica en carbohidratos, proteínas y vitaminas A y C",
+          "precio": "18.50",
+          "tiempo_preparacion": "30.00",
+          "comentarios": "Plato tradicional de la gastronomía peruana",
+          "receta": "Cocinar papa amarilla, hacer puré, mezclar con ají amarillo, rellenar con pollo deshilachado",
+          "disponible": true,
+          "unidades_disponibles": 12,
+          "num_ingredientes": 6,
+          "kcal": 320,
+          "calorias": "320.00",
+          "proteinas": "18.00",
+          "azucares": "8.00",
+          "descripcion": "Causa Limeña de Pollo",
+          "etiquetas": [
+            "FRIO",
+            "SIN_GLUTEN"
+          ],
+          "ingredientes_ids": [],
+          "id": 1,
+          "tipo": "PLATO"
+        },
+        {
+          "valor_nutricional": "Rico en proteínas, omega-3 y vitamina C",
+          "precio": "28.00",
+          "tiempo_preparacion": "20.00",
+          "comentarios": "Plato bandera del Perú, pescado fresco marinado en leche de tigre",
+          "receta": "Cortar pescado fresco, marinar en limón, ají, cebolla morada y culantro",
+          "disponible": true,
+          "unidades_disponibles": 15,
+          "num_ingredientes": 7,
+          "kcal": 250,
+          "calorias": "250.00",
+          "proteinas": "30.00",
+          "azucares": "5.00",
+          "descripcion": "Ceviche de Pescado",
+          "etiquetas": [
+            "FRIO",
+            "ACIDO",
+            "SIN_GLUTEN"
+          ],
+          "ingredientes_ids": [],
+          "id": 3,
+          "tipo": "PLATO"
+        },
+        {
+          "valor_nutricional": "Completo en proteínas, carbohidratos y minerales",
+          "precio": "45.00",
+          "tiempo_preparacion": "120.00",
+          "comentarios": "Cocción tradicional en piedras calientes bajo tierra",
+          "receta": "Cocinar carnes, papas, camotes y habas en piedras calientes bajo tierra",
+          "disponible": true,
+          "unidades_disponibles": 6,
+          "num_ingredientes": 10,
+          "kcal": 650,
+          "calorias": "650.00",
+          "proteinas": "40.00",
+          "azucares": "15.00",
+          "descripcion": "Pachamanca",
+          "etiquetas": [
+            "CALIENTE",
+            "SIN_GLUTEN"
+          ],
+          "ingredientes_ids": [],
+          "id": 6,
+          "tipo": "PLATO"
+        },
+        {
+          "valor_nutricional": "Rica en antioxidantes y fibra",
+          "precio": "8.50",
+          "tiempo_preparacion": "45.00",
+          "comentarios": "Postre de maíz morado con frutas",
+          "receta": "Cocinar maíz morado con canela, agregar frutas y azúcar",
+          "disponible": true,
+          "unidades_disponibles": 15,
+          "num_ingredientes": 6,
+          "kcal": 250,
+          "calorias": "250.00",
+          "proteinas": "3.00",
+          "azucares": "35.00",
+          "descripcion": "Mazamorra Morada",
+          "etiquetas": [
+            "FRIO",
+            "SIN_GLUTEN"
+          ],
+          "ingredientes_ids": [],
+          "id": 9,
+          "tipo": "PLATO"
+        },
+        {
+          "valor_nutricional": "Rica en antioxidantes y vitamina C",
+          "precio": "6.50",
+          "tiempo_preparacion": "15.00",
+          "comentarios": "Bebida tradicional de maíz morado",
+          "receta": "Cocinar maíz morado con canela y clavo, endulzar y servir frío",
+          "disponible": true,
+          "unidades_disponibles": 25,
+          "num_ingredientes": 3,
+          "kcal": 120,
+          "calorias": "120.00",
+          "proteinas": "1.00",
+          "azucares": "28.00",
+          "descripcion": "Chicha Morada",
+          "etiquetas": [
+            "FRIO",
+            "SIN_GLUTEN"
+          ],
+          "ingredientes_ids": [],
+          "id": 11,
+          "tipo": "BEBIDA"
+        },
+        {
+          "valor_nutricional": "Rico en vitaminas A y C, fibra",
+          "precio": "8.00",
+          "tiempo_preparacion": "10.00",
+          "comentarios": "Jugo de la fruta nacional del Perú",
+          "receta": "Licuar lúcuma con leche y azúcar, servir frío",
+          "disponible": true,
+          "unidades_disponibles": 20,
+          "num_ingredientes": 3,
+          "kcal": 180,
+          "calorias": "180.00",
+          "proteinas": "4.00",
+          "azucares": "35.00",
+          "descripcion": "Jugo de Lúcuma",
+          "etiquetas": [
+            "FRIO",
+            "SIN_GLUTEN"
+          ],
+          "ingredientes_ids": [],
+          "id": 12,
+          "tipo": "BEBIDA"
+        },
+        {
+          "valor_nutricional": "Alto en vitamina C y antioxidantes",
+          "precio": "7.50",
+          "tiempo_preparacion": "8.00",
+          "comentarios": "Jugo ácido y refrescante",
+          "receta": "Extraer pulpa de maracuyá, mezclar con agua y azúcar",
+          "disponible": true,
+          "unidades_disponibles": 18,
+          "num_ingredientes": 3,
+          "kcal": 90,
+          "calorias": "90.00",
+          "proteinas": "1.50",
+          "azucares": "20.00",
+          "descripcion": "Jugo de Maracuyá",
+          "etiquetas": [
+            "FRIO",
+            "ACIDO",
+            "SIN_GLUTEN"
+          ],
+          "ingredientes_ids": [],
+          "id": 13,
+          "tipo": "BEBIDA"
+        },
+        {
+          "valor_nutricional": "Infusión digestiva y relajante",
+          "precio": "3.00",
+          "tiempo_preparacion": "5.00",
+          "comentarios": "Infusión tradicional peruana",
+          "receta": "Infusionar hojas de hierba luisa en agua caliente, endulzar",
+          "disponible": true,
+          "unidades_disponibles": 20,
+          "num_ingredientes": 2,
+          "kcal": 5,
+          "calorias": "5.00",
+          "proteinas": "0.00",
+          "azucares": "1.00",
+          "descripcion": "Agua de Hierba Luisa",
+          "etiquetas": [
+            "CALIENTE",
+            "SIN_GLUTEN"
+          ],
+          "ingredientes_ids": [],
+          "id": 15,
+          "tipo": "BEBIDA"
+        },
+        {
+          "valor_nutricional": "Bebida ancestral de maíz fermentado",
+          "precio": "12.00",
+          "tiempo_preparacion": "0.00",
+          "comentarios": "Bebida tradicional andina fermentada",
+          "receta": "Fermentar maíz jora con agua, endulzar y servir",
+          "disponible": true,
+          "unidades_disponibles": 10,
+          "num_ingredientes": 2,
+          "kcal": 120,
+          "calorias": "120.00",
+          "proteinas": "2.00",
+          "azucares": "15.00",
+          "descripcion": "Chicha de Jora",
+          "etiquetas": [
+            "FRIO",
+            "SIN_GLUTEN"
+          ],
+          "ingredientes_ids": [],
+          "id": 18,
+          "tipo": "BEBIDA"
+        }
+      ],
+      "data_type": "JSON",
+      "data_size": 4671,
+      "status": "✅ ÉXITO"
+    },
+    {
+      "endpoint": "/items/filter/etiqueta/CALIENTE",
+      "method": "GET",
+      "description": "Filtrar por etiqueta CALIENTE",
+      "status_code": 200,
+      "expected_status": 200,
+      "response_time_ms": 26.35,
+      "success": true,
+      "url": "http://localhost:8002/items/filter/etiqueta/CALIENTE",
+      "timestamp": "2025-09-18T20:58:45.900445",
+      "response_data": [
+        {
+          "valor_nutricional": "Alto en proteínas y hierro",
+          "precio": "22.00",
+          "tiempo_preparacion": "45.00",
+          "comentarios": "Brochetas de corazón de res marinadas en ají panca",
+          "receta": "Marinar corazón en ají panca, vinagre y especias, asar a la parrilla",
+          "disponible": true,
+          "unidades_disponibles": 8,
+          "num_ingredientes": 5,
+          "kcal": 280,
+          "calorias": "280.00",
+          "proteinas": "25.00",
+          "azucares": "3.00",
+          "descripcion": "Anticuchos de Corazón",
+          "etiquetas": [
+            "CALIENTE",
+            "PICANTE"
+          ],
+          "ingredientes_ids": [],
+          "id": 2,
+          "tipo": "PLATO"
+        },
+        {
+          "valor_nutricional": "Alto en proteínas, carbohidratos y vitaminas",
+          "precio": "32.50",
+          "tiempo_preparacion": "25.00",
+          "comentarios": "Fusión peruano-china, lomo de res salteado con verduras",
+          "receta": "Saltear lomo con cebolla, tomate, ají amarillo, servir con papas fritas y arroz",
+          "disponible": true,
+          "unidades_disponibles": 10,
+          "num_ingredientes": 8,
+          "kcal": 580,
+          "calorias": "580.00",
+          "proteinas": "35.00",
+          "azucares": "12.00",
+          "descripcion": "Lomo Saltado",
+          "etiquetas": [
+            "CALIENTE",
+            "CON_GLUTEN"
+          ],
+          "ingredientes_ids": [],
+          "id": 4,
+          "tipo": "PLATO"
+        },
+        {
+          "valor_nutricional": "Rico en proteínas y carbohidratos",
+          "precio": "26.00",
+          "tiempo_preparacion": "40.00",
+          "comentarios": "Pollo deshilachado en crema de ají amarillo",
+          "receta": "Cocinar pollo, deshilachar, preparar crema con ají amarillo, leche y pan",
+          "disponible": true,
+          "unidades_disponibles": 12,
+          "num_ingredientes": 6,
+          "kcal": 450,
+          "calorias": "450.00",
+          "proteinas": "28.00",
+          "azucares": "8.00",
+          "descripcion": "Aji de Gallina",
+          "etiquetas": [
+            "CALIENTE",
+            "PICANTE",
+            "CON_GLUTEN"
+          ],
+          "ingredientes_ids": [],
+          "id": 5,
+          "tipo": "PLATO"
+        },
+        {
+          "valor_nutricional": "Completo en proteínas, carbohidratos y minerales",
+          "precio": "45.00",
+          "tiempo_preparacion": "120.00",
+          "comentarios": "Cocción tradicional en piedras calientes bajo tierra",
+          "receta": "Cocinar carnes, papas, camotes y habas en piedras calientes bajo tierra",
+          "disponible": true,
+          "unidades_disponibles": 6,
+          "num_ingredientes": 10,
+          "kcal": 650,
+          "calorias": "650.00",
+          "proteinas": "40.00",
+          "azucares": "15.00",
+          "descripcion": "Pachamanca",
+          "etiquetas": [
+            "CALIENTE",
+            "SIN_GLUTEN"
+          ],
+          "ingredientes_ids": [],
+          "id": 6,
+          "tipo": "PLATO"
+        },
+        {
+          "valor_nutricional": "Balanceado en carbohidratos y proteínas",
+          "precio": "24.00",
+          "tiempo_preparacion": "35.00",
+          "comentarios": "Arroz verde con pollo, típico de la costa peruana",
+          "receta": "Cocinar arroz con culantro, agregar pollo, arvejas y zanahoria",
+          "disponible": true,
+          "unidades_disponibles": 14,
+          "num_ingredientes": 7,
+          "kcal": 520,
+          "calorias": "520.00",
+          "proteinas": "32.00",
+          "azucares": "10.00",
+          "descripcion": "Arroz con Pollo",
+          "etiquetas": [
+            "CALIENTE",
+            "CON_GLUTEN"
+          ],
+          "ingredientes_ids": [],
+          "id": 7,
+          "tipo": "PLATO"
+        },
+        {
+          "valor_nutricional": "Alto en carbohidratos y grasas",
+          "precio": "10.00",
+          "tiempo_preparacion": "25.00",
+          "comentarios": "Donas peruanas de camote con miel de chancaca",
+          "receta": "Preparar masa con camote y harina, freír, bañar con miel de chancaca",
+          "disponible": true,
+          "unidades_disponibles": 12,
+          "num_ingredientes": 4,
+          "kcal": 320,
+          "calorias": "320.00",
+          "proteinas": "4.00",
+          "azucares": "40.00",
+          "descripcion": "Picarones",
+          "etiquetas": [
+            "CALIENTE",
+            "CON_GLUTEN"
+          ],
+          "ingredientes_ids": [],
+          "id": 10,
+          "tipo": "PLATO"
+        },
+        {
+          "valor_nutricional": "Infusión digestiva y relajante",
+          "precio": "3.00",
+          "tiempo_preparacion": "5.00",
+          "comentarios": "Infusión tradicional peruana",
+          "receta": "Infusionar hojas de hierba luisa en agua caliente, endulzar",
+          "disponible": true,
+          "unidades_disponibles": 20,
+          "num_ingredientes": 2,
+          "kcal": 5,
+          "calorias": "5.00",
+          "proteinas": "0.00",
+          "azucares": "1.00",
+          "descripcion": "Agua de Hierba Luisa",
+          "etiquetas": [
+            "CALIENTE",
+            "SIN_GLUTEN"
+          ],
+          "ingredientes_ids": [],
+          "id": 15,
+          "tipo": "BEBIDA"
+        }
+      ],
+      "data_type": "JSON",
+      "data_size": 3735,
+      "status": "✅ ÉXITO"
+    },
+    {
+      "endpoint": "/items/bebidas/alcoholicas",
+      "method": "GET",
+      "description": "Obtener bebidas alcohólicas",
+      "status_code": 200,
+      "expected_status": 200,
+      "response_time_ms": 24.12,
+      "success": true,
+      "url": "http://localhost:8002/items/bebidas/alcoholicas",
+      "timestamp": "2025-09-18T20:58:45.948303",
+      "response_data": [
+        {
+          "valor_nutricional": "Cóctel nacional del Perú",
+          "precio": "18.00",
+          "tiempo_preparacion": "8.00",
+          "comentarios": "Cóctel emblemático con pisco, limón y clara de huevo",
+          "receta": "Mezclar pisco, jugo de limón, jarabe de goma y clara de huevo, batir con hielo",
+          "disponible": true,
+          "unidades_disponibles": 15,
+          "num_ingredientes": 5,
+          "kcal": 200,
+          "calorias": "200.00",
+          "proteinas": "2.00",
+          "azucares": "8.00",
+          "descripcion": "Pisco Sour",
+          "etiquetas": [
+            "FRIO",
+            "ACIDO"
+          ],
+          "ingredientes_ids": [],
+          "id": 16,
+          "litros": "0.200",
+          "alcoholico": true
+        },
+        {
+          "valor_nutricional": "Cóctel refrescante con pisco",
+          "precio": "15.00",
+          "tiempo_preparacion": "5.00",
+          "comentarios": "Cóctel simple con pisco, ginger ale y limón",
+          "receta": "Mezclar pisco con ginger ale, agregar hielo y limón",
+          "disponible": true,
+          "unidades_disponibles": 12,
+          "num_ingredientes": 4,
+          "kcal": 150,
+          "calorias": "150.00",
+          "proteinas": "0.50",
+          "azucares": "12.00",
+          "descripcion": "Chilcano de Pisco",
+          "etiquetas": [
+            "FRIO"
+          ],
+          "ingredientes_ids": [],
+          "id": 17,
+          "litros": "0.300",
+          "alcoholico": true
+        },
+        {
+          "valor_nutricional": "Bebida ancestral de maíz fermentado",
+          "precio": "12.00",
+          "tiempo_preparacion": "0.00",
+          "comentarios": "Bebida tradicional andina fermentada",
+          "receta": "Fermentar maíz jora con agua, endulzar y servir",
+          "disponible": true,
+          "unidades_disponibles": 10,
+          "num_ingredientes": 2,
+          "kcal": 120,
+          "calorias": "120.00",
+          "proteinas": "2.00",
+          "azucares": "15.00",
+          "descripcion": "Chicha de Jora",
+          "etiquetas": [
+            "FRIO",
+            "SIN_GLUTEN"
+          ],
+          "ingredientes_ids": [],
+          "id": 18,
+          "litros": "0.500",
+          "alcoholico": true
+        },
+        {
+          "valor_nutricional": "Cerveza peruana premium",
+          "precio": "8.50",
+          "tiempo_preparacion": "0.00",
+          "comentarios": "Cerveza artesanal de la ciudad imperial",
+          "receta": "Servir fría",
+          "disponible": true,
+          "unidades_disponibles": 20,
+          "num_ingredientes": 1,
+          "kcal": 140,
+          "calorias": "140.00",
+          "proteinas": "1.50",
+          "azucares": "3.00",
+          "descripcion": "Cerveza Cusqueña",
+          "etiquetas": [
+            "FRIO"
+          ],
+          "ingredientes_ids": [],
+          "id": 19,
+          "litros": "0.330",
+          "alcoholico": true
+        }
+      ],
+      "data_type": "JSON",
+      "data_size": 2032,
+      "status": "✅ ÉXITO"
+    },
+    {
+      "endpoint": "/items/bebidas/no-alcoholicas",
+      "method": "GET",
+      "description": "Obtener bebidas no alcohólicas",
+      "status_code": 200,
+      "expected_status": 200,
+      "response_time_ms": 28.18,
+      "success": true,
+      "url": "http://localhost:8002/items/bebidas/no-alcoholicas",
+      "timestamp": "2025-09-18T20:58:45.978482",
+      "response_data": [
+        {
+          "valor_nutricional": "Rica en antioxidantes y vitamina C",
+          "precio": "6.50",
+          "tiempo_preparacion": "15.00",
+          "comentarios": "Bebida tradicional de maíz morado",
+          "receta": "Cocinar maíz morado con canela y clavo, endulzar y servir frío",
+          "disponible": true,
+          "unidades_disponibles": 25,
+          "num_ingredientes": 3,
+          "kcal": 120,
+          "calorias": "120.00",
+          "proteinas": "1.00",
+          "azucares": "28.00",
+          "descripcion": "Chicha Morada",
+          "etiquetas": [
+            "FRIO",
+            "SIN_GLUTEN"
+          ],
+          "ingredientes_ids": [],
+          "id": 11,
+          "litros": "0.500",
+          "alcoholico": false
+        },
+        {
+          "valor_nutricional": "Rico en vitaminas A y C, fibra",
+          "precio": "8.00",
+          "tiempo_preparacion": "10.00",
+          "comentarios": "Jugo de la fruta nacional del Perú",
+          "receta": "Licuar lúcuma con leche y azúcar, servir frío",
+          "disponible": true,
+          "unidades_disponibles": 20,
+          "num_ingredientes": 3,
+          "kcal": 180,
+          "calorias": "180.00",
+          "proteinas": "4.00",
+          "azucares": "35.00",
+          "descripcion": "Jugo de Lúcuma",
+          "etiquetas": [
+            "FRIO",
+            "SIN_GLUTEN"
+          ],
+          "ingredientes_ids": [],
+          "id": 12,
+          "litros": "0.400",
+          "alcoholico": false
+        },
+        {
+          "valor_nutricional": "Alto en vitamina C y antioxidantes",
+          "precio": "7.50",
+          "tiempo_preparacion": "8.00",
+          "comentarios": "Jugo ácido y refrescante",
+          "receta": "Extraer pulpa de maracuyá, mezclar con agua y azúcar",
+          "disponible": true,
+          "unidades_disponibles": 18,
+          "num_ingredientes": 3,
+          "kcal": 90,
+          "calorias": "90.00",
+          "proteinas": "1.50",
+          "azucares": "20.00",
+          "descripcion": "Jugo de Maracuyá",
+          "etiquetas": [
+            "FRIO",
+            "ACIDO",
+            "SIN_GLUTEN"
+          ],
+          "ingredientes_ids": [],
+          "id": 13,
+          "litros": "0.400",
+          "alcoholico": false
+        },
+        {
+          "valor_nutricional": "Bebida gaseosa con sabor a hierba luisa",
+          "precio": "4.50",
+          "tiempo_preparacion": "0.00",
+          "comentarios": "La bebida nacional del Perú",
+          "receta": "Servir fría",
+          "disponible": true,
+          "unidades_disponibles": 30,
+          "num_ingredientes": 1,
+          "kcal": 150,
+          "calorias": "150.00",
+          "proteinas": "0.00",
+          "azucares": "35.00",
+          "descripcion": "Inca Kola",
+          "etiquetas": [
+            "FRIO"
+          ],
+          "ingredientes_ids": [],
+          "id": 14,
+          "litros": "0.500",
+          "alcoholico": false
+        },
+        {
+          "valor_nutricional": "Infusión digestiva y relajante",
+          "precio": "3.00",
+          "tiempo_preparacion": "5.00",
+          "comentarios": "Infusión tradicional peruana",
+          "receta": "Infusionar hojas de hierba luisa en agua caliente, endulzar",
+          "disponible": true,
+          "unidades_disponibles": 20,
+          "num_ingredientes": 2,
+          "kcal": 5,
+          "calorias": "5.00",
+          "proteinas": "0.00",
+          "azucares": "1.00",
+          "descripcion": "Agua de Hierba Luisa",
+          "etiquetas": [
+            "CALIENTE",
+            "SIN_GLUTEN"
+          ],
+          "ingredientes_ids": [],
+          "id": 15,
+          "litros": "0.500",
+          "alcoholico": false
+        }
+      ],
+      "data_type": "JSON",
+      "data_size": 2538,
+      "status": "✅ ÉXITO"
+    },
+    {
+      "endpoint": "/items/bebidas/filter/volume",
+      "method": "GET",
+      "description": "Filtrar bebidas por volumen",
+      "status_code": 200,
+      "expected_status": 200,
+      "response_time_ms": 31.84,
+      "success": true,
+      "url": "http://localhost:8002/items/bebidas/filter/volume",
+      "timestamp": "2025-09-18T20:58:46.011318",
+      "response_data": [
+        {
+          "valor_nutricional": "Rica en antioxidantes y vitamina C",
+          "precio": "6.50",
+          "tiempo_preparacion": "15.00",
+          "comentarios": "Bebida tradicional de maíz morado",
+          "receta": "Cocinar maíz morado con canela y clavo, endulzar y servir frío",
+          "disponible": true,
+          "unidades_disponibles": 25,
+          "num_ingredientes": 3,
+          "kcal": 120,
+          "calorias": "120.00",
+          "proteinas": "1.00",
+          "azucares": "28.00",
+          "descripcion": "Chicha Morada",
+          "etiquetas": [
+            "FRIO",
+            "SIN_GLUTEN"
+          ],
+          "ingredientes_ids": [],
+          "id": 11,
+          "litros": "0.500",
+          "alcoholico": false
+        },
+        {
+          "valor_nutricional": "Rico en vitaminas A y C, fibra",
+          "precio": "8.00",
+          "tiempo_preparacion": "10.00",
+          "comentarios": "Jugo de la fruta nacional del Perú",
+          "receta": "Licuar lúcuma con leche y azúcar, servir frío",
+          "disponible": true,
+          "unidades_disponibles": 20,
+          "num_ingredientes": 3,
+          "kcal": 180,
+          "calorias": "180.00",
+          "proteinas": "4.00",
+          "azucares": "35.00",
+          "descripcion": "Jugo de Lúcuma",
+          "etiquetas": [
+            "FRIO",
+            "SIN_GLUTEN"
+          ],
+          "ingredientes_ids": [],
+          "id": 12,
+          "litros": "0.400",
+          "alcoholico": false
+        },
+        {
+          "valor_nutricional": "Alto en vitamina C y antioxidantes",
+          "precio": "7.50",
+          "tiempo_preparacion": "8.00",
+          "comentarios": "Jugo ácido y refrescante",
+          "receta": "Extraer pulpa de maracuyá, mezclar con agua y azúcar",
+          "disponible": true,
+          "unidades_disponibles": 18,
+          "num_ingredientes": 3,
+          "kcal": 90,
+          "calorias": "90.00",
+          "proteinas": "1.50",
+          "azucares": "20.00",
+          "descripcion": "Jugo de Maracuyá",
+          "etiquetas": [
+            "FRIO",
+            "ACIDO",
+            "SIN_GLUTEN"
+          ],
+          "ingredientes_ids": [],
+          "id": 13,
+          "litros": "0.400",
+          "alcoholico": false
+        },
+        {
+          "valor_nutricional": "Bebida gaseosa con sabor a hierba luisa",
+          "precio": "4.50",
+          "tiempo_preparacion": "0.00",
+          "comentarios": "La bebida nacional del Perú",
+          "receta": "Servir fría",
+          "disponible": true,
+          "unidades_disponibles": 30,
+          "num_ingredientes": 1,
+          "kcal": 150,
+          "calorias": "150.00",
+          "proteinas": "0.00",
+          "azucares": "35.00",
+          "descripcion": "Inca Kola",
+          "etiquetas": [
+            "FRIO"
+          ],
+          "ingredientes_ids": [],
+          "id": 14,
+          "litros": "0.500",
+          "alcoholico": false
+        },
+        {
+          "valor_nutricional": "Infusión digestiva y relajante",
+          "precio": "3.00",
+          "tiempo_preparacion": "5.00",
+          "comentarios": "Infusión tradicional peruana",
+          "receta": "Infusionar hojas de hierba luisa en agua caliente, endulzar",
+          "disponible": true,
+          "unidades_disponibles": 20,
+          "num_ingredientes": 2,
+          "kcal": 5,
+          "calorias": "5.00",
+          "proteinas": "0.00",
+          "azucares": "1.00",
+          "descripcion": "Agua de Hierba Luisa",
+          "etiquetas": [
+            "CALIENTE",
+            "SIN_GLUTEN"
+          ],
+          "ingredientes_ids": [],
+          "id": 15,
+          "litros": "0.500",
+          "alcoholico": false
+        },
+        {
+          "valor_nutricional": "Cóctel refrescante con pisco",
+          "precio": "15.00",
+          "tiempo_preparacion": "5.00",
+          "comentarios": "Cóctel simple con pisco, ginger ale y limón",
+          "receta": "Mezclar pisco con ginger ale, agregar hielo y limón",
+          "disponible": true,
+          "unidades_disponibles": 12,
+          "num_ingredientes": 4,
+          "kcal": 150,
+          "calorias": "150.00",
+          "proteinas": "0.50",
+          "azucares": "12.00",
+          "descripcion": "Chilcano de Pisco",
+          "etiquetas": [
+            "FRIO"
+          ],
+          "ingredientes_ids": [],
+          "id": 17,
+          "litros": "0.300",
+          "alcoholico": true
+        },
+        {
+          "valor_nutricional": "Bebida ancestral de maíz fermentado",
+          "precio": "12.00",
+          "tiempo_preparacion": "0.00",
+          "comentarios": "Bebida tradicional andina fermentada",
+          "receta": "Fermentar maíz jora con agua, endulzar y servir",
+          "disponible": true,
+          "unidades_disponibles": 10,
+          "num_ingredientes": 2,
+          "kcal": 120,
+          "calorias": "120.00",
+          "proteinas": "2.00",
+          "azucares": "15.00",
+          "descripcion": "Chicha de Jora",
+          "etiquetas": [
+            "FRIO",
+            "SIN_GLUTEN"
+          ],
+          "ingredientes_ids": [],
+          "id": 18,
+          "litros": "0.500",
+          "alcoholico": true
+        },
+        {
+          "valor_nutricional": "Cerveza peruana premium",
+          "precio": "8.50",
+          "tiempo_preparacion": "0.00",
+          "comentarios": "Cerveza artesanal de la ciudad imperial",
+          "receta": "Servir fría",
+          "disponible": true,
+          "unidades_disponibles": 20,
+          "num_ingredientes": 1,
+          "kcal": 140,
+          "calorias": "140.00",
+          "proteinas": "1.50",
+          "azucares": "3.00",
+          "descripcion": "Cerveza Cusqueña",
+          "etiquetas": [
+            "FRIO"
+          ],
+          "ingredientes_ids": [],
+          "id": 19,
+          "litros": "0.330",
+          "alcoholico": true
+        }
+      ],
+      "data_type": "JSON",
+      "data_size": 4026,
+      "status": "✅ ÉXITO"
+    },
+    {
+      "endpoint": "/items/1/ingredientes",
+      "method": "GET",
+      "description": "Obtener ingredientes de un ítem",
+      "status_code": 200,
+      "expected_status": 200,
+      "response_time_ms": 9.0,
+      "success": true,
+      "url": "http://localhost:8002/items/1/ingredientes",
+      "timestamp": "2025-09-18T20:58:46.021317",
+      "response_data": [],
+      "data_type": "JSON",
+      "data_size": 2,
+      "status": "✅ ÉXITO"
+    },
+    {
+      "endpoint": "/items/999/ingredientes",
+      "method": "GET",
+      "description": "Ingredientes de ítem inexistente",
+      "status_code": 404,
+      "expected_status": 404,
+      "response_time_ms": 9.0,
+      "success": true,
+      "url": "http://localhost:8002/items/999/ingredientes",
+      "timestamp": "2025-09-18T20:58:46.031318",
+      "response_data": {
+        "detail": "Ítem no encontrado"
+      },
+      "data_type": "JSON",
+      "data_size": 32,
+      "status": "✅ ÉXITO"
+    },
+    {
+      "endpoint": "/seed-data",
+      "method": "POST",
+      "description": "Sembrar datos peruanos",
+      "status_code": 200,
+      "expected_status": 200,
+      "response_time_ms": 17.3,
+      "success": true,
+      "url": "http://localhost:8002/seed-data",
+      "timestamp": "2025-09-18T20:58:46.051622",
+      "response_data": {
+        "message": "Base de datos poblada exitosamente con datos peruanos",
+        "success": true,
+        "data": {
+          "ingredientes": "Ingredientes típicos peruanos (ají amarillo, rocoto, lúcuma, etc.)",
+          "platos": "Platos tradicionales (ceviche, lomo saltado, causa limeña, etc.)",
+          "bebidas": "Bebidas peruanas (chicha morada, pisco sour, Inca Kola, etc.)"
+        }
+      },
+      "data_type": "JSON",
+      "data_size": 335,
+      "status": "✅ ÉXITO"
+    }
+  ],
+  "failing_endpoints": [
+    {
+      "endpoint": "/ingredientes/search",
+      "method": "GET",
+      "description": "Buscar ingredientes",
+      "status_code": 200,
+      "expected_status": 422,
+      "response_time_ms": 13.19,
+      "success": false,
+      "url": "http://localhost:8002/ingredientes/search",
+      "timestamp": "2025-09-18T20:58:45.596105",
+      "response_data": [],
+      "data_type": "JSON",
+      "data_size": 2,
+      "status": "❌ FALLO",
+      "error": "Esperado 422, obtenido 200"
+    },
+    {
+      "endpoint": "/items/with-ingredientes",
+      "method": "GET",
+      "description": "Listar ítems con ingredientes",
+      "status_code": 500,
+      "expected_status": 200,
+      "response_time_ms": 13.0,
+      "success": false,
+      "url": "http://localhost:8002/items/with-ingredientes",
+      "timestamp": "2025-09-18T20:58:45.799856",
+      "response_data": {
+        "detail": "Error interno del servidor: 'PlatoModel' object has no attribute 'tipo'"
+      },
+      "data_type": "JSON",
+      "data_size": 85,
+      "status": "❌ FALLO",
+      "error": "Esperado 200, obtenido 500"
+    },
+    {
+      "endpoint": "/items/platos/entradas",
+      "method": "GET",
+      "description": "Obtener entradas",
+      "status_code": 422,
+      "expected_status": 200,
+      "response_time_ms": 6.63,
+      "success": false,
+      "url": "http://localhost:8002/items/platos/entradas",
+      "timestamp": "2025-09-18T20:58:45.908070",
+      "response_data": {
+        "detail": [
+          {
+            "type": "int_parsing",
+            "loc": [
+              "path",
+              "item_id"
+            ],
+            "msg": "Input should be a valid integer, unable to parse string as an integer",
+            "input": "entradas"
+          }
+        ]
+      },
+      "data_type": "JSON",
+      "data_size": 166,
+      "status": "❌ FALLO",
+      "error": "Esperado 200, obtenido 422"
+    },
+    {
+      "endpoint": "/items/platos/principales",
+      "method": "GET",
+      "description": "Obtener platos principales",
+      "status_code": 422,
+      "expected_status": 200,
+      "response_time_ms": 6.0,
+      "success": false,
+      "url": "http://localhost:8002/items/platos/principales",
+      "timestamp": "2025-09-18T20:58:45.915589",
+      "response_data": {
+        "detail": [
+          {
+            "type": "int_parsing",
+            "loc": [
+              "path",
+              "item_id"
+            ],
+            "msg": "Input should be a valid integer, unable to parse string as an integer",
+            "input": "principales"
+          }
+        ]
+      },
+      "data_type": "JSON",
+      "data_size": 169,
+      "status": "❌ FALLO",
+      "error": "Esperado 200, obtenido 422"
+    },
+    {
+      "endpoint": "/items/platos/postres",
+      "method": "GET",
+      "description": "Obtener postres",
+      "status_code": 422,
+      "expected_status": 200,
+      "response_time_ms": 5.07,
+      "success": false,
+      "url": "http://localhost:8002/items/platos/postres",
+      "timestamp": "2025-09-18T20:58:45.922659",
+      "response_data": {
+        "detail": [
+          {
+            "type": "int_parsing",
+            "loc": [
+              "path",
+              "item_id"
+            ],
+            "msg": "Input should be a valid integer, unable to parse string as an integer",
+            "input": "postres"
+          }
+        ]
+      },
+      "data_type": "JSON",
+      "data_size": 165,
+      "status": "❌ FALLO",
+      "error": "Esperado 200, obtenido 422"
+    }
+  ]
+}

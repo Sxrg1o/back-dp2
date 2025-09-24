@@ -56,7 +56,7 @@ class ItemRepositoryImpl(ItemRepository):
             proteinas=to_decimal(item.proteinas, "0.0"),
             azucares=to_decimal(item.azucares, "0.0"),
             descripcion=item.descripcion or "",
-            tipo=item.get_tipo()
+            tipo_item=item.get_tipo_item().value
         )
 
         print(f"DEBUG: Creando ítem - precio: {item.precio}, tipo: {type(item.precio)} -> {base_kwargs['precio']}")
@@ -66,7 +66,7 @@ class ItemRepositoryImpl(ItemRepository):
             model = PlatoModel(
                 **base_kwargs,
                 peso=to_decimal(item.peso, "0.0"),
-                tipo_plato=item.tipo.value
+                tipo_plato=item.get_tipo_especifico().value
             )
         elif isinstance(item, Bebida):
             model = BebidaModel(
@@ -174,10 +174,11 @@ class ItemRepositoryImpl(ItemRepository):
                     )
                 ).scalar()
                 
+                ingrediente_domain = ingrediente.to_domain()
                 ingredientes_data.append({
-                    "id": ingrediente.id,
-                    "nombre": ingrediente.nombre,
-                    "tipo": ingrediente.tipo,
+                    "id": ingrediente_domain.id,
+                    "nombre": ingrediente_domain.nombre,
+                    "tipo": ingrediente_domain.tipo.value,
                     "cantidad": cantidad or Decimal('1.0')
                 })
             
@@ -186,7 +187,7 @@ class ItemRepositoryImpl(ItemRepository):
                 "id": item.id,
                 "descripcion": item.descripcion,
                 "precio": float(item.precio),
-                "tipo": item.tipo,
+                "tipo": item_domain.get_tipo_item().value,
                 "disponible": item.disponible,
                 "unidades_disponibles": item.unidades_disponibles,
                 "valor_nutricional": item.valor_nutricional or "",
@@ -203,15 +204,15 @@ class ItemRepositoryImpl(ItemRepository):
             }
             
             # Agregar campos específicos según el tipo
-            if item.tipo == 'PLATO' and hasattr(item, 'peso'):
+            if item_domain.get_tipo_item().value == 'PLATO' and hasattr(item_domain, 'peso'):
                 item_data.update({
-                    "peso": float(item.peso),
-                    "tipo_plato": getattr(item, 'tipo_plato', 'FONDO')
+                    "peso": float(item_domain.peso),
+                    "tipo_plato": item_domain.get_tipo_especifico().value
                 })
-            elif item.tipo == 'BEBIDA' and hasattr(item, 'litros'):
+            elif item_domain.get_tipo_item().value == 'BEBIDA' and hasattr(item_domain, 'litros'):
                 item_data.update({
-                    "litros": float(item.litros),
-                    "alcoholico": getattr(item, 'alcoholico', False)
+                    "litros": float(item_domain.litros),
+                    "alcoholico": getattr(item_domain, 'alcoholico', False)
                 })
             
             result.append(item_data)
@@ -281,7 +282,7 @@ class ItemRepositoryImpl(ItemRepository):
             plato_model = self.db.query(PlatoModel).filter(PlatoModel.id == item.id).first()
             if plato_model:
                 plato_model.peso = item.peso
-                plato_model.tipo_plato = item.tipo.value
+                plato_model.tipo_plato = item.get_tipo_especifico().value
         elif isinstance(item, Bebida):
             bebida_model = self.db.query(BebidaModel).filter(BebidaModel.id == item.id).first()
             if bebida_model:

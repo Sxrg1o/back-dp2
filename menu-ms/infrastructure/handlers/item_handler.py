@@ -34,6 +34,60 @@ def get_item_service(db: Session = Depends(get_db)) -> ItemService:
     return ItemService(item_repository, plato_repository, bebida_repository)
 
 
+def plato_to_dto(plato: Plato) -> PlatoResponseDTO:
+    """
+    Convierte una entidad Plato a PlatoResponseDTO.
+    """
+    plato_data = {
+        'id': plato.id,
+        'valor_nutricional': plato.valor_nutricional,
+        'precio': plato.precio,
+        'tiempo_preparacion': plato.tiempo_preparacion,
+        'comentarios': plato.comentarios,
+        'receta': plato.receta,
+        'disponible': plato.disponible,
+        'unidades_disponibles': plato.unidades_disponibles,
+        'num_ingredientes': plato.num_ingredientes,
+        'kcal': plato.kcal,
+        'calorias': plato.calorias,
+        'proteinas': plato.proteinas,
+        'azucares': plato.azucares,
+        'descripcion': plato.descripcion,
+        'etiquetas': plato.etiquetas,
+        'ingredientes_ids': [ing.id for ing in plato.ingredientes],
+        'peso': plato.peso,
+        'tipo': plato.get_tipo_especifico(),
+        'tipo_item': plato.get_tipo_item()
+    }
+    return PlatoResponseDTO.model_validate(plato_data)
+
+
+def item_to_dto(item: Item) -> ItemResponseDTO:
+    """
+    Convierte una entidad Item a ItemResponseDTO.
+    """
+    item_data = {
+        'id': item.id,
+        'valor_nutricional': item.valor_nutricional,
+        'precio': item.precio,
+        'tiempo_preparacion': item.tiempo_preparacion,
+        'comentarios': item.comentarios,
+        'receta': item.receta,
+        'disponible': item.disponible,
+        'unidades_disponibles': item.unidades_disponibles,
+        'num_ingredientes': item.num_ingredientes,
+        'kcal': item.kcal,
+        'calorias': item.calorias,
+        'proteinas': item.proteinas,
+        'azucares': item.azucares,
+        'descripcion': item.descripcion,
+        'etiquetas': item.etiquetas,
+        'ingredientes_ids': [ing.id for ing in item.ingredientes],
+        'tipo_item': item.get_tipo_item()
+    }
+    return ItemResponseDTO.model_validate(item_data)
+
+
 @router.post("/platos", response_model=PlatoResponseDTO, status_code=201)
 def create_plato(
     plato_data: PlatoCreateDTO,
@@ -130,7 +184,7 @@ def get_all_items(
     """
     try:
         items = service.get_all_items(only_available)
-        return [ItemResponseDTO.model_validate(item) for item in items]
+        return [item_to_dto(item) for item in items]
     
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error interno del servidor: {str(e)}")
@@ -164,7 +218,7 @@ def get_item(
         if not item:
             raise HTTPException(status_code=404, detail="Ítem no encontrado")
         
-        return ItemResponseDTO.model_validate(item)
+        return item_to_dto(item)
     
     except HTTPException:
         raise
@@ -385,7 +439,7 @@ def search_items(
     """
     try:
         items = service.search_items(q)
-        return [ItemResponseDTO.model_validate(item) for item in items]
+        return [item_to_dto(item) for item in items]
     
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
@@ -404,7 +458,7 @@ def get_items_by_price_range(
     """
     try:
         items = service.get_items_by_price_range(min_price, max_price)
-        return [ItemResponseDTO.model_validate(item) for item in items]
+        return [item_to_dto(item) for item in items]
     
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
@@ -422,7 +476,7 @@ def get_items_by_etiqueta(
     """
     try:
         items = service.get_items_by_etiqueta(etiqueta)
-        return [ItemResponseDTO.model_validate(item) for item in items]
+        return [item_to_dto(item) for item in items]
     
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error interno del servidor: {str(e)}")
@@ -436,7 +490,7 @@ def get_entradas(service: ItemService = Depends(get_item_service)):
     """
     try:
         platos = service.get_entradas()
-        return [PlatoResponseDTO.model_validate(plato) for plato in platos]
+        return [plato_to_dto(plato) for plato in platos]
     
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error interno del servidor: {str(e)}")
@@ -449,7 +503,7 @@ def get_platos_principales(service: ItemService = Depends(get_item_service)):
     """
     try:
         platos = service.get_platos_principales()
-        return [PlatoResponseDTO.model_validate(plato) for plato in platos]
+        return [plato_to_dto(plato) for plato in platos]
     
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error interno del servidor: {str(e)}")
@@ -462,7 +516,7 @@ def get_postres(service: ItemService = Depends(get_item_service)):
     """
     try:
         platos = service.get_postres()
-        return [PlatoResponseDTO.model_validate(plato) for plato in platos]
+        return [plato_to_dto(plato) for plato in platos]
     
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error interno del servidor: {str(e)}")
@@ -508,6 +562,33 @@ def get_bebidas_by_volume_range(
         bebidas = service.get_bebidas_by_volume_range(min_volume, max_volume)
         return [BebidaResponseDTO.model_validate(bebida) for bebida in bebidas]
     
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error interno del servidor: {str(e)}")
+
+
+@router.get("/platos/{item_id}", response_model=PlatoResponseDTO)
+def get_plato_by_id(
+    item_id: int,
+    service: ItemService = Depends(get_item_service)
+):
+    """
+    Obtiene un plato específico por su ID.
+    """
+    try:
+        item = service.get_item(item_id)
+        if not item:
+            raise HTTPException(status_code=404, detail="Plato no encontrado")
+
+        # Verificar que el ítem sea un plato
+        if item.get_tipo_item().value != "PLATO":
+            raise HTTPException(status_code=404, detail="El ítem encontrado no es un plato")
+
+        return plato_to_dto(item)
+
+    except HTTPException:
+        raise
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:

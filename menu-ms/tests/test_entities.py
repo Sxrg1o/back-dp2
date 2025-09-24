@@ -5,7 +5,7 @@ Tests unitarios para las entidades del dominio.
 import pytest
 from decimal import Decimal
 from domain.entities import Item, Plato, Bebida, Ingrediente
-from domain.entities.enums import EtiquetaItem, EtiquetaIngrediente, EtiquetaPlato
+from domain.entities.enums import EtiquetaItem, EtiquetaIngrediente, EtiquetaPlato, EtiquetaBebida, TipoItem
 
 
 class TestIngrediente:
@@ -90,7 +90,8 @@ class TestPlato:
         assert plato.precio == Decimal('15.50')
         assert plato.peso == Decimal('300.0')
         assert plato.tipo == EtiquetaPlato.FONDO
-        assert plato.get_tipo() == "PLATO"
+        assert plato.get_tipo_item().value == "PLATO"
+        assert plato.get_tipo_especifico() == EtiquetaPlato.FONDO
     
     def test_es_plato_principal(self):
         """Test para verificar si es plato principal."""
@@ -133,7 +134,8 @@ class TestBebida:
         assert bebida.precio == Decimal('3.50')
         assert bebida.litros == Decimal('0.5')
         assert bebida.alcoholico is False
-        assert bebida.get_tipo() == "BEBIDA"
+        assert bebida.get_tipo_item().value == "BEBIDA"
+        assert bebida.get_tipo_especifico() == EtiquetaBebida.NO_ALCOHOLICA
     
     def test_es_alcoholica(self):
         """Test para verificar si es alcohólica."""

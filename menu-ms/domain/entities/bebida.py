@@ -6,6 +6,7 @@ Representa las bebidas disponibles en el menú.
 from decimal import Decimal
 from typing import Optional
 from .item import Item
+from .enums import EtiquetaBebida, TipoItem
 
 
 class Bebida(Item):
@@ -32,7 +33,9 @@ class Bebida(Item):
         descripcion: str = "",
         etiquetas: list = None,
         litros: Decimal = Decimal('0.0'),
-        alcoholico: bool = False
+        alcoholico: bool = False,
+        tipo_bebida: EtiquetaBebida = None,
+        tipo_item: TipoItem = TipoItem.BEBIDA
     ):
         """
         Inicializa una bebida.
@@ -55,6 +58,8 @@ class Bebida(Item):
             etiquetas: Lista de etiquetas de la bebida
             litros: Cantidad en litros del contenido
             alcoholico: Indica si la bebida contiene alcohol
+            tipo_bebida: Clasificación específica de la bebida
+            tipo_item: Tipo base del ítem (BEBIDA)
         """
         super().__init__(
             id=id,
@@ -71,19 +76,21 @@ class Bebida(Item):
             proteinas=proteinas,
             azucares=azucares,
             descripcion=descripcion,
-            etiquetas=etiquetas or []
+            etiquetas=etiquetas or [],
+            tipo_item=TipoItem.BEBIDA
         )
         self.litros = litros
         self.alcoholico = alcoholico
+        self.tipo_bebida = tipo_bebida or (EtiquetaBebida.ALCOHOLICA if alcoholico else EtiquetaBebida.NO_ALCOHOLICA)
     
-    def get_tipo(self) -> str:
+    def get_tipo_especifico(self) -> EtiquetaBebida:
         """
-        Retorna el tipo específico de la bebida.
+        Retorna la clasificación específica de la bebida.
         
         Returns:
-            str: Tipo de la bebida
+            EtiquetaBebida: Clasificación de la bebida
         """
-        return "BEBIDA"
+        return self.tipo_bebida
     
     def es_alcoholica(self) -> bool:
         """

@@ -6,7 +6,7 @@ Representa los platos principales, entradas y postres del menú.
 from decimal import Decimal
 from typing import Optional
 from .item import Item
-from .enums import EtiquetaPlato
+from .enums import EtiquetaPlato, TipoItem
 
 
 class Plato(Item):
@@ -33,7 +33,8 @@ class Plato(Item):
         descripcion: str = "",
         etiquetas: list = None,
         peso: Decimal = Decimal('0.0'),
-        tipo: EtiquetaPlato = EtiquetaPlato.FONDO
+        tipo: EtiquetaPlato = EtiquetaPlato.FONDO,
+        tipo_item: TipoItem = TipoItem.PLATO
     ):
         """
         Inicializa un plato.
@@ -56,6 +57,7 @@ class Plato(Item):
             etiquetas: Lista de etiquetas del plato
             peso: Peso total del plato en gramos
             tipo: Clasificación del plato (ENTRADA, FONDO, POSTRE)
+            tipo_item: Tipo base del ítem (PLATO)
         """
         super().__init__(
             id=id,
@@ -72,23 +74,25 @@ class Plato(Item):
             proteinas=proteinas,
             azucares=azucares,
             descripcion=descripcion,
-            etiquetas=etiquetas or []
+            etiquetas=etiquetas or [],
+            tipo_item=TipoItem.PLATO
         )
         self.peso = peso
         self.tipo = tipo
     
-    def get_tipo(self) -> str:
+    def get_tipo_especifico(self) -> EtiquetaPlato:
         """
-        Retorna el tipo específico del plato.
+        Retorna la clasificación específica del plato.
         
         Returns:
-            str: Tipo del plato
+            EtiquetaPlato: Clasificación del plato
         """
-        return "PLATO"
+        return self.tipo
     
     def get_tipo_plato(self) -> EtiquetaPlato:
         """
         Retorna la clasificación específica del plato.
+        Método de compatibilidad.
         
         Returns:
             EtiquetaPlato: Clasificación del plato

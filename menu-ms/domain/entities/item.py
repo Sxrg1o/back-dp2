@@ -6,7 +6,7 @@ Representa cualquier elemento del menú con sus características comunes.
 from abc import ABC, abstractmethod
 from typing import List, Optional
 from decimal import Decimal
-from .enums import EtiquetaItem
+from .enums import EtiquetaItem, TipoItem
 from .ingrediente import Ingrediente
 
 
@@ -33,7 +33,8 @@ class Item(ABC):
         azucares: Decimal = Decimal('0.0'),
         descripcion: str = "",
         etiquetas: List[EtiquetaItem] = None,
-        ingredientes: List[Ingrediente] = None
+        ingredientes: List[Ingrediente] = None,
+        tipo_item: TipoItem = None
     ):
         """
         Inicializa un ítem del menú.
@@ -71,6 +72,7 @@ class Item(ABC):
         self.descripcion = descripcion
         self.etiquetas = etiquetas or []
         self.ingredientes = ingredientes or []
+        self.tipo_item = tipo_item
     
     def verificar_stock(self) -> bool:
         """
@@ -141,19 +143,28 @@ class Item(ABC):
         """
         return etiqueta in self.etiquetas
     
+    def get_tipo_item(self) -> TipoItem:
+        """
+        Retorna el tipo base del ítem.
+        
+        Returns:
+            TipoItem: Tipo base del ítem (PLATO o BEBIDA)
+        """
+        return self.tipo_item
+    
     @abstractmethod
-    def get_tipo(self) -> str:
+    def get_tipo_especifico(self):
         """
         Retorna el tipo específico del ítem.
         Debe ser implementado por las clases hijas.
         
         Returns:
-            str: Tipo del ítem
+            EtiquetaPlato o EtiquetaBebida: Tipo específico del ítem
         """
         pass
     
     def __str__(self) -> str:
-        return f"{self.get_tipo()}(id={self.id}, descripcion='{self.descripcion}', precio={self.precio})"
+        return f"{self.get_tipo_item().value}(id={self.id}, descripcion='{self.descripcion}', precio={self.precio})"
     
     def __repr__(self) -> str:
         return self.__str__()

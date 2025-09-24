@@ -46,10 +46,10 @@ class ItemModel(Base):
     proteinas = Column(Numeric(8, 2), nullable=False, default=0)
     azucares = Column(Numeric(8, 2), nullable=False, default=0)
     descripcion = Column(String(500), nullable=False)
-    tipo = Column(String(20), nullable=False)  # 'PLATO' o 'BEBIDA'
+    tipo_item = Column(String(20), nullable=False)  # 'PLATO' o 'BEBIDA'
     
     __mapper_args__ = {
-        'polymorphic_on': tipo,
+        'polymorphic_on': tipo_item,
         'polymorphic_identity': 'ITEM'
     }
     
@@ -71,12 +71,12 @@ class ItemModel(Base):
         Convierte el modelo a entidad de dominio.
         """
         from domain.entities import Item, Plato, Bebida
-        from domain.entities.enums import EtiquetaItem, EtiquetaPlato
+        from domain.entities.enums import EtiquetaItem, EtiquetaPlato, EtiquetaBebida, TipoItem
         
         # Convertir etiquetas
         etiquetas = [EtiquetaItem(etiqueta.etiqueta) for etiqueta in self.etiquetas]
         
-        if self.tipo == 'PLATO':
+        if self.tipo_item == 'PLATO':
             plato = Plato(
                 id=self.id,
                 valor_nutricional=self.valor_nutricional or "",
@@ -94,12 +94,12 @@ class ItemModel(Base):
                 descripcion=self.descripcion,
                 etiquetas=etiquetas,
                 peso=getattr(self, 'peso', Decimal('0.0')),
-                tipo=EtiquetaPlato(getattr(self, 'tipo_plato', 'FONDO'))
+                tipo=EtiquetaPlato(getattr(self, 'tipo_plato', 'FONDO')),
+                tipo_item=TipoItem.PLATO
             )
-            # Agregar campo tipo para compatibilidad con DTO
-            plato.tipo = 'PLATO'
+            # El campo tipo ya está correctamente asignado como EtiquetaPlato
             return plato
-        elif self.tipo == 'BEBIDA':
+        elif self.tipo_item == 'BEBIDA':
             bebida = Bebida(
                 id=self.id,
                 valor_nutricional=self.valor_nutricional or "",
@@ -117,10 +117,11 @@ class ItemModel(Base):
                 descripcion=self.descripcion,
                 etiquetas=etiquetas,
                 litros=getattr(self, 'litros', Decimal('0.0')),
-                alcoholico=getattr(self, 'alcoholico', False)
+                alcoholico=getattr(self, 'alcoholico', False),
+                tipo_bebida=EtiquetaBebida.ALCOHOLICA if getattr(self, 'alcoholico', False) else EtiquetaBebida.NO_ALCOHOLICA,
+                tipo_item=TipoItem.BEBIDA
             )
-            # Agregar campo tipo para compatibilidad con DTO
-            bebida.tipo = 'BEBIDA'
+            # El campo tipo_bebida ya está correctamente asignado como EtiquetaBebida
             return bebida
         else:
             # Fallback para ítems genéricos
@@ -141,8 +142,7 @@ class ItemModel(Base):
                 descripcion=self.descripcion,
                 etiquetas=etiquetas
             )
-            # Agregar campo tipo para compatibilidad con DTO
-            item.tipo = self.tipo or 'ITEM'
+            # El campo tipo_item ya está correctamente asignado
             return item
 
 
@@ -202,12 +202,18 @@ class IngredienteModel(Base):
         from domain.entities import Ingrediente
         from domain.entities.enums import EtiquetaIngrediente
         
+        try:
+            tipo_enum = EtiquetaIngrediente(self.tipo)
+        except ValueError:
+            # Si el tipo no es válido, usar VERDURA por defecto
+            tipo_enum = EtiquetaIngrediente.VERDURA
+        
         return Ingrediente(
             id=self.id,
             nombre=self.nombre,
             stock=self.stock,
             peso=self.peso,
-            tipo=EtiquetaIngrediente(self.tipo)
+            tipo=tipo_enum
         )
 
 

@@ -5,7 +5,7 @@ DTOs (Data Transfer Objects) para los endpoints del menú.
 from typing import List, Optional
 from decimal import Decimal
 from pydantic import BaseModel, Field
-from domain.entities.enums import EtiquetaItem, EtiquetaIngrediente, EtiquetaPlato
+from domain.entities.enums import EtiquetaItem, EtiquetaIngrediente, EtiquetaPlato, EtiquetaBebida, TipoItem
 
 
 # DTOs para ítems
@@ -45,6 +45,7 @@ class PlatoResponseDTO(ItemBaseDTO):
     id: int = Field(..., description="Identificador único del plato")
     peso: Decimal = Field(..., description="Peso total del plato en gramos")
     tipo: EtiquetaPlato = Field(..., description="Clasificación del plato")
+    tipo_item: TipoItem = Field(..., description="Tipo base del ítem")
     
     class Config:
         from_attributes = True
@@ -75,7 +76,7 @@ class BebidaResponseDTO(ItemBaseDTO):
 class ItemResponseDTO(ItemBaseDTO):
     """DTO de respuesta genérico para un ítem."""
     id: int = Field(..., description="Identificador único del ítem")
-    tipo: str = Field(..., description="Tipo del ítem (PLATO o BEBIDA)")
+    tipo_item: TipoItem = Field(..., description="Tipo del ítem (PLATO o BEBIDA)")
     
     class Config:
         from_attributes = True

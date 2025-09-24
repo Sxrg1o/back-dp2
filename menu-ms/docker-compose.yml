@@ -6,12 +6,10 @@ services:
     ports:
       - "8002:8002"
     environment:
-      - DATABASE_URL=sqlite:///./menu.db
-      - PORT=8002
-      - HOST=0.0.0.0
-      - RELOAD=false
-    volumes:
-      - ./menu.db:/app/menu.db
+      DATABASE_URL: "sqlite:///:memory:"
+      PORT: "8002"
+      HOST: "0.0.0.0"
+      RELOAD: "false"
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8002/health"]

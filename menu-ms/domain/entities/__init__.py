@@ -3,7 +3,7 @@ Módulo de entidades del dominio para el menú y carta.
 Exporta todas las entidades y enumeraciones del dominio.
 """
 
-from .enums import EtiquetaItem, EtiquetaIngrediente, EtiquetaPlato
+from .enums import EtiquetaItem, EtiquetaIngrediente, EtiquetaPlato, EtiquetaBebida, TipoItem
 from .item import Item
 from .ingrediente import Ingrediente
 from .plato import Plato
@@ -13,6 +13,8 @@ __all__ = [
     'EtiquetaItem',
     'EtiquetaIngrediente', 
     'EtiquetaPlato',
+    'EtiquetaBebida',
+    'TipoItem',
     'Item',
     'Ingrediente',
     'Plato',

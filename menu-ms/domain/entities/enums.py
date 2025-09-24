@@ -40,3 +40,25 @@ class EtiquetaPlato(Enum):
     ENTRADA = "ENTRADA"
     FONDO = "FONDO"
     POSTRE = "POSTRE"
+
+
+class EtiquetaBebida(Enum):
+    """
+    Clasificación de bebidas según su tipo.
+    Utilizado para organizar bebidas por su categoría.
+    """
+    ALCOHOLICA = "ALCOHOLICA"
+    NO_ALCOHOLICA = "NO_ALCOHOLICA"
+    GASEOSA = "GASEOSA"
+    NATURAL = "NATURAL"
+    CALIENTE = "CALIENTE"
+    FRIO = "FRIO"
+
+
+class TipoItem(Enum):
+    """
+    Tipo base de ítem del menú.
+    Utilizado para distinguir entre platos y bebidas.
+    """
+    PLATO = "PLATO"
+    BEBIDA = "BEBIDA"

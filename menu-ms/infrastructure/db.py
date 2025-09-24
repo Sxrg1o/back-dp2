@@ -10,7 +10,7 @@ import os
 # Configuración de la base de datos
 DATABASE_URL = os.getenv(
     "DATABASE_URL", 
-    "sqlite:///./menu.db"
+    "sqlite:///:memory:"
 )
 
 # Crear el motor de base de datos

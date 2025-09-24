@@ -74,3 +74,9 @@ pause >nul
 REM Mostrar logs
 docker-compose logs -f
 
+
+
+
+
+
+
