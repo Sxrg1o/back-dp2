@@ -1,6 +1,6 @@
 from typing import List, Dict, Optional, Tuple
-from app.models.domain import Item, Plato, Bebida, Ingrediente
-from app.models.enums import EtiquetaPlato, TipoAlergeno
+from app.models.menu_y_carta.domain import Item, Plato, Bebida, Ingrediente
+from app.models.menu_y_carta.enums import EtiquetaPlato, TipoAlergeno
 from app.data.menu_data import (
     obtener_todos_los_items, 
     obtener_platos_por_tipo, 

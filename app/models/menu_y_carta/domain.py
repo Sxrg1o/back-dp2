@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 from typing import List, Optional
 from pydantic import BaseModel, Field
-from app.models.enums import EtiquetaPlato, TipoAlergeno
+from app.models.menu_y_carta.enums import EtiquetaPlato, TipoAlergeno
 
 class Ingrediente(BaseModel):
     """Modelo para ingredientes"""

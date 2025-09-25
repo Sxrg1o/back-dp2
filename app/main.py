@@ -2,8 +2,8 @@ from fastapi import FastAPI, HTTPException, Query
 from typing import List, Optional, Dict
 from pydantic import BaseModel
 
-from app.models.domain import Item, Plato, Bebida, Ingrediente
-from app.models.enums import EtiquetaPlato, TipoAlergeno
+from app.models.menu_y_carta.domain import Item, Plato, Bebida, Ingrediente
+from app.models.menu_y_carta.enums import EtiquetaPlato, TipoAlergeno
 from app.services.menu_service import MenuService
 
 # Inicializar FastAPI

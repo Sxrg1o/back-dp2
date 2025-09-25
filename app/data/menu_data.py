@@ -1,6 +1,6 @@
 from typing import Dict, List
-from app.models.domain import Item, Plato, Bebida, Ingrediente, GrupoPersonalizacion, Opcion
-from app.models.enums import EtiquetaPlato, TipoAlergeno
+from app.models.menu_y_carta.domain import Item, Plato, Bebida, Ingrediente, GrupoPersonalizacion, Opcion
+from app.models.menu_y_carta.enums import EtiquetaPlato, TipoAlergeno
 
 # =========================
 # Catálogo de ingredientes
