@@ -1,0 +1,22 @@
+# Configuración para despliegue en Render
+# Este archivo permite configurar múltiples servicios desde un solo archivo
+
+services:
+  # Servicio principal de la API
+  - type: web
+    name: menu-api
+    env: python
+    region: oregon
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: PYTHONPATH
+        value: /opt/render/project/src
+      - key: PYTHONUNBUFFERED
+        value: 1
+      - key: PORT
+        value: 10000
+    healthCheckPath: /health
+    autoDeploy: true
+    branch: feat/mockup-frontend  # Cambiar a tu rama actual

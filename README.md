@@ -73,11 +73,35 @@ deactivate
 ```
 
 ### Despliegue en Render
-1. Sube el código a GitHub
-2. En Render: New → Web Service
-3. Runtime: Python
-4. Build: `pip install -r requirements.txt`
-5. Start: `uvicorn app.main:app --host 0.0.0.0 --port $PORT`
+
+#### Opción 1: Despliegue Rápido
+```bash
+# 1. Subir a GitHub
+git add .
+git commit -m "Preparar para Render"
+git push origin main
+
+# 2. Ir a render.com y crear Web Service
+# 3. Conectar repositorio GitHub
+# 4. Usar configuración automática
+```
+
+#### Opción 2: Despliegue Manual
+1. **Crear servicio en Render**: [render.com](https://render.com)
+2. **Conectar GitHub**: Seleccionar tu repositorio
+3. **Configurar**:
+   - Build Command: `pip install -r requirements.txt`
+   - Start Command: `uvicorn app.main:app --host 0.0.0.0 --port $PORT`
+   - Health Check: `/health`
+4. **Desplegar**: Click en "Create Web Service"
+
+#### Verificación Previa
+```bash
+# Verificar que todo está listo
+python scripts/check-deploy.py
+```
+
+**Ver guía completa**: [DEPLOY_RENDER.md](DEPLOY_RENDER.md)
 
 ## 🐳 Dockerización
 

@@ -1,0 +1,60 @@
+# Configuración para múltiples ramas en Render
+# Este archivo permite configurar diferentes servicios para diferentes ramas
+
+services:
+  # Servicio para rama de desarrollo
+  - type: web
+    name: menu-api-dev
+    env: python
+    region: oregon
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: PYTHONPATH
+        value: /opt/render/project/src
+      - key: PYTHONUNBUFFERED
+        value: 1
+      - key: ENVIRONMENT
+        value: development
+    healthCheckPath: /health
+    autoDeploy: true
+    branch: feat/mockup-frontend  # Tu rama actual
+
+  # Servicio para rama principal (producción)
+  - type: web
+    name: menu-api-prod
+    env: python
+    region: oregon
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: PYTHONPATH
+        value: /opt/render/project/src
+      - key: PYTHONUNBUFFERED
+        value: 1
+      - key: ENVIRONMENT
+        value: production
+    healthCheckPath: /health
+    autoDeploy: true
+    branch: main  # Rama principal
+
+  # Servicio para rama de staging
+  - type: web
+    name: menu-api-staging
+    env: python
+    region: oregon
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: PYTHONPATH
+        value: /opt/render/project/src
+      - key: PYTHONUNBUFFERED
+        value: 1
+      - key: ENVIRONMENT
+        value: staging
+    healthCheckPath: /health
+    autoDeploy: true
+    branch: develop  # Rama de desarrollo
