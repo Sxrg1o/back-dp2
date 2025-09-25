@@ -79,6 +79,55 @@ deactivate
 4. Build: `pip install -r requirements.txt`
 5. Start: `uvicorn app.main:app --host 0.0.0.0 --port $PORT`
 
+## 🐳 Dockerización
+
+### Opción 1: Docker Compose (Recomendado)
+```bash
+# Desarrollo con hot reload
+docker-compose up --build
+
+# Producción
+docker-compose -f docker-compose.prod.yml up --build -d
+```
+
+### Opción 2: Script de inicio
+```bash
+# Hacer ejecutable (Linux/Mac)
+chmod +x scripts/docker-start.sh
+
+# Desarrollo
+./scripts/docker-start.sh dev
+
+# Producción
+./scripts/docker-start.sh prod
+
+# Ver logs
+./scripts/docker-start.sh logs
+
+# Detener
+./scripts/docker-start.sh stop
+
+# Limpiar
+./scripts/docker-start.sh clean
+```
+
+### Opción 3: Docker directo
+```bash
+# Construir imagen
+docker build -t menu-api .
+
+# Ejecutar contenedor
+docker run -p 8000:8000 menu-api
+
+# Ejecutar con hot reload (desarrollo)
+docker run -p 8000:8000 -v $(pwd):/app menu-api uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+```
+
+### URLs de acceso
+- **API**: http://localhost:8000
+- **Documentación**: http://localhost:8000/docs
+- **Health Check**: http://localhost:8000/health
+
 ## 📚 Endpoints Principales
 
 ### Items
