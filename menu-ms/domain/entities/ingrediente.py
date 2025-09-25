@@ -18,9 +18,7 @@ class Ingrediente:
         self,
         id: Optional[int] = None,
         nombre: str = "",
-        stock: Decimal = Decimal('0.0'),
-        peso: Decimal = Decimal('0.0'),
-        tipo: EtiquetaIngrediente = EtiquetaIngrediente.VERDURA
+        categoriaAlergeno: str = ""
     ):
         """
         Inicializa un ingrediente.
@@ -34,10 +32,9 @@ class Ingrediente:
         """
         self.id = id
         self.nombre = nombre
-        self.stock = stock
-        self.peso = peso
-        self.tipo = tipo
+        self.categoriaAlergeno = categoriaAlergeno
     
+    # a priori no se tiene como calcular el stock de los ingredientes
     def verificar_stock(self, cantidad_necesaria: Decimal) -> bool:
         """
         Verifica si hay suficiente stock del ingrediente.

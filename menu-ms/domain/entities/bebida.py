@@ -6,6 +6,8 @@ Representa las bebidas disponibles en el menú.
 from decimal import Decimal
 from typing import Optional
 from .item import Item
+from .ingrediente import Ingrediente
+
 
 
 class Bebida(Item):
@@ -17,20 +19,17 @@ class Bebida(Item):
     def __init__(
         self,
         id: Optional[int] = None,
-        valor_nutricional: str = "",
+        nombre: str = "",
+        imagen: str = "",
         precio: Decimal = Decimal('0.0'),
         tiempo_preparacion: Decimal = Decimal('0.0'),
-        comentarios: str = "",
-        receta: str = "",
+        alergenos: str = "",
         disponible: bool = True,
-        unidades_disponibles: int = 0,
-        num_ingredientes: int = 0,
-        kcal: int = 0,
-        calorias: Decimal = Decimal('0.0'),
-        proteinas: Decimal = Decimal('0.0'),
-        azucares: Decimal = Decimal('0.0'),
+        stock: int = 0,
+        categoria: str = "",
         descripcion: str = "",
-        etiquetas: list = None,
+        ingredientes: List[Ingrediente] = None,
+        grupoPersonalizacion: Optional['GrupoPersonalizacion'] = None,
         litros: Decimal = Decimal('0.0'),
         alcoholico: bool = False
     ):
@@ -57,21 +56,9 @@ class Bebida(Item):
             alcoholico: Indica si la bebida contiene alcohol
         """
         super().__init__(
-            id=id,
-            valor_nutricional=valor_nutricional,
-            precio=precio,
-            tiempo_preparacion=tiempo_preparacion,
-            comentarios=comentarios,
-            receta=receta,
-            disponible=disponible,
-            unidades_disponibles=unidades_disponibles,
-            num_ingredientes=num_ingredientes,
-            kcal=kcal,
-            calorias=calorias,
-            proteinas=proteinas,
-            azucares=azucares,
-            descripcion=descripcion,
-            etiquetas=etiquetas or []
+            id, nombre, imagen, precio, tiempo_preparacion, alergenos,
+            disponible, stock, categoria, descripcion, ingredientes,
+            grupoPersonalizacion
         )
         self.litros = litros
         self.alcoholico = alcoholico

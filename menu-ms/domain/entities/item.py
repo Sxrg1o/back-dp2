@@ -15,25 +15,22 @@ class Item(ABC):
     Clase base abstracta que representa cualquier elemento del menú.
     Define las características comunes de todos los productos.
     """
-    
+    _id_counter = 1  # Variable de clase para autoincrementar el id
+
     def __init__(
         self,
         id: Optional[int] = None,
-        valor_nutricional: str = "",
+        nombre: str = "",
+        imagen: str = "",
         precio: Decimal = Decimal('0.0'),
         tiempo_preparacion: Decimal = Decimal('0.0'),
-        comentarios: str = "",
-        receta: str = "",
+        alergenos: str = "",
         disponible: bool = True,
-        unidades_disponibles: int = 0,
-        num_ingredientes: int = 0,
-        kcal: int = 0,
-        calorias: Decimal = Decimal('0.0'),
-        proteinas: Decimal = Decimal('0.0'),
-        azucares: Decimal = Decimal('0.0'),
+        stock: int = 0,
+        categoria: str = "",
         descripcion: str = "",
-        etiquetas: List[EtiquetaItem] = None,
-        ingredientes: List[Ingrediente] = None
+        ingredientes: List[Ingrediente] = None,
+        grupoPersonalizacion: Optional['GrupoPersonalizacion'] = None
     ):
         """
         Inicializa un ítem del menú.
@@ -55,22 +52,24 @@ class Item(ABC):
             descripcion: Descripción detallada del ítem
             etiquetas: Lista de etiquetas del ítem
         """
-        self.id = id
-        self.valor_nutricional = valor_nutricional
+
+        if id is not None:
+            self.id = id
+        else:
+            self.id = Item._id_counter
+            Item._id_counter += 1
+        self.nombre = nombre
+        self.imagen = imagen
         self.precio = precio
-        self.tiempo_preparacion = tiempo_preparacion
-        self.comentarios = comentarios
-        self.receta = receta
+        self.stock = stock
         self.disponible = disponible
-        self.unidades_disponibles = unidades_disponibles
-        self.num_ingredientes = num_ingredientes
-        self.kcal = kcal
-        self.calorias = calorias
-        self.proteinas = proteinas
-        self.azucares = azucares
+        self.categoria = categoria
+        self.alergenos = alergenos
+        self.tiempo_preparacion = tiempo_preparacion
         self.descripcion = descripcion
-        self.etiquetas = etiquetas or []
-        self.ingredientes = ingredientes or []
+        self.ingredientes = ingredientes
+        self.grupoPersonalizacion = grupoPersonalizacion
+
     
     def verificar_stock(self) -> bool:
         """

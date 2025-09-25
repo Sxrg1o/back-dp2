@@ -7,6 +7,7 @@ from decimal import Decimal
 from typing import Optional
 from .item import Item
 from .enums import EtiquetaPlato
+from .ingrediente import Ingrediente
 
 
 class Plato(Item):
@@ -18,20 +19,17 @@ class Plato(Item):
     def __init__(
         self,
         id: Optional[int] = None,
-        valor_nutricional: str = "",
+        nombre: str = "",
+        imagen: str = "",
         precio: Decimal = Decimal('0.0'),
         tiempo_preparacion: Decimal = Decimal('0.0'),
-        comentarios: str = "",
-        receta: str = "",
+        alergenos: str = "",
         disponible: bool = True,
-        unidades_disponibles: int = 0,
-        num_ingredientes: int = 0,
-        kcal: int = 0,
-        calorias: Decimal = Decimal('0.0'),
-        proteinas: Decimal = Decimal('0.0'),
-        azucares: Decimal = Decimal('0.0'),
+        stock: int = 0,
+        categoria: str = "",
         descripcion: str = "",
-        etiquetas: list = None,
+        ingredientes: List[Ingrediente] = None,
+        grupoPersonalizacion: Optional['GrupoPersonalizacion'] = None,
         peso: Decimal = Decimal('0.0'),
         tipo: EtiquetaPlato = EtiquetaPlato.FONDO
     ):
@@ -58,21 +56,9 @@ class Plato(Item):
             tipo: Clasificación del plato (ENTRADA, FONDO, POSTRE)
         """
         super().__init__(
-            id=id,
-            valor_nutricional=valor_nutricional,
-            precio=precio,
-            tiempo_preparacion=tiempo_preparacion,
-            comentarios=comentarios,
-            receta=receta,
-            disponible=disponible,
-            unidades_disponibles=unidades_disponibles,
-            num_ingredientes=num_ingredientes,
-            kcal=kcal,
-            calorias=calorias,
-            proteinas=proteinas,
-            azucares=azucares,
-            descripcion=descripcion,
-            etiquetas=etiquetas or []
+            id, nombre, imagen, precio, tiempo_preparacion, alergenos,
+            disponible, stock, categoria, descripcion, ingredientes,
+            grupoPersonalizacion
         )
         self.peso = peso
         self.tipo = tipo
