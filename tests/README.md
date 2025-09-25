@@ -2,41 +2,67 @@
 
 Este directorio contiene los tests organizados por módulos para verificar el funcionamiento de todos los endpoints de la API.
 
-## Estructura Modular
+## 🏗️ Estructura Modular Reorganizada
 
 ```
 tests/
 ├── __init__.py
-├── requirements-test.txt  # Dependencias para tests
-├── README.md             # Este archivo
-├── menu_y_carta/         # Tests del módulo Menu y Carta
+├── conftest.py              # Configuración global de pytest
+├── utils.py                 # Utilidades comunes para tests
+├── run_tests.py            # Runner centralizado
+├── requirements-test.txt    # Dependencias para tests
+├── README.md               # Este archivo
+├── menu_y_carta/           # Tests del módulo Menu y Carta
 │   ├── __init__.py
-│   ├── test_menu_y_carta_all_endpoints.py
-│   ├── run_tests.py
+│   ├── test_endpoints.py   # Tests reorganizados
+│   ├── run_tests.py        # Script del módulo
 │   └── README.md
-└── gestion_pedidos/      # Tests del módulo Gestión de Pedidos
+└── gestion_pedidos/        # Tests del módulo Gestión de Pedidos
     ├── __init__.py
-    ├── test_pedidos_endpoints.py
-    ├── run_tests.py
+    ├── test_endpoints.py   # Tests reorganizados
+    ├── run_tests.py        # Script del módulo
     └── README.md
 ```
 
-## Cómo ejecutar los tests
+## 🚀 Cómo ejecutar los tests
 
-### Por módulo (Recomendado)
+### Opción 1: Runner Centralizado (Recomendado)
+```bash
+# Ejecutar todos los tests
+python tests/run_tests.py
+
+# Ejecutar tests de un módulo específico
+python tests/run_tests.py --module menu
+python tests/run_tests.py --module pedidos
+
+# Ver opciones disponibles
+python tests/run_tests.py --help
+
+# Listar módulos disponibles
+python tests/run_tests.py --list
+```
+
+### Opción 2: Scripts por Módulo
 ```bash
 # Tests del módulo Menu y Carta
 python tests/menu_y_carta/run_tests.py
 
 # Tests del módulo Gestión de Pedidos
 python tests/gestion_pedidos/run_tests.py
-
-# O ejecutar directamente
-python tests/menu_y_carta/test_menu_y_carta_all_endpoints.py
-python tests/gestion_pedidos/test_pedidos_endpoints.py
 ```
 
-### Con pytest
+### Opción 3: Scripts del Sistema
+```bash
+# Windows
+scripts\run-tests.bat
+scripts\run-tests.bat --module menu
+
+# Linux/Mac
+./scripts/run-tests.sh
+./scripts/run-tests.sh --module pedidos
+```
+
+### Opción 4: Con pytest
 ```bash
 # Todos los tests
 pytest tests/ -v
@@ -46,6 +72,12 @@ pytest tests/menu_y_carta/ -v
 
 # Solo tests del módulo Gestión de Pedidos
 pytest tests/gestion_pedidos/ -v
+
+# Con coverage
+pytest tests/ --cov=app --cov-report=html
+
+# Tests paralelos
+pytest tests/ -n auto
 ```
 
 ## Módulos de Tests

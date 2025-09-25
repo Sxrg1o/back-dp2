@@ -170,6 +170,33 @@ docker run -p 8000:8000 -v $(pwd):/app menu-api uvicorn app.main:app --host 0.0.
 - `GET /api/menu/validar-disponibilidad/{id}?cantidad=...` - Validar stock de un item
 - `POST /api/menu/validar-disponibilidad-multiple` - Validar stock de múltiples items
 
+## 🧪 Testing
+
+### Ejecutar Tests
+```bash
+# Todos los tests
+python tests/run_tests.py
+
+# Tests por módulo
+python tests/run_tests.py --module menu
+python tests/run_tests.py --module pedidos
+
+# Con scripts del sistema
+scripts\run-tests.bat          # Windows
+./scripts/run-tests.sh         # Linux/Mac
+
+# Con pytest
+pytest tests/ -v
+pytest tests/ --cov=app        # Con coverage
+```
+
+### Estructura de Tests
+- **Menu y Carta**: 27 tests organizados por categorías
+- **Gestión de Pedidos**: 13 tests con validaciones completas
+- **Runner centralizado**: Ejecución modular y reportes detallados
+
+Ver detalles en: [tests/README.md](tests/README.md)
+
 ## 🔍 Documentación
 
 Una vez ejecutado, visita:
