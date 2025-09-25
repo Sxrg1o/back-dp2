@@ -4,7 +4,18 @@ from pydantic import BaseModel
 
 from app.models.menu_y_carta.domain import Item, Plato, Bebida, Ingrediente
 from app.models.menu_y_carta.enums import EtiquetaPlato, TipoAlergeno
+from app.models.gestion_pedidos.domain import Orden, ItemOrden, Mesero, GrupoMesa, ResumenOrden, EstadisticasPedidos
+from app.models.gestion_pedidos.enums import EstadoOrden, TipoMesa
+from app.models.gestion_pedidos.dto import (
+    CrearOrdenRequest, AgregarItemOrdenRequest, ModificarItemOrdenRequest,
+    CambiarEstadoOrdenRequest, AsignarMeseroRequest, CrearMeseroRequest,
+    CrearGrupoMesaRequest, FiltrarOrdenesRequest,
+    OrdenResponse, ItemOrdenResponse, ResumenOrdenResponse, MeseroResponse,
+    GrupoMesaResponse, EstadisticasPedidosResponse, ValidacionDisponibilidadResponse,
+    ListaOrdenesResponse, ListaMeserosResponse, ListaMesasResponse
+)
 from app.services.menu_service import MenuService
+from app.services.pedidos_service import PedidosService
 
 # Inicializar FastAPI
 app = FastAPI(
@@ -13,8 +24,9 @@ app = FastAPI(
     version="1.0.0"
 )
 
-# Inicializar servicio de menú
+# Inicializar servicios
 menu_service = MenuService()
+pedidos_service = PedidosService()
 
 # =========================
 # DTOs para respuestas
@@ -430,3 +442,323 @@ def convertir_grupo_personalizacion(grupo) -> Optional[Dict]:
             for opcion in grupo.opciones
         ]
     }
+
+# =========================
+# Endpoints de Gestión de Pedidos
+# =========================
+
+@app.post("/api/pedidos/ordenes", response_model=OrdenResponse, summary="Crear nueva orden")
+def crear_orden(request: CrearOrdenRequest):
+    """Crea una nueva orden de pedido"""
+    orden = pedidos_service.crear_orden(
+        mesa_id=request.mesa_id,
+        comentarios=request.comentarios,
+        mesero_ids=request.mesero_ids
+    )
+    return convertir_orden_a_response(orden)
+
+@app.get("/api/pedidos/ordenes", response_model=ListaOrdenesResponse, summary="Obtener todas las órdenes")
+def obtener_ordenes(estado: Optional[EstadoOrden] = None, mesa_id: Optional[int] = None, 
+                   mesero_id: Optional[int] = None, pagina: int = 1, por_pagina: int = 10):
+    """Obtiene todas las órdenes con filtros opcionales"""
+    ordenes = pedidos_service.filtrar_ordenes(
+        estado=estado,
+        mesa_id=mesa_id,
+        mesero_id=mesero_id
+    )
+    
+    # Paginación simple
+    inicio = (pagina - 1) * por_pagina
+    fin = inicio + por_pagina
+    ordenes_paginadas = ordenes[inicio:fin]
+    
+    resumenes = [convertir_resumen_orden_a_response(ResumenOrden(
+        id=o.id,
+        numero_orden=o.numero_orden,
+        mesa_nombre=o.mesa.nombre if o.mesa else None,
+        estado=o.estado.value,
+        num_items=o.num_items,
+        monto_total=o.monto_total,
+        hora_registro=o.hora_registro,
+        meseros_nombres=[m.nombre for m in o.meseros],
+        tiempo_estimado=o.obtener_tiempo_estimado()
+    )) for o in ordenes_paginadas]
+    
+    total_paginas = (len(ordenes) + por_pagina - 1) // por_pagina
+    
+    return ListaOrdenesResponse(
+        ordenes=resumenes,
+        total=len(ordenes),
+        pagina=pagina,
+        por_pagina=por_pagina,
+        total_paginas=total_paginas
+    )
+
+@app.get("/api/pedidos/ordenes/{orden_id}", response_model=OrdenResponse, summary="Obtener orden por ID")
+def obtener_orden_por_id(orden_id: int):
+    """Obtiene una orden específica por su ID"""
+    orden = pedidos_service.obtener_orden_por_id(orden_id)
+    if not orden:
+        raise HTTPException(status_code=404, detail="Orden no encontrada")
+    return convertir_orden_a_response(orden)
+
+@app.put("/api/pedidos/ordenes/{orden_id}/estado", summary="Cambiar estado de orden")
+def cambiar_estado_orden(orden_id: int, request: CambiarEstadoOrdenRequest):
+    """Cambia el estado de una orden"""
+    if pedidos_service.cambiar_estado_orden(orden_id, request.nuevo_estado):
+        return {"mensaje": f"Estado de orden {orden_id} cambiado a {request.nuevo_estado.value}"}
+    else:
+        raise HTTPException(status_code=400, detail="No se pudo cambiar el estado de la orden")
+
+@app.delete("/api/pedidos/ordenes/{orden_id}/cancelar", summary="Cancelar orden")
+def cancelar_orden(orden_id: int, razon: str = ""):
+    """Cancela una orden"""
+    if pedidos_service.cancelar_orden(orden_id, razon):
+        return {"mensaje": f"Orden {orden_id} cancelada exitosamente"}
+    else:
+        raise HTTPException(status_code=400, detail="No se pudo cancelar la orden")
+
+@app.post("/api/pedidos/ordenes/{orden_id}/items", summary="Agregar item a orden")
+def agregar_item_a_orden(orden_id: int, request: AgregarItemOrdenRequest):
+    """Agrega un item a una orden existente"""
+    if pedidos_service.agregar_item_a_orden(
+        orden_id=orden_id,
+        item_id=request.item_id,
+        cantidad=request.cantidad,
+        comentarios=request.comentarios,
+        acompanamientos=request.acompanamientos,
+        opciones_adicionales=request.opciones_adicionales
+    ):
+        return {"mensaje": "Item agregado a la orden exitosamente"}
+    else:
+        raise HTTPException(status_code=400, detail="No se pudo agregar el item a la orden")
+
+@app.put("/api/pedidos/ordenes/{orden_id}/items/{item_orden_id}", summary="Modificar item en orden")
+def modificar_item_orden(orden_id: int, item_orden_id: int, request: ModificarItemOrdenRequest):
+    """Modifica un item en una orden existente"""
+    if pedidos_service.modificar_item_orden(
+        orden_id=orden_id,
+        item_orden_id=item_orden_id,
+        cantidad=request.cantidad,
+        comentarios=request.comentarios
+    ):
+        return {"mensaje": "Item modificado exitosamente"}
+    else:
+        raise HTTPException(status_code=400, detail="No se pudo modificar el item")
+
+@app.delete("/api/pedidos/ordenes/{orden_id}/items/{item_orden_id}", summary="Remover item de orden")
+def remover_item_orden(orden_id: int, item_orden_id: int):
+    """Remueve un item de una orden"""
+    if pedidos_service.remover_item_orden(orden_id, item_orden_id):
+        return {"mensaje": "Item removido de la orden exitosamente"}
+    else:
+        raise HTTPException(status_code=400, detail="No se pudo remover el item de la orden")
+
+@app.get("/api/pedidos/ordenes/{orden_id}/validar-disponibilidad", response_model=ValidacionDisponibilidadResponse, summary="Validar disponibilidad de orden")
+def validar_disponibilidad_orden(orden_id: int):
+    """Valida la disponibilidad de todos los items de una orden"""
+    todos_disponibles, items_no_disponibles = pedidos_service.validar_disponibilidad_orden(orden_id)
+    
+    return ValidacionDisponibilidadResponse(
+        orden_id=orden_id,
+        todos_disponibles=todos_disponibles,
+        items_no_disponibles=items_no_disponibles,
+        mensaje="Todos los items disponibles" if todos_disponibles else "Algunos items no están disponibles"
+    )
+
+# =========================
+# Endpoints de Meseros
+# =========================
+
+@app.post("/api/pedidos/meseros", response_model=MeseroResponse, summary="Crear mesero")
+def crear_mesero(request: CrearMeseroRequest):
+    """Crea un nuevo mesero"""
+    mesero = pedidos_service.crear_mesero(
+        nombre=request.nombre,
+        activo=request.activo
+    )
+    return convertir_mesero_a_response(mesero)
+
+@app.get("/api/pedidos/meseros", response_model=ListaMeserosResponse, summary="Obtener todos los meseros")
+def obtener_meseros():
+    """Obtiene todos los meseros"""
+    meseros = pedidos_service.obtener_todos_los_meseros()
+    return ListaMeserosResponse(
+        meseros=[convertir_mesero_a_response(m) for m in meseros],
+        total=len(meseros)
+    )
+
+@app.get("/api/pedidos/meseros/{mesero_id}", response_model=MeseroResponse, summary="Obtener mesero por ID")
+def obtener_mesero_por_id(mesero_id: int):
+    """Obtiene un mesero específico por su ID"""
+    mesero = pedidos_service.obtener_mesero_por_id(mesero_id)
+    if not mesero:
+        raise HTTPException(status_code=404, detail="Mesero no encontrado")
+    return convertir_mesero_a_response(mesero)
+
+@app.post("/api/pedidos/ordenes/{orden_id}/meseros", summary="Asignar mesero a orden")
+def asignar_mesero_a_orden(orden_id: int, request: AsignarMeseroRequest):
+    """Asigna un mesero a una orden"""
+    if pedidos_service.asignar_mesero_a_orden(orden_id, request.mesero_id):
+        return {"mensaje": "Mesero asignado a la orden exitosamente"}
+    else:
+        raise HTTPException(status_code=400, detail="No se pudo asignar el mesero a la orden")
+
+# =========================
+# Endpoints de Mesas
+# =========================
+
+@app.post("/api/pedidos/mesas", response_model=GrupoMesaResponse, summary="Crear grupo de mesa")
+def crear_grupo_mesa(request: CrearGrupoMesaRequest):
+    """Crea un nuevo grupo de mesa"""
+    mesa = pedidos_service.crear_grupo_mesa(
+        nombre=request.nombre,
+        capacidad=request.capacidad,
+        tipo=request.tipo,
+        ubicacion=request.ubicacion
+    )
+    return convertir_grupo_mesa_a_response(mesa)
+
+@app.get("/api/pedidos/mesas", response_model=ListaMesasResponse, summary="Obtener todas las mesas")
+def obtener_mesas():
+    """Obtiene todas las mesas"""
+    mesas = pedidos_service.obtener_todas_las_mesas()
+    return ListaMesasResponse(
+        mesas=[convertir_grupo_mesa_a_response(m) for m in mesas],
+        total=len(mesas)
+    )
+
+@app.get("/api/pedidos/mesas/disponibles", response_model=ListaMesasResponse, summary="Obtener mesas disponibles")
+def obtener_mesas_disponibles():
+    """Obtiene mesas que no tienen órdenes activas"""
+    mesas = pedidos_service.obtener_mesas_disponibles()
+    return ListaMesasResponse(
+        mesas=[convertir_grupo_mesa_a_response(m) for m in mesas],
+        total=len(mesas)
+    )
+
+@app.get("/api/pedidos/mesas/{mesa_id}", response_model=GrupoMesaResponse, summary="Obtener mesa por ID")
+def obtener_mesa_por_id(mesa_id: int):
+    """Obtiene una mesa específica por su ID"""
+    mesa = pedidos_service.obtener_mesa_por_id(mesa_id)
+    if not mesa:
+        raise HTTPException(status_code=404, detail="Mesa no encontrada")
+    return convertir_grupo_mesa_a_response(mesa)
+
+# =========================
+# Endpoints de Estadísticas
+# =========================
+
+@app.get("/api/pedidos/estadisticas", response_model=EstadisticasPedidosResponse, summary="Obtener estadísticas de pedidos")
+def obtener_estadisticas_pedidos():
+    """Obtiene estadísticas de pedidos"""
+    stats = pedidos_service.obtener_estadisticas_pedidos()
+    return convertir_estadisticas_a_response(stats)
+
+@app.get("/api/pedidos/resumen", response_model=List[ResumenOrdenResponse], summary="Obtener resumen de órdenes")
+def obtener_resumen_ordenes():
+    """Obtiene resumen de todas las órdenes"""
+    resumenes = pedidos_service.obtener_resumen_ordenes()
+    return [convertir_resumen_orden_a_response(r) for r in resumenes]
+
+# =========================
+# Funciones auxiliares para conversión
+# =========================
+
+def convertir_orden_a_response(orden: Orden) -> OrdenResponse:
+    """Convierte una Orden a OrdenResponse"""
+    return OrdenResponse(
+        id=orden.id,
+        numero_orden=orden.numero_orden,
+        mesa=convertir_grupo_mesa_a_dict(orden.mesa) if orden.mesa else None,
+        linea_pedidos=[convertir_item_orden_a_response(item) for item in orden.linea_pedidos],
+        num_items=orden.num_items,
+        monto_total=orden.monto_total,
+        estado=orden.estado.value,
+        comentarios=orden.comentarios,
+        activo=orden.activo,
+        hora_registro=orden.hora_registro,
+        meseros=[convertir_mesero_a_dict(m) for m in orden.meseros],
+        tiempo_estimado=orden.obtener_tiempo_estimado()
+    )
+
+def convertir_item_orden_a_response(item_orden: ItemOrden) -> ItemOrdenResponse:
+    """Convierte un ItemOrden a ItemOrdenResponse"""
+    return ItemOrdenResponse(
+        id=item_orden.id,
+        item_id=item_orden.item.id,
+        item_nombre=item_orden.item.nombre,
+        item_precio=item_orden.item.precio,
+        cant_pedida=item_orden.cant_pedida,
+        subtotal=item_orden.subtotal,
+        comentarios=item_orden.comentarios,
+        acompanamientos=[{"etiqueta": op.etiqueta, "precio_adicional": op.precio_adicional} for op in item_orden.acompanamientos],
+        opciones_adicionales=[{"etiqueta": op.etiqueta, "precio_adicional": op.precio_adicional} for op in item_orden.opciones_adicionales]
+    )
+
+def convertir_resumen_orden_a_response(resumen: ResumenOrden) -> ResumenOrdenResponse:
+    """Convierte un ResumenOrden a ResumenOrdenResponse"""
+    return ResumenOrdenResponse(
+        id=resumen.id,
+        numero_orden=resumen.numero_orden,
+        mesa_nombre=resumen.mesa_nombre,
+        estado=resumen.estado,
+        num_items=resumen.num_items,
+        monto_total=resumen.monto_total,
+        hora_registro=resumen.hora_registro,
+        meseros_nombres=resumen.meseros_nombres,
+        tiempo_estimado=resumen.tiempo_estimado
+    )
+
+def convertir_mesero_a_response(mesero: Mesero) -> MeseroResponse:
+    """Convierte un Mesero a MeseroResponse"""
+    return MeseroResponse(
+        id=mesero.id,
+        nombre=mesero.nombre,
+        activo=mesero.activo,
+        ordenes_count=len(mesero.ordenes)
+    )
+
+def convertir_mesero_a_dict(mesero: Mesero) -> Dict:
+    """Convierte un Mesero a diccionario"""
+    return {
+        "id": mesero.id,
+        "nombre": mesero.nombre,
+        "activo": mesero.activo
+    }
+
+def convertir_grupo_mesa_a_response(mesa: GrupoMesa) -> GrupoMesaResponse:
+    """Convierte un GrupoMesa a GrupoMesaResponse"""
+    return GrupoMesaResponse(
+        id=mesa.id,
+        nombre=mesa.nombre,
+        capacidad=mesa.capacidad,
+        tipo=mesa.tipo.value,
+        activa=mesa.activa,
+        ubicacion=mesa.ubicacion
+    )
+
+def convertir_grupo_mesa_a_dict(mesa: GrupoMesa) -> Dict:
+    """Convierte un GrupoMesa a diccionario"""
+    return {
+        "id": mesa.id,
+        "nombre": mesa.nombre,
+        "capacidad": mesa.capacidad,
+        "tipo": mesa.tipo.value,
+        "activa": mesa.activa,
+        "ubicacion": mesa.ubicacion
+    }
+
+def convertir_estadisticas_a_response(stats: EstadisticasPedidos) -> EstadisticasPedidosResponse:
+    """Convierte EstadisticasPedidos a EstadisticasPedidosResponse"""
+    return EstadisticasPedidosResponse(
+        total_ordenes=stats.total_ordenes,
+        ordenes_en_cola=stats.ordenes_en_cola,
+        ordenes_en_preparacion=stats.ordenes_en_preparacion,
+        ordenes_listas=stats.ordenes_listas,
+        ordenes_despachadas=stats.ordenes_despachadas,
+        ordenes_canceladas=stats.ordenes_canceladas,
+        monto_total_dia=stats.monto_total_dia,
+        promedio_tiempo_preparacion=stats.promedio_tiempo_preparacion,
+        items_mas_pedidos=stats.items_mas_pedidos
+    )

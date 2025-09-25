@@ -9,9 +9,14 @@ tests/
 ├── __init__.py
 ├── requirements-test.txt  # Dependencias para tests
 ├── README.md             # Este archivo
-└── menu_y_carta/         # Tests del módulo Menu y Carta
+├── menu_y_carta/         # Tests del módulo Menu y Carta
+│   ├── __init__.py
+│   ├── test_menu_y_carta_all_endpoints.py
+│   ├── run_tests.py
+│   └── README.md
+└── gestion_pedidos/      # Tests del módulo Gestión de Pedidos
     ├── __init__.py
-    ├── test_menu_y_carta_all_endpoints.py
+    ├── test_pedidos_endpoints.py
     ├── run_tests.py
     └── README.md
 ```
@@ -23,8 +28,12 @@ tests/
 # Tests del módulo Menu y Carta
 python tests/menu_y_carta/run_tests.py
 
+# Tests del módulo Gestión de Pedidos
+python tests/gestion_pedidos/run_tests.py
+
 # O ejecutar directamente
 python tests/menu_y_carta/test_menu_y_carta_all_endpoints.py
+python tests/gestion_pedidos/test_pedidos_endpoints.py
 ```
 
 ### Con pytest
@@ -34,6 +43,9 @@ pytest tests/ -v
 
 # Solo tests del módulo Menu y Carta
 pytest tests/menu_y_carta/ -v
+
+# Solo tests del módulo Gestión de Pedidos
+pytest tests/gestion_pedidos/ -v
 ```
 
 ## Módulos de Tests
@@ -48,8 +60,15 @@ Tests completos para el módulo de gestión de menú y carta:
 
 Ver detalles en: [tests/menu_y_carta/README.md](menu_y_carta/README.md)
 
-### 🔄 Gestión de Pedidos (Próximamente)
-Tests para el módulo de gestión de pedidos (cuando se implemente)
+### 🍽️ Gestión de Pedidos (13 tests)
+Tests completos para el módulo de gestión de pedidos:
+- Gestión de órdenes y estados
+- Gestión de meseros y mesas
+- Validación de disponibilidad
+- Estadísticas y reportes
+- Integración con catálogo de menú
+
+Ver detalles en: [tests/gestion_pedidos/README.md](gestion_pedidos/README.md)
 
 ### 📊 Reportes y Analytics (Próximamente)
 Tests para el módulo de reportes (cuando se implemente)
