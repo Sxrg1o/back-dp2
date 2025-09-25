@@ -70,54 +70,8 @@ class Plato(Item):
         Returns:
             str: Tipo del plato
         """
-        return "PLATO"
-    
-    def get_tipo_plato(self) -> EtiquetaPlato:
-        """
-        Retorna la clasificación específica del plato.
-        
-        Returns:
-            EtiquetaPlato: Clasificación del plato
-        """
-        return self.tipo
-    
-    def calcular_densidad_calorica(self) -> Decimal:
-        """
-        Calcula la densidad calórica del plato (calorías por gramo).
-        
-        Returns:
-            Decimal: Densidad calórica del plato
-        """
-        if self.peso > 0:
-            return self.calorias / self.peso
-        return Decimal('0.0')
-    
-    def es_entrada(self) -> bool:
-        """
-        Verifica si el plato es una entrada.
-        
-        Returns:
-            bool: True si es entrada, False en caso contrario
-        """
-        return self.tipo == EtiquetaPlato.ENTRADA
-    
-    def es_plato_principal(self) -> bool:
-        """
-        Verifica si el plato es un plato principal.
-        
-        Returns:
-            bool: True si es plato principal, False en caso contrario
-        """
-        return self.tipo == EtiquetaPlato.FONDO
-    
-    def es_postre(self) -> bool:
-        """
-        Verifica si el plato es un postre.
-        
-        Returns:
-            bool: True si es postre, False en caso contrario
-        """
-        return self.tipo == EtiquetaPlato.POSTRE
+        return  self.tipo  
+     
     
     def __str__(self) -> str:
         return f"Plato(id={self.id}, descripcion='{self.descripcion}', precio={self.precio}, tipo={self.tipo.value}, peso={self.peso}g)"
