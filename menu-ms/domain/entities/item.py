@@ -8,6 +8,7 @@ from typing import List, Optional
 from decimal import Decimal
 from .enums import EtiquetaItem
 from .ingrediente import Ingrediente
+from .GrupoPersonalizacion import GrupoPersonalizacion
 
 
 class Item(ABC):
@@ -30,7 +31,7 @@ class Item(ABC):
         categoria: str = "",
         descripcion: str = "",
         ingredientes: List[Ingrediente] = None,
-        grupoPersonalizacion: Optional['GrupoPersonalizacion'] = None
+        grupoPersonalizacion: Optional[GrupoPersonalizacion] = None
     ):
         """
         Inicializa un ítem del menú.

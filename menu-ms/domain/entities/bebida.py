@@ -7,7 +7,7 @@ from decimal import Decimal
 from typing import Optional
 from .item import Item
 from .ingrediente import Ingrediente
-
+from .GrupoPersonalizacion import GrupoPersonalizacion
 
 
 class Bebida(Item):
@@ -29,7 +29,7 @@ class Bebida(Item):
         categoria: str = "",
         descripcion: str = "",
         ingredientes: List[Ingrediente] = None,
-        grupoPersonalizacion: Optional['GrupoPersonalizacion'] = None,
+        grupoPersonalizacion: Optional[GrupoPersonalizacion] = None,
         litros: Decimal = Decimal('0.0'),
         alcoholico: bool = False
     ):

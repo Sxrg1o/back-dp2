@@ -4,11 +4,11 @@ Representa los platos principales, entradas y postres del menú.
 """
 
 from decimal import Decimal
-from typing import Optional
+from typing import List, Optional
 from .item import Item
 from .enums import EtiquetaPlato
 from .ingrediente import Ingrediente
-
+from .GrupoPersonalizacion import GrupoPersonalizacion
 
 class Plato(Item):
     """
@@ -28,8 +28,8 @@ class Plato(Item):
         stock: int = 0,
         categoria: str = "",
         descripcion: str = "",
-        ingredientes: List[Ingrediente] = None,
-        grupoPersonalizacion: Optional['GrupoPersonalizacion'] = None,
+        ingredientes: list[Ingrediente] = None,
+        grupoPersonalizacion: Optional[GrupoPersonalizacion] = None,
         peso: Decimal = Decimal('0.0'),
         tipo: EtiquetaPlato = EtiquetaPlato.FONDO
     ):
