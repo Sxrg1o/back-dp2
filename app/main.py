@@ -94,14 +94,6 @@ def obtener_todos_los_items():
     items = menu_service.obtener_todos_los_items()
     return [convertir_item_a_response(item) for item in items.values()]
 
-@app.get("/api/menu/items/{item_id}", response_model=ItemResponse, summary="Obtener item por ID")
-def obtener_item_por_id(item_id: int):
-    """Obtiene un item específico por su ID"""
-    item = menu_service.obtener_item_por_id(item_id)
-    if not item:
-        raise HTTPException(status_code=404, detail="Item no encontrado")
-    return convertir_item_a_response(item)
-
 @app.get("/api/menu/items/disponibles", response_model=List[ItemResponse], summary="Obtener items disponibles")
 def obtener_items_disponibles():
     """Obtiene solo los items que están disponibles y tienen stock"""
@@ -113,6 +105,14 @@ def buscar_items_por_nombre(nombre: str = Query(..., description="Nombre a busca
     """Busca items por nombre (búsqueda parcial)"""
     items = menu_service.buscar_items_por_nombre(nombre)
     return [convertir_item_a_response(item) for item in items]
+
+@app.get("/api/menu/items/{item_id}", response_model=ItemResponse, summary="Obtener item por ID")
+def obtener_item_por_id(item_id: int):
+    """Obtiene un item específico por su ID"""
+    item = menu_service.obtener_item_por_id(item_id)
+    if not item:
+        raise HTTPException(status_code=404, detail="Item no encontrado")
+    return convertir_item_a_response(item)
 
 # =========================
 # Endpoints de Platos
@@ -180,6 +180,12 @@ def obtener_ingredientes():
     ingredientes = menu_service.obtener_ingredientes()
     return [convertir_ingrediente_a_response(ing) for ing in ingredientes]
 
+@app.get("/api/menu/ingredientes/buscar", response_model=List[IngredienteResponse], summary="Buscar ingredientes por nombre")
+def buscar_ingredientes_por_nombre(nombre: str = Query(..., description="Nombre a buscar")):
+    """Busca ingredientes por nombre"""
+    ingredientes = menu_service.buscar_ingredientes_por_nombre(nombre)
+    return [convertir_ingrediente_a_response(ing) for ing in ingredientes]
+
 @app.get("/api/menu/ingredientes/{ingrediente_id}", response_model=IngredienteResponse, summary="Obtener ingrediente por ID")
 def obtener_ingrediente_por_id(ingrediente_id: int):
     """Obtiene un ingrediente específico por su ID"""
@@ -187,12 +193,6 @@ def obtener_ingrediente_por_id(ingrediente_id: int):
     if not ingrediente:
         raise HTTPException(status_code=404, detail="Ingrediente no encontrado")
     return convertir_ingrediente_a_response(ingrediente)
-
-@app.get("/api/menu/ingredientes/buscar", response_model=List[IngredienteResponse], summary="Buscar ingredientes por nombre")
-def buscar_ingredientes_por_nombre(nombre: str = Query(..., description="Nombre a buscar")):
-    """Busca ingredientes por nombre"""
-    ingredientes = menu_service.buscar_ingredientes_por_nombre(nombre)
-    return [convertir_ingrediente_a_response(ing) for ing in ingredientes]
 
 # =========================
 # Endpoints de Filtros
