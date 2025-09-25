@@ -8,6 +8,7 @@ from .get_item import GetItemUseCase
 from .get_all_items import GetAllItemsUseCase
 from .update_item import UpdateItemUseCase
 from .delete_item import DeleteItemUseCase
+from .filter_platos import FilterPlatosUseCase
 
 from .create_ingrediente import CreateIngredienteUseCase
 from .get_ingrediente import GetIngredienteUseCase
@@ -21,6 +22,7 @@ __all__ = [
     'GetAllItemsUseCase',
     'UpdateItemUseCase',
     'DeleteItemUseCase',
+    'FilterPlatosUseCase',
     'CreateIngredienteUseCase',
     'GetIngredienteUseCase',
     'GetAllIngredientesUseCase',

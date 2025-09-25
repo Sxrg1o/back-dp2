@@ -12,7 +12,8 @@ from domain.use_cases import (
     GetItemUseCase,
     GetAllItemsUseCase,
     UpdateItemUseCase,
-    DeleteItemUseCase
+    DeleteItemUseCase,
+    FilterPlatosUseCase
 )
 
 
@@ -45,6 +46,7 @@ class ItemService:
         self.get_all_items_use_case = GetAllItemsUseCase(item_repository)
         self.update_item_use_case = UpdateItemUseCase(item_repository)
         self.delete_item_use_case = DeleteItemUseCase(item_repository)
+        self.filter_platos_use_case = FilterPlatosUseCase(plato_repository)
     
     def create_item(self, item: Union[Plato, Bebida]) -> Union[Plato, Bebida]:
         """
@@ -208,6 +210,10 @@ class ItemService:
             List[Plato]: Lista de postres
         """
         return self.plato_repository.get_postres()
+    
+    def filter_platos(self, categoria: Optional[EtiquetaPlato] = None, disponible: Optional[bool] = None) -> List[Plato]:
+        
+        return self.filter_platos_use_case.execute(categoria, disponible)
     
     # Métodos específicos para bebidas
     def get_bebidas_alcoholicas(self) -> List[Bebida]:

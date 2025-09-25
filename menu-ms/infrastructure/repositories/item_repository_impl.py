@@ -356,6 +356,13 @@ class PlatoRepositoryImpl(PlatoRepository):
         item_repo = ItemRepositoryImpl(self.db)
         return item_repo.create(plato)
     
+    def get_all(self) -> List[Plato]:
+        """
+        Obtiene todos los platos.
+        """
+        platos = self.db.query(ItemModel).join(PlatoModel).all()
+        return [plato.to_domain() for plato in platos if isinstance(plato.to_domain(), Plato)]
+    
     def get_by_tipo(self, tipo: EtiquetaPlato) -> List[Plato]:
         """
         Obtiene platos por tipo.
@@ -382,6 +389,23 @@ class PlatoRepositoryImpl(PlatoRepository):
         Obtiene todos los postres.
         """
         return self.get_by_tipo(EtiquetaPlato.POSTRE)
+    
+    def filter_by_categoria_disponibilidad(self, categoria: Optional[EtiquetaPlato], disponible: Optional[bool]) -> List[Plato]:
+        """
+        Filtra platos por categoría y/o disponibilidad.
+        """
+        query = self.db.query(ItemModel).join(PlatoModel)
+        
+        # Aplicar filtro de categoría si se especifica
+        if categoria is not None:
+            query = query.filter(PlatoModel.tipo_plato == categoria.value)
+        
+        # Aplicar filtro de disponibilidad si se especifica
+        if disponible is not None:
+            query = query.filter(ItemModel.disponible == disponible)
+        
+        platos = query.all()
+        return [plato.to_domain() for plato in platos if isinstance(plato.to_domain(), Plato)]
 
 
 class BebidaRepositoryImpl(BebidaRepository):

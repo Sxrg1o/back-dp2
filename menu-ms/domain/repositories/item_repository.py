@@ -163,6 +163,16 @@ class PlatoRepository(ABC):
         pass
     
     @abstractmethod
+    def get_all(self) -> List[Plato]:
+        """
+        Obtiene todos los platos.
+        
+        Returns:
+            List[Plato]: Lista de todos los platos
+        """
+        pass
+    
+    @abstractmethod
     def get_by_tipo(self, tipo: EtiquetaPlato) -> List[Plato]:
         """
         Obtiene platos por tipo (ENTRADA, FONDO, POSTRE).
@@ -202,6 +212,20 @@ class PlatoRepository(ABC):
         
         Returns:
             List[Plato]: Lista de postres
+        """
+        pass
+        
+    @abstractmethod
+    def filter_by_categoria_disponibilidad(self, categoria: Optional[EtiquetaPlato], disponible: Optional[bool]) -> List[Plato]:
+        """
+        Filtra platos por categoría y/o disponibilidad.
+        
+        Args:
+            categoria: Categoría de plato (opcional)
+            disponible: Estado de disponibilidad (opcional)
+            
+        Returns:
+            List[Plato]: Lista de platos que cumplen con los criterios
         """
         pass
 

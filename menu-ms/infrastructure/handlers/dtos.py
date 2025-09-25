@@ -160,6 +160,13 @@ class LowStockDTO(BaseModel):
     threshold: Decimal = Field(default=10.0, ge=0, description="Umbral de stock bajo")
 
 
+# DTO para filtrar platos por categoría y disponibilidad
+class FilterPlatosDTO(BaseModel):
+    """DTO para filtrar platos por categoría y disponibilidad."""
+    categoria: Optional[EtiquetaPlato] = Field(None, description="Categoría de plato (ENTRADA, FONDO, POSTRE)")
+    disponible: Optional[bool] = Field(None, description="Estado de disponibilidad")
+
+
 # DTOs de respuesta genéricos
 class MessageResponseDTO(BaseModel):
     """DTO de respuesta genérico con mensaje."""
