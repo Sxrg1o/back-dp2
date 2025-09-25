@@ -162,8 +162,13 @@ docker run -p 8000:8000 -v $(pwd):/app menu-api uvicorn app.main:app --host 0.0.
 - `GET /api/menu/completo` - Menú organizado
 - `GET /api/menu/estadisticas` - Estadísticas
 
+### Acompañamientos
+- `GET /api/menu/items/{id}/acompanamientos` - Acompañamientos de un item específico
+- `GET /api/menu/acompanamientos` - Todos los acompañamientos disponibles
+
 ### Validación
-- `GET /api/menu/validar-disponibilidad/{id}?cantidad=...` - Validar stock
+- `GET /api/menu/validar-disponibilidad/{id}?cantidad=...` - Validar stock de un item
+- `POST /api/menu/validar-disponibilidad-multiple` - Validar stock de múltiples items
 
 ## 🔍 Documentación
 

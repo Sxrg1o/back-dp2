@@ -247,6 +247,72 @@ def obtener_estadisticas_menu():
     return EstadisticasMenuResponse(**stats)
 
 # =========================
+# Endpoints de Acompañamientos
+# =========================
+
+@app.get("/api/menu/items/{item_id}/acompanamientos", summary="Obtener acompañamientos de un item")
+def obtener_acompanamientos_item(item_id: int):
+    """Obtiene los acompañamientos disponibles para un item específico"""
+    item = menu_service.obtener_item_por_id(item_id)
+    if not item:
+        raise HTTPException(status_code=404, detail="Item no encontrado")
+    
+    if not item.grupo_personalizacion:
+        return {
+            "item_id": item_id,
+            "item_nombre": item.nombre,
+            "acompanamientos": [],
+            "mensaje": "Este item no tiene acompañamientos disponibles"
+        }
+    
+    # Filtrar solo acompañamientos del grupo de personalización
+    acompanamientos = []
+    if item.grupo_personalizacion.tipo == "acompanamiento":
+        acompanamientos = [
+            {
+                "etiqueta": opcion.etiqueta,
+                "precio_adicional": opcion.precio_adicional,
+                "es_default": opcion.es_default,
+                "seleccionado": opcion.seleccionado
+            }
+            for opcion in item.grupo_personalizacion.opciones
+        ]
+    
+    return {
+        "item_id": item_id,
+        "item_nombre": item.nombre,
+        "acompanamientos": acompanamientos,
+        "max_selecciones": item.grupo_personalizacion.max_selecciones,
+        "tipo_personalizacion": item.grupo_personalizacion.tipo
+    }
+
+@app.get("/api/menu/acompanamientos", summary="Obtener todos los acompañamientos disponibles")
+def obtener_todos_acompanamientos():
+    """Obtiene todos los acompañamientos disponibles en el menú"""
+    items = menu_service.obtener_todos_los_items()
+    acompanamientos_unicos = {}
+    
+    for item in items.values():
+        if item.grupo_personalizacion and item.grupo_personalizacion.tipo == "acompanamiento":
+            for opcion in item.grupo_personalizacion.opciones:
+                if opcion.etiqueta not in acompanamientos_unicos:
+                    acompanamientos_unicos[opcion.etiqueta] = {
+                        "etiqueta": opcion.etiqueta,
+                        "precio_adicional": opcion.precio_adicional,
+                        "es_default": opcion.es_default,
+                        "items_disponibles": []
+                    }
+                acompanamientos_unicos[opcion.etiqueta]["items_disponibles"].append({
+                    "item_id": item.id,
+                    "item_nombre": item.nombre
+                })
+    
+    return {
+        "acompanamientos": list(acompanamientos_unicos.values()),
+        "total_acompanamientos": len(acompanamientos_unicos)
+    }
+
+# =========================
 # Endpoints de Validación
 # =========================
 
@@ -259,6 +325,43 @@ def validar_disponibilidad_item(item_id: int, cantidad: int = Query(1, descripti
         "cantidad": cantidad,
         "disponible": disponible,
         "mensaje": mensaje
+    }
+
+@app.post("/api/menu/validar-disponibilidad-multiple", summary="Validar disponibilidad de múltiples items")
+def validar_disponibilidad_multiple(items: List[Dict]):
+    """Valida la disponibilidad de múltiples items a la vez"""
+    resultados = []
+    todos_disponibles = True
+    
+    for item_data in items:
+        item_id = item_data.get("item_id")
+        cantidad = item_data.get("cantidad", 1)
+        
+        if not item_id:
+            resultados.append({
+                "item_id": None,
+                "cantidad": cantidad,
+                "disponible": False,
+                "mensaje": "ID de item no proporcionado"
+            })
+            todos_disponibles = False
+            continue
+        
+        disponible, mensaje = menu_service.verificar_disponibilidad_item(item_id, cantidad)
+        resultados.append({
+            "item_id": item_id,
+            "cantidad": cantidad,
+            "disponible": disponible,
+            "mensaje": mensaje
+        })
+        
+        if not disponible:
+            todos_disponibles = False
+    
+    return {
+        "todos_disponibles": todos_disponibles,
+        "resultados": resultados,
+        "total_items": len(items)
     }
 
 # =========================
