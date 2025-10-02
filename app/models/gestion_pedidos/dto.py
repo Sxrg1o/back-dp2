@@ -1,7 +1,7 @@
 from typing import List, Optional, Dict
 from datetime import datetime
 from pydantic import BaseModel, Field
-from app.models.gestion_pedidos.enums import EstadoOrden, TipoMesa, PrioridadOrden, TipoPago, EstadoCuenta
+from app.models.gestion_pedidos.enums import EstadoOrden, PrioridadOrden, TipoPago, EstadoCuenta
 
 # =========================
 # DTOs para Requests
@@ -9,7 +9,7 @@ from app.models.gestion_pedidos.enums import EstadoOrden, TipoMesa, PrioridadOrd
 
 class CrearOrdenRequest(BaseModel):
     """DTO para crear una nueva orden"""
-    # mesa_id: Optional[int] = None  # Temporalmente removido
+    # mesa_id: Optional[int] = None  # Estará en módulo estancia_cliente
     # cliente_ids: List[int] = []  # Estará en módulo estancia_cliente
     comentarios: str = ""
     mesero_ids: List[int] = []
@@ -19,6 +19,21 @@ class AgregarItemOrdenRequest(BaseModel):
     item_id: int
     cantidad: int = Field(gt=0, description="Cantidad debe ser mayor a 0")
     comentarios: str = ""
+
+class ItemOrdenCompletaRequest(BaseModel):
+    """DTO para un item en una orden completa"""
+    item_id: int
+    cantidad: int = Field(gt=0, description="Cantidad debe ser mayor a 0")
+    comentarios: str = ""
+    acompanamientos_seleccionados: List[int] = []  # IDs de opciones de acompañamientos
+    opciones_adicionales_seleccionadas: List[int] = []  # IDs de opciones adicionales
+
+class CrearOrdenCompletaRequest(BaseModel):
+    """DTO para crear una orden completa con todos los items"""
+    # mesa_id: Optional[int] = None  # Estará en módulo estancia_cliente
+    comentarios_generales: str = ""
+    mesero_ids: List[int] = []
+    items: List[ItemOrdenCompletaRequest] = Field(..., min_items=1, description="Debe tener al menos un item")
 
 class ModificarItemOrdenRequest(BaseModel):
     """DTO para modificar un item en una orden"""
@@ -48,12 +63,12 @@ class CrearMeseroRequest(BaseModel):
     nombre: str
     activo: bool = True
 
-class CrearGrupoMesaRequest(BaseModel):
-    """DTO para crear un grupo de mesa"""
-    nombre: str
-    capacidad: int = Field(gt=0)
-    tipo: TipoMesa
-    ubicacion: Optional[str] = None
+# class CrearGrupoMesaRequest(BaseModel):
+#     """DTO para crear un grupo de mesa - Estará en módulo estancia_cliente"""
+#     nombre: str
+#     capacidad: int = Field(gt=0)
+#     tipo: TipoMesa
+#     ubicacion: Optional[str] = None
 
 # class CrearClienteRequest(BaseModel):
 #     """DTO para crear un cliente - estará en módulo estancia_cliente"""
@@ -64,7 +79,7 @@ class CrearGrupoMesaRequest(BaseModel):
 class FiltrarOrdenesRequest(BaseModel):
     """DTO para filtrar órdenes"""
     estado: Optional[EstadoOrden] = None
-    # mesa_id: Optional[int] = None  # Temporalmente removido
+    # mesa_id: Optional[int] = None  # Estará en módulo estancia_cliente
     mesero_id: Optional[int] = None
     fecha_desde: Optional[datetime] = None
     fecha_hasta: Optional[datetime] = None
@@ -89,7 +104,7 @@ class OrdenResponse(BaseModel):
     """DTO de respuesta para Orden"""
     id: int
     numero_orden: int
-    # mesa: Optional[Dict] = None  # Temporalmente removido
+    # mesa: Optional[Dict] = None  # Estará en módulo estancia_cliente
     # clientes: List[Dict] = []  # Estará en módulo estancia_cliente
     linea_pedidos: List[ItemOrdenResponse] = []
     num_items: int
@@ -106,7 +121,7 @@ class ResumenOrdenResponse(BaseModel):
     """DTO de respuesta para ResumenOrden"""
     id: int
     numero_orden: int
-    # mesa_nombre: Optional[str] = None  # Temporalmente removido
+    # mesa_nombre: Optional[str] = None  # Estará en módulo estancia_cliente
     estado: str
     num_items: int
     monto_total: float
@@ -120,14 +135,14 @@ class MeseroResponse(BaseModel):
     activo: bool
     ordenes_count: int = 0
 
-class GrupoMesaResponse(BaseModel):
-    """DTO de respuesta para GrupoMesa"""
-    id: int
-    nombre: str
-    capacidad: int
-    tipo: str
-    activa: bool
-    ubicacion: Optional[str] = None
+# class GrupoMesaResponse(BaseModel):
+#     """DTO de respuesta para GrupoMesa - Estará en módulo estancia_cliente"""
+#     id: int
+#     nombre: str
+#     capacidad: int
+#     tipo: str
+#     activa: bool
+#     ubicacion: Optional[str] = None
 
 # class ClienteResponse(BaseModel):
 #     """DTO de respuesta para Cliente - estará en módulo estancia_cliente"""
@@ -190,10 +205,10 @@ class ListaMeserosResponse(BaseModel):
     meseros: List[MeseroResponse]
     total: int
 
-class ListaMesasResponse(BaseModel):
-    """DTO de respuesta para lista de mesas"""
-    mesas: List[GrupoMesaResponse]
-    total: int
+# class ListaMesasResponse(BaseModel):
+#     """DTO de respuesta para lista de mesas - Estará en módulo estancia_cliente"""
+#     mesas: List[GrupoMesaResponse]
+#     total: int
 
 # class ListaClientesResponse(BaseModel):
 #     """DTO de respuesta para lista de clientes - estará en módulo estancia_cliente"""

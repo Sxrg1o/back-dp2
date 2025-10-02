@@ -1,0 +1,574 @@
+{
+	"info": {
+		"_postman_id": "12345678-1234-1234-1234-123456789abc",
+		"name": "API Gestión de Restaurante - Casos de Uso Charlie",
+		"description": "Colección de Postman para probar los endpoints relacionados con los casos de uso C4, C10 y C11 de Charlie",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "C4 - Crear Orden Completa",
+			"item": [
+				{
+					"name": "1. Obtener Items Disponibles",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/menu/items/disponibles",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"menu",
+								"items",
+								"disponibles"
+							]
+						},
+						"description": "Obtiene todos los items disponibles para mostrar en el menú"
+					},
+					"response": []
+				},
+				{
+					"name": "2. Obtener Acompañamientos de Item",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/menu/items/1/acompanamientos",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"menu",
+								"items",
+								"1",
+								"acompanamientos"
+							]
+						},
+						"description": "Obtiene los acompañamientos disponibles para un item específico"
+					},
+					"response": []
+				},
+				{
+					"name": "3. Validar Disponibilidad de Item",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/menu/validar-disponibilidad/1?cantidad=2",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"menu",
+								"validar-disponibilidad",
+								"1"
+							],
+							"query": [
+								{
+									"key": "cantidad",
+									"value": "2"
+								}
+							]
+						},
+						"description": "Valida la disponibilidad de un item antes de agregarlo a la orden"
+					},
+					"response": []
+				},
+				{
+					"name": "4. Obtener Meseros Disponibles",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/pedidos/meseros",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"pedidos",
+								"meseros"
+							]
+						},
+						"description": "Obtiene los meseros disponibles para asignar a la orden"
+					},
+					"response": []
+				},
+				{
+					"name": "5. Crear Orden Completa (Recomendado)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"comentarios_generales\": \"Orden completa para Cliente Charlie\",\n  \"mesero_ids\": [1],\n  \"items\": [\n    {\n      \"item_id\": 1,\n      \"cantidad\": 1,\n      \"comentarios\": \"Ceviche sin cebolla, bien picante\",\n      \"acompanamientos_seleccionados\": [1, 2],\n      \"opciones_adicionales_seleccionadas\": [5]\n    },\n    {\n      \"item_id\": 6,\n      \"cantidad\": 2,\n      \"comentarios\": \"Cerveza bien fría\",\n      \"acompanamientos_seleccionados\": [],\n      \"opciones_adicionales_seleccionadas\": []\n    }\n  ]\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/pedidos/ordenes/completa",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"pedidos",
+								"ordenes",
+								"completa"
+							]
+						},
+						"description": "Crea una orden completa con todos los items, acompañamientos y comentarios en una sola llamada (MÉTODO RECOMENDADO)"
+					},
+					"response": []
+				},
+				{
+					"name": "6. Crear Nueva Orden (Método Simple)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"comentarios\": \"Orden para Cliente Charlie\",\n  \"mesero_ids\": [1]\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/pedidos/ordenes",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"pedidos",
+								"ordenes"
+							]
+						},
+						"description": "Crea una nueva orden vacía (método simple para agregar items después)"
+					},
+					"response": []
+				},
+				{
+					"name": "7. Agregar Item Principal a Orden",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"item_id\": 1,\n  \"cantidad\": 1,\n  \"comentarios\": \"Ceviche sin cebolla\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/pedidos/ordenes/{{orden_id}}/items",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"pedidos",
+								"ordenes",
+								"{{orden_id}}",
+								"items"
+							]
+						},
+						"description": "Agrega el item principal (Ceviche) a la orden con comentarios especiales"
+					},
+					"response": []
+				},
+				{
+					"name": "8. Agregar Bebida a Orden",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"item_id\": 6,\n  \"cantidad\": 2,\n  \"comentarios\": \"Cerveza bien fría\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/pedidos/ordenes/{{orden_id}}/items",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"pedidos",
+								"ordenes",
+								"{{orden_id}}",
+								"items"
+							]
+						},
+						"description": "Agrega bebidas a la orden"
+					},
+					"response": []
+				},
+				{
+					"name": "9. Verificar Orden Completa",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/pedidos/ordenes/{{orden_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"pedidos",
+								"ordenes",
+								"{{orden_id}}"
+							]
+						},
+						"description": "Verifica la orden completa con todos los items agregados"
+					},
+					"response": []
+				}
+			],
+			"description": "Flujo completo para crear una orden con productos seleccionados, acompañamientos y comentarios especiales"
+		},
+		{
+			"name": "C10 - Acompañamientos Disponibles",
+			"item": [
+				{
+					"name": "1. Obtener Todos los Acompañamientos",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/menu/acompanamientos",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"menu",
+								"acompanamientos"
+							]
+						},
+						"description": "Obtiene todos los acompañamientos disponibles en el menú para mostrar en el proceso de personalización"
+					},
+					"response": []
+				},
+				{
+					"name": "2. Acompañamientos de Ceviche",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/menu/items/1/acompanamientos",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"menu",
+								"items",
+								"1",
+								"acompanamientos"
+							]
+						},
+						"description": "Obtiene los acompañamientos específicos para el Ceviche"
+					},
+					"response": []
+				},
+				{
+					"name": "3. Acompañamientos de Lomo Saltado",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/menu/items/2/acompanamientos",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"menu",
+								"items",
+								"2",
+								"acompanamientos"
+							]
+						},
+						"description": "Obtiene los acompañamientos específicos para el Lomo Saltado"
+					},
+					"response": []
+				},
+				{
+					"name": "4. Acompañamientos de Arroz con Mariscos",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/menu/items/3/acompanamientos",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"menu",
+								"items",
+								"3",
+								"acompanamientos"
+							]
+						},
+						"description": "Obtiene los acompañamientos específicos para el Arroz con Mariscos"
+					},
+					"response": []
+				}
+			],
+			"description": "Endpoints para obtener todos los acompañamientos disponibles para mostrar en el proceso de personalización de pedidos"
+		},
+		{
+			"name": "C11 - Validar Disponibilidad",
+			"item": [
+				{
+					"name": "1. Validar Item Individual",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/menu/validar-disponibilidad/1?cantidad=1",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"menu",
+								"validar-disponibilidad",
+								"1"
+							],
+							"query": [
+								{
+									"key": "cantidad",
+									"value": "1"
+								}
+							]
+						},
+						"description": "Valida la disponibilidad de un item individual antes de confirmar el pedido"
+					},
+					"response": []
+				},
+				{
+					"name": "2. Validar Múltiples Items",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "[\n  {\n    \"item_id\": 1,\n    \"cantidad\": 2\n  },\n  {\n    \"item_id\": 2,\n    \"cantidad\": 1\n  },\n  {\n    \"item_id\": 6,\n    \"cantidad\": 3\n  }\n]"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/menu/validar-disponibilidad-multiple",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"menu",
+								"validar-disponibilidad-multiple"
+							]
+						},
+						"description": "Valida la disponibilidad de múltiples items de una vez para evitar errores en el pedido"
+					},
+					"response": []
+				},
+				{
+					"name": "3. Validar Item con Cantidad Alta",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/menu/validar-disponibilidad/1?cantidad=50",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"menu",
+								"validar-disponibilidad",
+								"1"
+							],
+							"query": [
+								{
+									"key": "cantidad",
+									"value": "50"
+								}
+							]
+						},
+						"description": "Prueba de validación con cantidad alta para verificar el manejo de stock insuficiente"
+					},
+					"response": []
+				},
+				{
+					"name": "4. Validar Item No Disponible",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/menu/validar-disponibilidad/999?cantidad=1",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"menu",
+								"validar-disponibilidad",
+								"999"
+							],
+							"query": [
+								{
+									"key": "cantidad",
+									"value": "1"
+								}
+							]
+						},
+						"description": "Prueba de validación con item inexistente para verificar el manejo de errores"
+					},
+					"response": []
+				},
+				{
+					"name": "5. Validar Disponibilidad de Orden Completa",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/pedidos/ordenes/{{orden_id}}/validar-disponibilidad",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"pedidos",
+								"ordenes",
+								"{{orden_id}}",
+								"validar-disponibilidad"
+							]
+						},
+						"description": "Valida la disponibilidad de todos los items en una orden existente"
+					},
+					"response": []
+				}
+			],
+			"description": "Endpoints para validar disponibilidad de productos antes de confirmar pedidos y evitar errores"
+		},
+		{
+			"name": "Endpoints de Apoyo",
+			"item": [
+				{
+					"name": "Health Check",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/health",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"health"
+							]
+						},
+						"description": "Verifica que la API esté funcionando correctamente"
+					},
+					"response": []
+				},
+				{
+					"name": "Obtener Todos los Items",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/menu/items",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"menu",
+								"items"
+							]
+						},
+						"description": "Obtiene todos los items del menú para referencia"
+					},
+					"response": []
+				},
+				{
+					"name": "Obtener Todas las Órdenes",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/pedidos/ordenes",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"pedidos",
+								"ordenes"
+							]
+						},
+						"description": "Obtiene todas las órdenes para verificar el estado del sistema"
+					},
+					"response": []
+				}
+			],
+			"description": "Endpoints de apoyo para verificar el estado del sistema y obtener información de referencia"
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://127.0.0.1:8000",
+			"type": "string"
+		},
+		{
+			"key": "orden_id",
+			"value": "1",
+			"type": "string"
+		}
+	]
+}

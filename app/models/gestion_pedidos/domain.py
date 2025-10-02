@@ -3,7 +3,7 @@ from typing import List, Optional, Dict
 from datetime import datetime
 from pydantic import BaseModel, Field
 from app.models.menu_y_carta.domain import Item, GrupoPersonalizacion, Opcion
-from app.models.gestion_pedidos.enums import EstadoOrden, TipoMesa
+from app.models.gestion_pedidos.enums import EstadoOrden
 
 class Mesero(BaseModel):
     """Modelo para meseros"""
@@ -12,16 +12,8 @@ class Mesero(BaseModel):
     activo: bool = True
     ordenes: List['Orden'] = []  # Lista de órdenes asignadas
 
-class GrupoMesa(BaseModel):
-    """Modelo para grupos de mesas"""
-    id: int
-    nombre: str
-    capacidad: int
-    tipo: TipoMesa
-    activa: bool = True
-    ubicacion: Optional[str] = None
-
-# Cliente y Cuenta estarán en otros módulos:
+# GrupoMesa, Cliente y Cuenta estarán en otros módulos:
+# - GrupoMesa: módulo estancia_cliente
 # - Cliente: módulo estancia_cliente
 # - Cuenta: módulo division_de_cuenta
 
@@ -43,7 +35,7 @@ class Orden(BaseModel):
     """Modelo principal para órdenes de pedidos"""
     id: int
     numero_orden: int
-    mesa: Optional[GrupoMesa] = None
+    # mesa: Optional[GrupoMesa] = None  # Estará en módulo estancia_cliente
     # clientes: List[Cliente] = []  # Estará en módulo estancia_cliente
     linea_pedidos: List[ItemOrden] = []
     num_items: int = 0
@@ -180,7 +172,7 @@ class ResumenOrden(BaseModel):
     """Modelo para resúmenes de órdenes"""
     id: int
     numero_orden: int
-    mesa_nombre: Optional[str] = None
+    # mesa_nombre: Optional[str] = None  # Estará en módulo estancia_cliente
     estado: str
     num_items: int
     monto_total: float

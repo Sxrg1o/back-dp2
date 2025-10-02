@@ -1,10 +1,10 @@
 from typing import List, Dict, Optional, Tuple
 from datetime import datetime, timedelta
 from app.models.gestion_pedidos.domain import (
-    Orden, ItemOrden, Mesero, GrupoMesa, 
+    Orden, ItemOrden, Mesero, 
     ResumenOrden, EstadisticasPedidos
 )
-from app.models.gestion_pedidos.enums import EstadoOrden, TipoMesa
+from app.models.gestion_pedidos.enums import EstadoOrden
 from app.models.menu_y_carta.domain import Item
 from app.services.menu_service import MenuService
 
@@ -15,7 +15,7 @@ class PedidosService:
         self.menu_service = MenuService()
         self.ordenes: Dict[int, Orden] = {}
         self.meseros: Dict[int, Mesero] = {}
-        self.mesas: Dict[int, GrupoMesa] = {}
+        # mesas: Dict[int, GrupoMesa] = {}  # Estará en módulo estancia_cliente
         # clientes: Dict[int, Cliente] = {}  # Estará en módulo estancia_cliente
         self._inicializar_datos_mock()
     
@@ -28,13 +28,13 @@ class PedidosService:
             3: Mesero(id=3, nombre="Luis Rodríguez", activo=True),
         }
         
-        # Crear mesas
-        self.mesas = {
-            1: GrupoMesa(id=1, nombre="Mesa 1", capacidad=2, tipo=TipoMesa.PAREJA, ubicacion="Interior"),
-            2: GrupoMesa(id=2, nombre="Mesa 2", capacidad=4, tipo=TipoMesa.FAMILIAR, ubicacion="Interior"),
-            3: GrupoMesa(id=3, nombre="Mesa 3", capacidad=6, tipo=TipoMesa.GRUPO, ubicacion="Terraza"),
-            4: GrupoMesa(id=4, nombre="Mesa VIP", capacidad=8, tipo=TipoMesa.VIP, ubicacion="Salón Privado"),
-        }
+        # Mesas estarán en módulo estancia_cliente
+        # self.mesas = {
+        #     1: GrupoMesa(id=1, nombre="Mesa 1", capacidad=2, tipo=TipoMesa.PAREJA, ubicacion="Interior"),
+        #     2: GrupoMesa(id=2, nombre="Mesa 2", capacidad=4, tipo=TipoMesa.FAMILIAR, ubicacion="Interior"),
+        #     3: GrupoMesa(id=3, nombre="Mesa 3", capacidad=6, tipo=TipoMesa.GRUPO, ubicacion="Terraza"),
+        #     4: GrupoMesa(id=4, nombre="Mesa VIP", capacidad=8, tipo=TipoMesa.VIP, ubicacion="Salón Privado"),
+        # }
         
         # Clientes estarán en módulo estancia_cliente
         # self.clientes = {
@@ -52,7 +52,7 @@ class PedidosService:
         orden1 = Orden(
             id=1,
             numero_orden=1001,
-            mesa=self.mesas[1],
+            # mesa=self.mesas[1],  # Estará en módulo estancia_cliente
             # clientes=[self.clientes[1]],  # Estará en módulo estancia_cliente
             estado=EstadoOrden.EN_COLA,
             comentarios="Sin cebolla en el ceviche",
@@ -72,7 +72,7 @@ class PedidosService:
         orden2 = Orden(
             id=2,
             numero_orden=1002,
-            mesa=self.mesas[2],
+            # mesa=self.mesas[2],  # Estará en módulo estancia_cliente
             # clientes=[self.clientes[2], self.clientes[3]],  # Estará en módulo estancia_cliente
             estado=EstadoOrden.EN_PREPARACION,
             meseros=[self.meseros[2]]
@@ -89,8 +89,7 @@ class PedidosService:
     # Gestión de Órdenes
     # =========================
     
-    def crear_orden(self, mesa_id: Optional[int] = None, 
-                   comentarios: str = "", mesero_ids: List[int] = None) -> Orden:
+    def crear_orden(self, comentarios: str = "", mesero_ids: List[int] = None) -> Orden:
         """Crea una nueva orden"""
         mesero_ids = mesero_ids or []
         
@@ -104,7 +103,7 @@ class PedidosService:
         orden = Orden(
             id=len(self.ordenes) + 1,
             numero_orden=numero_orden,
-            # mesa=mesa,  # Temporalmente removido
+            # mesa=mesa,  # Estará en módulo estancia_cliente
             # clientes=clientes,  # Estará en módulo estancia_cliente
             comentarios=comentarios,
             meseros=meseros
@@ -112,6 +111,65 @@ class PedidosService:
         
         self.ordenes[orden.id] = orden
         return orden
+    
+    def crear_orden_completa(self, comentarios_generales: str = "", mesero_ids: List[int] = None, 
+                           items_data: List[Dict] = None) -> Tuple[Orden, List[Dict]]:
+        """Crea una orden completa con todos los items y sus personalizaciones"""
+        items_data = items_data or []
+        mesero_ids = mesero_ids or []
+        
+        # Crear la orden base
+        orden = self.crear_orden(comentarios_generales, mesero_ids)
+        
+        # Lista para almacenar resultados de cada item
+        resultados_items = []
+        
+        # Agregar cada item a la orden
+        for item_data in items_data:
+            item_id = item_data.get("item_id")
+            cantidad = item_data.get("cantidad", 1)
+            comentarios = item_data.get("comentarios", "")
+            acompanamientos = item_data.get("acompanamientos_seleccionados", [])
+            opciones_adicionales = item_data.get("opciones_adicionales_seleccionadas", [])
+            
+            # Obtener el item del menú
+            item = self.menu_service.obtener_item_por_id(item_id)
+            if not item:
+                resultados_items.append({
+                    "item_id": item_id,
+                    "exitoso": False,
+                    "mensaje": "Item no encontrado"
+                })
+                continue
+            
+            # Validar disponibilidad
+            if not item.verificar_stock() or item.stock < cantidad:
+                resultados_items.append({
+                    "item_id": item_id,
+                    "exitoso": False,
+                    "mensaje": f"Stock insuficiente. Disponible: {item.stock}, Solicitado: {cantidad}"
+                })
+                continue
+            
+            # Agregar el item a la orden
+            if orden.agregar_item(item, cantidad, comentarios):
+                resultados_items.append({
+                    "item_id": item_id,
+                    "item_nombre": item.nombre,
+                    "cantidad": cantidad,
+                    "exitoso": True,
+                    "mensaje": "Item agregado exitosamente",
+                    "acompanamientos": acompanamientos,
+                    "opciones_adicionales": opciones_adicionales
+                })
+            else:
+                resultados_items.append({
+                    "item_id": item_id,
+                    "exitoso": False,
+                    "mensaje": "No se pudo agregar el item a la orden"
+                })
+        
+        return orden, resultados_items
     
     def obtener_orden_por_id(self, orden_id: int) -> Optional[Orden]:
         """Obtiene una orden por su ID"""
@@ -126,10 +184,10 @@ class PedidosService:
         return [orden for orden in self.ordenes.values() if orden.estado == estado]
     
     def obtener_ordenes_por_mesa(self, mesa_id: int) -> List[Orden]:
-        """Obtiene órdenes de una mesa específica - Temporalmente deshabilitado"""
+        """Obtiene órdenes de una mesa específica - Estará en módulo estancia_cliente"""
         # return [orden for orden in self.ordenes.values() 
         #         if orden.mesa and orden.mesa.id == mesa_id]
-        return []  # Temporalmente retorna lista vacía
+        return []  # Temporalmente deshabilitado
     
     def obtener_ordenes_por_mesero(self, mesero_id: int) -> List[Orden]:
         """Obtiene órdenes de un mesero específico"""
@@ -306,38 +364,39 @@ class PedidosService:
         return orden.asignar_mesero(mesero)
     
     # =========================
-    # Gestión de Mesas
+    # Gestión de Mesas - Estará en módulo estancia_cliente
     # =========================
     
-    def crear_grupo_mesa(self, nombre: str, capacidad: int, tipo: TipoMesa, 
-                        ubicacion: Optional[str] = None) -> GrupoMesa:
-        """Crea un nuevo grupo de mesa"""
-        mesa = GrupoMesa(
-            id=len(self.mesas) + 1,
-            nombre=nombre,
-            capacidad=capacidad,
-            tipo=tipo,
-            ubicacion=ubicacion
-        )
-        self.mesas[mesa.id] = mesa
-        return mesa
+    # def crear_grupo_mesa(self, nombre: str, capacidad: int, tipo: TipoMesa, 
+    #                     ubicacion: Optional[str] = None) -> GrupoMesa:
+    #     """Crea un nuevo grupo de mesa"""
+    #     mesa = GrupoMesa(
+    #         id=len(self.mesas) + 1,
+    #         nombre=nombre,
+    #         capacidad=capacidad,
+    #         tipo=tipo,
+    #         ubicacion=ubicacion
+    #     )
+    #     self.mesas[mesa.id] = mesa
+    #     return mesa
     
-    def obtener_mesa_por_id(self, mesa_id: int) -> Optional[GrupoMesa]:
-        """Obtiene una mesa por ID"""
-        return self.mesas.get(mesa_id)
+    # def obtener_mesa_por_id(self, mesa_id: int) -> Optional[GrupoMesa]:
+    #     """Obtiene una mesa por ID"""
+    #     return self.mesas.get(mesa_id)
     
-    def obtener_todas_las_mesas(self) -> List[GrupoMesa]:
-        """Obtiene todas las mesas"""
-        return list(self.mesas.values())
+    # def obtener_todas_las_mesas(self) -> List[GrupoMesa]:
+    #     """Obtiene todas las mesas"""
+    #     return list(self.mesas.values())
     
-    def obtener_mesas_disponibles(self) -> List[GrupoMesa]:
-        """Obtiene mesas que no tienen órdenes activas - Temporalmente simplificado"""
-        # mesas_ocupadas = set()
-        # for orden in self.ordenes.values():
-        #     if orden.activo and orden.mesa and orden.estado != EstadoOrden.DESPACHADO:
-        #         mesas_ocupadas.add(orden.mesa.id)
-        
-        return [mesa for mesa in self.mesas.values() if mesa.activa]
+    # def obtener_mesas_disponibles(self) -> List[GrupoMesa]:
+    #     """Obtiene mesas que no tienen órdenes activas"""
+    #     mesas_ocupadas = set()
+    #     for orden in self.ordenes.values():
+    #         if orden.activo and orden.mesa and orden.estado != EstadoOrden.DESPACHADO:
+    #             mesas_ocupadas.add(orden.mesa.id)
+    #     
+    #     return [mesa for mesa in self.mesas.values() 
+    #             if mesa.activa and mesa.id not in mesas_ocupadas]
     
     # =========================
     # Gestión de Clientes - Estará en módulo estancia_cliente
@@ -393,7 +452,7 @@ class PedidosService:
             resumen = ResumenOrden(
                 id=orden.id,
                 numero_orden=orden.numero_orden,
-                mesa_nombre=None,  # Temporalmente removido
+                # mesa_nombre=orden.mesa.nombre if orden.mesa else None,  # Estará en módulo estancia_cliente
                 estado=orden.estado.value,
                 num_items=orden.num_items,
                 monto_total=orden.monto_total,
