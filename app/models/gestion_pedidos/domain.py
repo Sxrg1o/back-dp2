@@ -2,7 +2,7 @@ from abc import ABC, abstractmethod
 from typing import List, Optional, Dict
 from datetime import datetime
 from pydantic import BaseModel, Field
-from app.models.menu_y_carta.domain import Item, Ingrediente, GrupoPersonalizacion, Opcion
+from app.models.menu_y_carta.domain import Item, GrupoPersonalizacion, Opcion
 from app.models.gestion_pedidos.enums import EstadoOrden, TipoMesa
 
 class Mesero(BaseModel):

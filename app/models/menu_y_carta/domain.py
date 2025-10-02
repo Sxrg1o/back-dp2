@@ -1,13 +1,11 @@
 from abc import ABC, abstractmethod
 from typing import List, Optional
 from pydantic import BaseModel, Field
-from app.models.menu_y_carta.enums import EtiquetaPlato, TipoAlergeno
 
-class Ingrediente(BaseModel):
-    """Modelo para ingredientes"""
-    id: int
+class Categoria(BaseModel):
+    """Modelo para categorías de items"""
     nombre: str
-    categoria_alergeno: Optional[TipoAlergeno] = None
+    descripcion: str
 
 class Opcion(BaseModel):
     """Modelo para opciones de personalización"""
@@ -31,12 +29,11 @@ class Item(BaseModel, ABC):
     precio: float
     stock: int
     disponible: bool
-    categoria: str
-    alergenos: str = ""
-    tiempo_preparacion: float
+    categoria: Categoria
+    alergenos: List[str] = []  # Lista de strings en lugar de enum
     descripcion: str
-    ingredientes: List[Ingrediente] = []
-    grupo_personalizacion: Optional[GrupoPersonalizacion] = None
+    ingredientes: List[str] = []  # Lista de strings en lugar de objetos Ingrediente
+    grupo_personalizacion: Optional[List[GrupoPersonalizacion]] = None  # Lista de grupos
 
     def verificar_stock(self) -> bool:
         """Verifica si el item tiene stock disponible"""
@@ -50,7 +47,7 @@ class Item(BaseModel, ABC):
 class Plato(Item):
     """Modelo para platos que hereda de Item"""
     peso: float  # en gramos
-    tipo: EtiquetaPlato
+    tipo: str  # String en lugar de enum (ej: "ENTRADA", "FONDO", "POSTRE")
 
     def get_tipo_item(self) -> str:
         return "PLATO"

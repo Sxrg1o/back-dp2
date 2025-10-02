@@ -2,8 +2,7 @@ from fastapi import FastAPI, HTTPException, Query
 from typing import List, Optional, Dict
 from pydantic import BaseModel
 
-from app.models.menu_y_carta.domain import Item, Plato, Bebida, Ingrediente
-from app.models.menu_y_carta.enums import EtiquetaPlato, TipoAlergeno
+from app.models.menu_y_carta.domain import Item, Plato, Bebida, Categoria
 from app.models.gestion_pedidos.domain import Orden, ItemOrden, Mesero, GrupoMesa, ResumenOrden, EstadisticasPedidos
 from app.models.gestion_pedidos.enums import EstadoOrden, TipoMesa
 from app.models.gestion_pedidos.dto import (
@@ -39,10 +38,10 @@ class ItemResponse(BaseModel):
     stock: int
     disponible: bool
     categoria: str
-    alergenos: str
+    alergenos: List[str]
     tiempo_preparacion: float
     descripcion: str
-    ingredientes: List[Dict]
+    ingredientes: List[str]
     grupo_personalizacion: Optional[Dict] = None
     tipo_item: str
 
@@ -54,10 +53,11 @@ class BebidaResponse(ItemResponse):
     litros: float
     con_alcohol: bool
 
-class IngredienteResponse(BaseModel):
-    id: int
+# IngredienteResponse eliminado - ahora se usan strings directamente
+
+class CategoriaResponse(BaseModel):
     nombre: str
-    categoria_alergeno: Optional[str] = None
+    descripcion: str
 
 class MenuCompletoResponse(BaseModel):
     entradas: List[PlatoResponse]
@@ -155,7 +155,7 @@ def obtener_postres():
     return [convertir_plato_a_response(plato) for plato in postres]
 
 @app.get("/api/menu/platos/tipo/{tipo}", response_model=List[PlatoResponse], summary="Obtener platos por tipo")
-def obtener_platos_por_tipo(tipo: EtiquetaPlato):
+def obtener_platos_por_tipo(tipo: str):
     """Obtiene platos filtrados por tipo (ENTRADA, FONDO, POSTRE)"""
     platos = menu_service.obtener_platos_por_tipo(tipo)
     return [convertir_plato_a_response(plato) for plato in platos]
@@ -186,25 +186,42 @@ def obtener_bebidas_con_alcohol():
 # Endpoints de Ingredientes
 # =========================
 
-@app.get("/api/menu/ingredientes", response_model=List[IngredienteResponse], summary="Obtener todos los ingredientes")
+@app.get("/api/menu/ingredientes", response_model=List[str], summary="Obtener todos los ingredientes")
 def obtener_ingredientes():
-    """Obtiene todos los ingredientes"""
-    ingredientes = menu_service.obtener_ingredientes()
-    return [convertir_ingrediente_a_response(ing) for ing in ingredientes]
+    """Obtiene todos los ingredientes únicos de todos los items"""
+    items = menu_service.obtener_todos_los_items()
+    ingredientes_unicos = set()
+    
+    for item in items.values():
+        ingredientes_unicos.update(item.ingredientes)
+    
+    return sorted(ingredientes_unicos)
 
-@app.get("/api/menu/ingredientes/buscar", response_model=List[IngredienteResponse], summary="Buscar ingredientes por nombre")
+@app.get("/api/menu/ingredientes/buscar", response_model=List[str], summary="Buscar ingredientes por nombre")
 def buscar_ingredientes_por_nombre(nombre: str = Query(..., description="Nombre a buscar")):
     """Busca ingredientes por nombre"""
     ingredientes = menu_service.buscar_ingredientes_por_nombre(nombre)
-    return [convertir_ingrediente_a_response(ing) for ing in ingredientes]
+    return ingredientes
 
-@app.get("/api/menu/ingredientes/{ingrediente_id}", response_model=IngredienteResponse, summary="Obtener ingrediente por ID")
-def obtener_ingrediente_por_id(ingrediente_id: int):
-    """Obtiene un ingrediente específico por su ID"""
-    ingrediente = menu_service.obtener_ingrediente_por_id(ingrediente_id)
-    if not ingrediente:
-        raise HTTPException(status_code=404, detail="Ingrediente no encontrado")
-    return convertir_ingrediente_a_response(ingrediente)
+# Endpoint eliminado - ya no hay IDs de ingredientes
+
+# =========================
+# Endpoints de Categorías
+# =========================
+
+@app.get("/api/menu/categorias", response_model=List[CategoriaResponse], summary="Obtener todas las categorías")
+def obtener_categorias():
+    """Obtiene todas las categorías disponibles"""
+    categorias = menu_service.obtener_categorias()
+    return [CategoriaResponse(nombre=cat.nombre, descripcion=cat.descripcion) for cat in categorias]
+
+@app.get("/api/menu/categorias/{nombre_categoria}", response_model=CategoriaResponse, summary="Obtener categoría por nombre")
+def obtener_categoria_por_nombre(nombre_categoria: str):
+    """Obtiene una categoría específica por su nombre"""
+    categoria = menu_service.obtener_categoria_por_nombre(nombre_categoria)
+    if not categoria:
+        raise HTTPException(status_code=404, detail="Categoría no encontrada")
+    return CategoriaResponse(nombre=categoria.nombre, descripcion=categoria.descripcion)
 
 # =========================
 # Endpoints de Filtros
@@ -219,21 +236,21 @@ def filtrar_por_categoria(categoria: str = Query(..., description="Categoría a 
 @app.get("/api/menu/filtrar/alergenos", response_model=List[ItemResponse], summary="Filtrar por alérgenos")
 def filtrar_por_alergenos(alergenos: str = Query(..., description="Alérgenos separados por coma")):
     """Filtra items que contengan los alérgenos especificados"""
-    alergenos_list = [TipoAlergeno(alergeno.strip().upper()) for alergeno in alergenos.split(",")]
+    alergenos_list = [alergeno.strip().upper() for alergeno in alergenos.split(",")]
     items = menu_service.filtrar_por_alergenos(alergenos_list)
     return [convertir_item_a_response(item) for item in items]
 
 @app.get("/api/menu/filtrar/sin-alergenos", response_model=List[ItemResponse], summary="Filtrar sin alérgenos")
 def filtrar_sin_alergenos(alergenos: str = Query(..., description="Alérgenos a excluir separados por coma")):
     """Filtra items que NO contengan los alérgenos especificados"""
-    alergenos_list = [TipoAlergeno(alergeno.strip().upper()) for alergeno in alergenos.split(",")]
+    alergenos_list = [alergeno.strip().upper() for alergeno in alergenos.split(",")]
     items = menu_service.filtrar_sin_alergenos(alergenos_list)
     return [convertir_item_a_response(item) for item in items]
 
-@app.get("/api/menu/items/ingrediente/{ingrediente_id}", response_model=List[ItemResponse], summary="Obtener items por ingrediente")
-def obtener_items_por_ingrediente(ingrediente_id: int):
+@app.get("/api/menu/items/ingrediente/{ingrediente_nombre}", response_model=List[ItemResponse], summary="Obtener items por ingrediente")
+def obtener_items_por_ingrediente(ingrediente_nombre: str):
     """Obtiene items que contengan un ingrediente específico"""
-    items = menu_service.obtener_items_por_ingrediente(ingrediente_id)
+    items = menu_service.obtener_items_por_ingrediente(ingrediente_nombre)
     return [convertir_item_a_response(item) for item in items]
 
 # =========================
@@ -389,12 +406,12 @@ def convertir_item_a_response(item: Item) -> ItemResponse:
         precio=item.precio,
         stock=item.stock,
         disponible=item.disponible,
-        categoria=item.categoria,
+        categoria=item.categoria.nombre,
         alergenos=item.alergenos,
-        tiempo_preparacion=item.tiempo_preparacion,
+        tiempo_preparacion=0.0,  # No está en el nuevo modelo
         descripcion=item.descripcion,
-        ingredientes=[{"id": ing.id, "nombre": ing.nombre, "categoria_alergeno": ing.categoria_alergeno.value if ing.categoria_alergeno else None} for ing in item.ingredientes],
-        grupo_personalizacion=convertir_grupo_personalizacion(item.grupo_personalizacion) if item.grupo_personalizacion else None,
+        ingredientes=item.ingredientes,
+        grupo_personalizacion=convertir_grupo_personalizacion(item.grupo_personalizacion[0]) if item.grupo_personalizacion else None,
         tipo_item=item.get_tipo_item()
     )
 
@@ -416,13 +433,7 @@ def convertir_bebida_a_response(bebida: Bebida) -> BebidaResponse:
         con_alcohol=bebida.con_alcohol
     )
 
-def convertir_ingrediente_a_response(ingrediente: Ingrediente) -> IngredienteResponse:
-    """Convierte un Ingrediente a IngredienteResponse"""
-    return IngredienteResponse(
-        id=ingrediente.id,
-        nombre=ingrediente.nombre,
-        categoria_alergeno=ingrediente.categoria_alergeno.value if ingrediente.categoria_alergeno else None
-    )
+# Función eliminada - ya no hay clase Ingrediente
 
 def convertir_grupo_personalizacion(grupo) -> Optional[Dict]:
     """Convierte un GrupoPersonalizacion a diccionario"""

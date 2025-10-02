@@ -10,17 +10,16 @@ from fastapi.testclient import TestClient
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..'))
 
 from app.main import app
-from tests.utils import TestBase, create_test_data
 
 # Configurar cliente de prueba
 client = TestClient(app)
 
-class TestMenuYCartaEndpoints(TestBase):
+class TestMenuYCartaEndpoints:
     """Tests organizados para el módulo Menu y Carta"""
     
-    def __init__(self):
-        super().__init__()
-        self.test_data = create_test_data()
+    def setup_method(self):
+        """Setup para cada test"""
+        self.client = client
     
     # =========================
     # Tests de Endpoints Básicos
@@ -48,11 +47,12 @@ class TestMenuYCartaEndpoints(TestBase):
     
     def test_obtener_todos_los_items(self):
         """Test para obtener todos los items"""
-        response = self.make_request('GET', '/api/menu/items')
-        self.assert_success_response(response)
-        assert isinstance(response['data'], list)
-        assert len(response['data']) > 0
-        self.print_test_result("Obtener todos los items", True, f"{len(response['data'])} items encontrados")
+        response = self.client.get('/api/menu/items')
+        assert response.status_code == 200, f"Expected 200, got {response.status_code}"
+        data = response.json()
+        assert isinstance(data, list)
+        assert len(data) > 0
+        print(f"Obtener todos los items: {len(data)} items encontrados")
     
     def test_obtener_item_por_id(self):
         """Test para obtener item por ID"""

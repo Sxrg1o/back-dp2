@@ -1,6 +1,7 @@
 """
 Configuración global de pytest para todos los tests del proyecto.
 """
+import pytest
 import sys
 import os
 from typing import Generator

@@ -1,26 +1,15 @@
-from typing import Dict, List
-from app.models.menu_y_carta.domain import Item, Plato, Bebida, Ingrediente, GrupoPersonalizacion, Opcion
-from app.models.menu_y_carta.enums import EtiquetaPlato, TipoAlergeno
+from typing import Dict, List, Optional
+from app.models.menu_y_carta.domain import Item, Plato, Bebida, Categoria, GrupoPersonalizacion, Opcion
 
 # =========================
-# Catálogo de ingredientes
+# Catálogo de categorías
 # =========================
-INGREDIENTES: Dict[int, Ingrediente] = {
-    1: Ingrediente(id=1, nombre="Pescado", categoria_alergeno=TipoAlergeno.PESCADO),
-    2: Ingrediente(id=2, nombre="Limón", categoria_alergeno=None),
-    3: Ingrediente(id=3, nombre="Cebolla", categoria_alergeno=None),
-    4: Ingrediente(id=4, nombre="Arroz", categoria_alergeno=None),
-    5: Ingrediente(id=5, nombre="Mariscos", categoria_alergeno=TipoAlergeno.MARISCOS),
-    6: Ingrediente(id=6, nombre="Camarones", categoria_alergeno=TipoAlergeno.MARISCOS),
-    7: Ingrediente(id=7, nombre="Pulpo", categoria_alergeno=TipoAlergeno.MOLUSCOS),
-    8: Ingrediente(id=8, nombre="Ají", categoria_alergeno=None),
-    9: Ingrediente(id=9, nombre="Cilantro", categoria_alergeno=None),
-    10: Ingrediente(id=10, nombre="Ajo", categoria_alergeno=None),
-    11: Ingrediente(id=11, nombre="Lomo de res", categoria_alergeno=None),
-    12: Ingrediente(id=12, nombre="Tomate", categoria_alergeno=None),
-    13: Ingrediente(id=13, nombre="Papas", categoria_alergeno=None),
-    14: Ingrediente(id=14, nombre="Cebada", categoria_alergeno=TipoAlergeno.GLUTEN),
-    15: Ingrediente(id=15, nombre="Lúpulo", categoria_alergeno=None),
+CATEGORIAS: Dict[str, Categoria] = {
+    "entrada": Categoria(nombre="Entrada", descripcion="Platos para comenzar la comida"),
+    "plato_principal": Categoria(nombre="Plato Principal", descripcion="Platos principales del menú"),
+    "postre": Categoria(nombre="Postre", descripcion="Dulces para finalizar la comida"),
+    "bebida_sin_alcohol": Categoria(nombre="Bebida Sin Alcohol", descripcion="Bebidas refrescantes"),
+    "bebida_alcoholica": Categoria(nombre="Bebida Alcohólica", descripcion="Bebidas con contenido alcohólico"),
 }
 
 # =========================
@@ -75,14 +64,13 @@ PLATOS: Dict[int, Plato] = {
         precio=28.0,
         stock=10,
         disponible=True,
-        categoria="Plato principal",
-        alergenos="Pescado",
-        tiempo_preparacion=10.0,
+        categoria=CATEGORIAS["plato_principal"],
+        alergenos=["PESCADO"],
         descripcion="Clásico ceviche peruano con pescado fresco marinado en limón",
-        ingredientes=[INGREDIENTES[1], INGREDIENTES[2], INGREDIENTES[3], INGREDIENTES[8], INGREDIENTES[9]],
-        grupo_personalizacion=crear_grupo_acompanamientos(),
+        ingredientes=["Pescado", "Limón", "Cebolla", "Ají", "Cilantro"],
+        grupo_personalizacion=[crear_grupo_acompanamientos()],
         peso=350.0,
-        tipo=EtiquetaPlato.FONDO
+        tipo="FONDO"
     ),
     2: Plato(
         id=2,
@@ -91,14 +79,13 @@ PLATOS: Dict[int, Plato] = {
         precio=32.0,
         stock=4,
         disponible=True,
-        categoria="Plato principal",
-        alergenos="Mariscos, Moluscos",
-        tiempo_preparacion=20.0,
+        categoria=CATEGORIAS["plato_principal"],
+        alergenos=["MARISCOS", "MOLUSCOS"],
         descripcion="Arroz con mariscos mixtos y salsa criolla",
-        ingredientes=[INGREDIENTES[4], INGREDIENTES[5], INGREDIENTES[6], INGREDIENTES[7], INGREDIENTES[3], INGREDIENTES[10]],
-        grupo_personalizacion=crear_grupo_salsas(),
+        ingredientes=["Arroz", "Mariscos", "Camarones", "Pulpo", "Cebolla", "Ajo"],
+        grupo_personalizacion=[crear_grupo_salsas()],
         peso=450.0,
-        tipo=EtiquetaPlato.FONDO
+        tipo="FONDO"
     ),
     3: Plato(
         id=3,
@@ -107,14 +94,13 @@ PLATOS: Dict[int, Plato] = {
         precio=35.0,
         stock=8,
         disponible=True,
-        categoria="Plato principal",
-        alergenos="",
-        tiempo_preparacion=15.0,
+        categoria=CATEGORIAS["plato_principal"],
+        alergenos=[],
         descripcion="Lomo de res salteado con cebolla, tomate y papas fritas",
-        ingredientes=[INGREDIENTES[11], INGREDIENTES[3], INGREDIENTES[12], INGREDIENTES[13], INGREDIENTES[10]],
-        grupo_personalizacion=crear_grupo_salsas(),
+        ingredientes=["Lomo de res", "Cebolla", "Tomate", "Papas", "Ajo"],
+        grupo_personalizacion=[crear_grupo_salsas()],
         peso=400.0,
-        tipo=EtiquetaPlato.FONDO
+        tipo="FONDO"
     ),
     4: Plato(
         id=4,
@@ -123,14 +109,13 @@ PLATOS: Dict[int, Plato] = {
         precio=18.0,
         stock=6,
         disponible=True,
-        categoria="Entrada",
-        alergenos="",
-        tiempo_preparacion=8.0,
+        categoria=CATEGORIAS["entrada"],
+        alergenos=[],
         descripcion="Causa limeña con pollo y palta",
-        ingredientes=[INGREDIENTES[13], INGREDIENTES[3], INGREDIENTES[8]],
-        grupo_personalizacion=crear_grupo_salsas(),
+        ingredientes=["Papas", "Cebolla", "Ají"],
+        grupo_personalizacion=[crear_grupo_salsas()],
         peso=250.0,
-        tipo=EtiquetaPlato.ENTRADA
+        tipo="ENTRADA"
     ),
     5: Plato(
         id=5,
@@ -139,14 +124,13 @@ PLATOS: Dict[int, Plato] = {
         precio=12.0,
         stock=15,
         disponible=True,
-        categoria="Postre",
-        alergenos="Lácteos",
-        tiempo_preparacion=5.0,
+        categoria=CATEGORIAS["postre"],
+        alergenos=["LACTEOS"],
         descripcion="Postre tradicional peruano",
         ingredientes=[],
         grupo_personalizacion=None,
         peso=150.0,
-        tipo=EtiquetaPlato.POSTRE
+        tipo="POSTRE"
     ),
 }
 
@@ -161,12 +145,11 @@ BEBIDAS: Dict[int, Bebida] = {
         precio=8.0,
         stock=20,
         disponible=True,
-        categoria="Bebida alcohólica",
-        alergenos="Gluten",
-        tiempo_preparacion=2.0,
+        categoria=CATEGORIAS["bebida_alcoholica"],
+        alergenos=["GLUTEN"],
         descripcion="Cerveza artesanal peruana",
-        ingredientes=[INGREDIENTES[14], INGREDIENTES[15]],
-        grupo_personalizacion=crear_grupo_tamaño_bebida(),
+        ingredientes=["Cebada", "Lúpulo"],
+        grupo_personalizacion=[crear_grupo_tamaño_bebida()],
         litros=0.5,
         con_alcohol=True
     ),
@@ -177,12 +160,11 @@ BEBIDAS: Dict[int, Bebida] = {
         precio=5.0,
         stock=25,
         disponible=True,
-        categoria="Bebida sin alcohol",
-        alergenos="",
-        tiempo_preparacion=1.0,
+        categoria=CATEGORIAS["bebida_sin_alcohol"],
+        alergenos=[],
         descripcion="Bebida tradicional peruana de maíz morado",
         ingredientes=[],
-        grupo_personalizacion=crear_grupo_tamaño_bebida(),
+        grupo_personalizacion=[crear_grupo_tamaño_bebida()],
         litros=0.5,
         con_alcohol=False
     ),
@@ -193,12 +175,11 @@ BEBIDAS: Dict[int, Bebida] = {
         precio=4.0,
         stock=30,
         disponible=True,
-        categoria="Bebida gaseosa",
-        alergenos="",
-        tiempo_preparacion=1.0,
+        categoria=CATEGORIAS["bebida_sin_alcohol"],
+        alergenos=[],
         descripcion="Gaseosa peruana tradicional",
         ingredientes=[],
-        grupo_personalizacion=crear_grupo_tamaño_bebida(),
+        grupo_personalizacion=[crear_grupo_tamaño_bebida()],
         litros=0.5,
         con_alcohol=False
     ),
@@ -214,7 +195,7 @@ def obtener_todos_los_items() -> Dict[int, Item]:
     items.update(BEBIDAS)
     return items
 
-def obtener_platos_por_tipo(tipo: EtiquetaPlato) -> List[Plato]:
+def obtener_platos_por_tipo(tipo: str) -> List[Plato]:
     """Retorna platos filtrados por tipo"""
     return [plato for plato in PLATOS.values() if plato.tipo == tipo]
 
@@ -225,3 +206,14 @@ def obtener_bebidas_sin_alcohol() -> List[Bebida]:
 def obtener_bebidas_con_alcohol() -> List[Bebida]:
     """Retorna bebidas con alcohol"""
     return [bebida for bebida in BEBIDAS.values() if bebida.con_alcohol]
+
+def obtener_categorias() -> List[Categoria]:
+    """Retorna todas las categorías"""
+    return list(CATEGORIAS.values())
+
+def obtener_categoria_por_nombre(nombre: str) -> Optional[Categoria]:
+    """Retorna una categoría por nombre"""
+    for categoria in CATEGORIAS.values():
+        if categoria.nombre.lower() == nombre.lower():
+            return categoria
+    return None
