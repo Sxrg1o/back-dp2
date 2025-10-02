@@ -1,15 +1,15 @@
 from typing import Dict, List, Optional
-from app.models.menu_y_carta.domain import Item, Plato, Bebida, Categoria, GrupoPersonalizacion, Opcion
+from app.models.menu_y_carta.domain import Item, Categoria, GrupoPersonalizacion, Opcion
 
 # =========================
 # Catálogo de categorías
 # =========================
 CATEGORIAS: Dict[str, Categoria] = {
-    "entrada": Categoria(nombre="Entrada", descripcion="Platos para comenzar la comida"),
-    "plato_principal": Categoria(nombre="Plato Principal", descripcion="Platos principales del menú"),
-    "postre": Categoria(nombre="Postre", descripcion="Dulces para finalizar la comida"),
-    "bebida_sin_alcohol": Categoria(nombre="Bebida Sin Alcohol", descripcion="Bebidas refrescantes"),
-    "bebida_alcoholica": Categoria(nombre="Bebida Alcohólica", descripcion="Bebidas con contenido alcohólico"),
+    "entrada": Categoria(id=1, nombre="Entrada", descripcion="Platos para comenzar la comida"),
+    "plato_principal": Categoria(id=2, nombre="Plato Principal", descripcion="Platos principales del menú"),
+    "postre": Categoria(id=3, nombre="Postre", descripcion="Dulces para finalizar la comida"),
+    "bebida_sin_alcohol": Categoria(id=4, nombre="Bebida Sin Alcohol", descripcion="Bebidas refrescantes"),
+    "bebida_alcoholica": Categoria(id=5, nombre="Bebida Alcohólica", descripcion="Bebidas con contenido alcohólico"),
 }
 
 # =========================
@@ -17,38 +17,41 @@ CATEGORIAS: Dict[str, Categoria] = {
 # =========================
 def crear_grupo_acompanamientos() -> GrupoPersonalizacion:
     return GrupoPersonalizacion(
+        id=1,
         etiqueta="Acompañamientos",
         tipo="acompanamiento",
         opciones=[
-            Opcion(etiqueta="Camote", precio_adicional=3.0, es_default=False),
-            Opcion(etiqueta="Choclo", precio_adicional=2.5, es_default=False),
-            Opcion(etiqueta="Papas fritas", precio_adicional=4.0, es_default=False),
-            Opcion(etiqueta="Sin acompañamiento", precio_adicional=0.0, es_default=True),
+            Opcion(id=1, etiqueta="Camote", precio_adicional=3.0, es_default=False),
+            Opcion(id=2, etiqueta="Choclo", precio_adicional=2.5, es_default=False),
+            Opcion(id=3, etiqueta="Papas fritas", precio_adicional=4.0, es_default=False),
+            Opcion(id=4, etiqueta="Sin acompañamiento", precio_adicional=0.0, es_default=True),
         ],
         max_selecciones=2
     )
 
 def crear_grupo_salsas() -> GrupoPersonalizacion:
     return GrupoPersonalizacion(
+        id=2,
         etiqueta="Salsas",
         tipo="salsa",
         opciones=[
-            Opcion(etiqueta="Ají extra", precio_adicional=1.0, es_default=False),
-            Opcion(etiqueta="Salsa de la casa", precio_adicional=1.5, es_default=False),
-            Opcion(etiqueta="Cebolla extra", precio_adicional=0.5, es_default=False),
-            Opcion(etiqueta="Sin salsas", precio_adicional=0.0, es_default=True),
+            Opcion(id=5, etiqueta="Ají extra", precio_adicional=1.0, es_default=False),
+            Opcion(id=6, etiqueta="Salsa de la casa", precio_adicional=1.5, es_default=False),
+            Opcion(id=7, etiqueta="Cebolla extra", precio_adicional=0.5, es_default=False),
+            Opcion(id=8, etiqueta="Sin salsas", precio_adicional=0.0, es_default=True),
         ],
         max_selecciones=3
     )
 
 def crear_grupo_tamaño_bebida() -> GrupoPersonalizacion:
     return GrupoPersonalizacion(
+        id=3,
         etiqueta="Tamaño",
         tipo="tamaño",
         opciones=[
-            Opcion(etiqueta="Pequeña (330ml)", precio_adicional=0.0, es_default=True),
-            Opcion(etiqueta="Mediana (500ml)", precio_adicional=3.0, es_default=False),
-            Opcion(etiqueta="Grande (750ml)", precio_adicional=5.0, es_default=False),
+            Opcion(id=9, etiqueta="Pequeña (330ml)", precio_adicional=0.0, es_default=True),
+            Opcion(id=10, etiqueta="Mediana (500ml)", precio_adicional=3.0, es_default=False),
+            Opcion(id=11, etiqueta="Grande (750ml)", precio_adicional=5.0, es_default=False),
         ],
         max_selecciones=1
     )
@@ -56,8 +59,8 @@ def crear_grupo_tamaño_bebida() -> GrupoPersonalizacion:
 # =========================
 # Catálogo de platos
 # =========================
-PLATOS: Dict[int, Plato] = {
-    1: Plato(
+PLATOS: Dict[int, Item] = {
+    1: Item(
         id=1,
         nombre="Ceviche",
         imagen="https://example.com/ceviche.jpg",
@@ -72,7 +75,7 @@ PLATOS: Dict[int, Plato] = {
         peso=350.0,
         tipo="FONDO"
     ),
-    2: Plato(
+    2: Item(
         id=2,
         nombre="Arroz con mariscos",
         imagen="https://example.com/arroz.jpg",
@@ -87,7 +90,7 @@ PLATOS: Dict[int, Plato] = {
         peso=450.0,
         tipo="FONDO"
     ),
-    3: Plato(
+    3: Item(
         id=3,
         nombre="Lomo saltado",
         imagen="https://example.com/lomo.jpg",
@@ -102,7 +105,7 @@ PLATOS: Dict[int, Plato] = {
         peso=400.0,
         tipo="FONDO"
     ),
-    4: Plato(
+    4: Item(
         id=4,
         nombre="Causa limeña",
         imagen="https://example.com/causa.jpg",
@@ -117,7 +120,7 @@ PLATOS: Dict[int, Plato] = {
         peso=250.0,
         tipo="ENTRADA"
     ),
-    5: Plato(
+    5: Item(
         id=5,
         nombre="Suspiro limeño",
         imagen="https://example.com/suspiro.jpg",
@@ -137,8 +140,8 @@ PLATOS: Dict[int, Plato] = {
 # =========================
 # Catálogo de bebidas
 # =========================
-BEBIDAS: Dict[int, Bebida] = {
-    6: Bebida(
+BEBIDAS: Dict[int, Item] = {
+    6: Item(
         id=6,
         nombre="Cerveza artesanal",
         imagen="https://example.com/cerveza.jpg",
@@ -153,7 +156,7 @@ BEBIDAS: Dict[int, Bebida] = {
         litros=0.5,
         con_alcohol=True
     ),
-    7: Bebida(
+    7: Item(
         id=7,
         nombre="Chicha morada",
         imagen="https://example.com/chicha.jpg",
@@ -168,7 +171,7 @@ BEBIDAS: Dict[int, Bebida] = {
         litros=0.5,
         con_alcohol=False
     ),
-    8: Bebida(
+    8: Item(
         id=8,
         nombre="Inca Kola",
         imagen="https://example.com/inca.jpg",
@@ -195,15 +198,15 @@ def obtener_todos_los_items() -> Dict[int, Item]:
     items.update(BEBIDAS)
     return items
 
-def obtener_platos_por_tipo(tipo: str) -> List[Plato]:
+def obtener_platos_por_tipo(tipo: str) -> List[Item]:
     """Retorna platos filtrados por tipo"""
     return [plato for plato in PLATOS.values() if plato.tipo == tipo]
 
-def obtener_bebidas_sin_alcohol() -> List[Bebida]:
+def obtener_bebidas_sin_alcohol() -> List[Item]:
     """Retorna bebidas sin alcohol"""
     return [bebida for bebida in BEBIDAS.values() if not bebida.con_alcohol]
 
-def obtener_bebidas_con_alcohol() -> List[Bebida]:
+def obtener_bebidas_con_alcohol() -> List[Item]:
     """Retorna bebidas con alcohol"""
     return [bebida for bebida in BEBIDAS.values() if bebida.con_alcohol]
 

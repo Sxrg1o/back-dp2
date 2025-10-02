@@ -1,5 +1,5 @@
 from typing import List, Dict, Optional, Tuple
-from app.models.menu_y_carta.domain import Item, Plato, Bebida, Categoria
+from app.models.menu_y_carta.domain import Item, Categoria
 from app.data.menu_data import (
     obtener_todos_los_items, 
     obtener_platos_por_tipo, 
@@ -23,35 +23,35 @@ class MenuService:
         items = self.obtener_todos_los_items()
         return items.get(item_id)
 
-    def obtener_platos(self) -> List[Plato]:
+    def obtener_platos(self) -> List[Item]:
         """Obtiene todos los platos"""
         return list(PLATOS.values())
 
-    def obtener_platos_por_tipo(self, tipo: str) -> List[Plato]:
+    def obtener_platos_por_tipo(self, tipo: str) -> List[Item]:
         """Obtiene platos filtrados por tipo"""
         return obtener_platos_por_tipo(tipo)
 
-    def obtener_entradas(self) -> List[Plato]:
+    def obtener_entradas(self) -> List[Item]:
         """Obtiene todas las entradas"""
         return self.obtener_platos_por_tipo("ENTRADA")
 
-    def obtener_platos_principales(self) -> List[Plato]:
+    def obtener_platos_principales(self) -> List[Item]:
         """Obtiene todos los platos principales (fondos)"""
         return self.obtener_platos_por_tipo("FONDO")
 
-    def obtener_postres(self) -> List[Plato]:
+    def obtener_postres(self) -> List[Item]:
         """Obtiene todos los postres"""
         return self.obtener_platos_por_tipo("POSTRE")
 
-    def obtener_bebidas(self) -> List[Bebida]:
+    def obtener_bebidas(self) -> List[Item]:
         """Obtiene todas las bebidas"""
         return list(BEBIDAS.values())
 
-    def obtener_bebidas_sin_alcohol(self) -> List[Bebida]:
+    def obtener_bebidas_sin_alcohol(self) -> List[Item]:
         """Obtiene bebidas sin alcohol"""
         return obtener_bebidas_sin_alcohol()
 
-    def obtener_bebidas_con_alcohol(self) -> List[Bebida]:
+    def obtener_bebidas_con_alcohol(self) -> List[Item]:
         """Obtiene bebidas con alcohol"""
         return obtener_bebidas_con_alcohol()
 

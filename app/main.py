@@ -2,7 +2,7 @@ from fastapi import FastAPI, HTTPException, Query
 from typing import List, Optional, Dict
 from pydantic import BaseModel
 
-from app.models.menu_y_carta.domain import Item, Plato, Bebida, Categoria
+from app.models.menu_y_carta.domain import Item, Categoria
 from app.models.gestion_pedidos.domain import Orden, ItemOrden, Mesero, GrupoMesa, ResumenOrden, EstadisticasPedidos
 from app.models.gestion_pedidos.enums import EstadoOrden, TipoMesa
 from app.models.gestion_pedidos.dto import (
@@ -20,7 +20,12 @@ from app.services.pedidos_service import PedidosService
 app = FastAPI(
     title="Menu API - Sistema de Gestión de Menú y Carta",
     description="API para gestión completa del menú, platos, bebidas e ingredientes",
-    version="1.0.0"
+    version="1.0.0",
+    docs_url="/docs",
+    redoc_url="/redoc",
+    openapi_url="/openapi.json",
+    # Optimizaciones para mejorar el rendimiento
+    generate_unique_id_function=lambda route: f"{route.tags[0]}-{route.name}" if route.tags else route.name
 )
 
 # Inicializar servicios
@@ -32,12 +37,14 @@ pedidos_service = PedidosService()
 # =========================
 
 class OpcionResponse(BaseModel):
+    id: int
     etiqueta: str
     precio_adicional: float
     es_default: bool
     seleccionado: bool = False
 
 class GrupoPersonalizacionResponse(BaseModel):
+    id: int
     etiqueta: str
     tipo: str
     opciones: List[OpcionResponse]
@@ -56,28 +63,22 @@ class ItemResponse(BaseModel):
     descripcion: str
     ingredientes: List[str]
     grupo_personalizacion: Optional[List[GrupoPersonalizacionResponse]] = None
-    tipo_item: str
 
-class PlatoResponse(ItemResponse):
-    peso: float
-    tipo: str
-
-class BebidaResponse(ItemResponse):
-    litros: float
-    con_alcohol: bool
+# PlatoResponse y BebidaResponse eliminados - ahora se usa solo ItemResponse
 
 # IngredienteResponse eliminado - ahora se usan strings directamente
 
 class CategoriaResponse(BaseModel):
+    id: int
     nombre: str
     descripcion: str
 
 class MenuCompletoResponse(BaseModel):
-    entradas: List[PlatoResponse]
-    platos_principales: List[PlatoResponse]
-    postres: List[PlatoResponse]
-    bebidas_sin_alcohol: List[BebidaResponse]
-    bebidas_con_alcohol: List[BebidaResponse]
+    entradas: List[ItemResponse]
+    platos_principales: List[ItemResponse]
+    postres: List[ItemResponse]
+    bebidas_sin_alcohol: List[ItemResponse]
+    bebidas_con_alcohol: List[ItemResponse]
 
 class EstadisticasMenuResponse(BaseModel):
     total_items: int
@@ -94,7 +95,7 @@ class EstadisticasMenuResponse(BaseModel):
 # Endpoints principales
 # =========================
 
-@app.get("/", summary="Información de la API")
+@app.get("/", summary="Información de la API", tags=["General"])
 def root():
     """Endpoint raíz con información de la API"""
     return {
@@ -104,7 +105,7 @@ def root():
         "health": "/health"
     }
 
-@app.get("/health", summary="Health check")
+@app.get("/health", summary="Health check", tags=["General"])
 def health_check():
     """Endpoint de health check"""
     return {"status": "ok", "message": "API funcionando correctamente"}
@@ -113,7 +114,7 @@ def health_check():
 # Endpoints de Items
 # =========================
 
-@app.get("/api/menu/items", response_model=List[ItemResponse], summary="Obtener todos los items")
+@app.get("/api/menu/items", response_model=List[ItemResponse], summary="Obtener todos los items", tags=["Items"])
 def obtener_todos_los_items():
     """Obtiene todos los items del menú (platos y bebidas)"""
     items = menu_service.obtener_todos_los_items()
@@ -139,61 +140,23 @@ def obtener_item_por_id(item_id: int):
         raise HTTPException(status_code=404, detail="Item no encontrado")
     return convertir_item_a_response(item)
 
+@app.get("/api/menu/items/categoria/{categoria}", response_model=List[ItemResponse], summary="Obtener items por categoría")
+def obtener_items_por_categoria(categoria: str):
+    """Obtiene items filtrados por categoría"""
+    items = menu_service.filtrar_por_categoria(categoria)
+    return [convertir_item_a_response(item) for item in items]
+
 # =========================
 # Endpoints de Platos
 # =========================
 
-@app.get("/api/menu/platos", response_model=List[PlatoResponse], summary="Obtener todos los platos")
-def obtener_platos():
-    """Obtiene todos los platos"""
-    platos = menu_service.obtener_platos()
-    return [convertir_plato_a_response(plato) for plato in platos]
-
-@app.get("/api/menu/platos/entradas", response_model=List[PlatoResponse], summary="Obtener entradas")
-def obtener_entradas():
-    """Obtiene todas las entradas"""
-    entradas = menu_service.obtener_entradas()
-    return [convertir_plato_a_response(plato) for plato in entradas]
-
-@app.get("/api/menu/platos/principales", response_model=List[PlatoResponse], summary="Obtener platos principales")
-def obtener_platos_principales():
-    """Obtiene todos los platos principales (fondos)"""
-    platos = menu_service.obtener_platos_principales()
-    return [convertir_plato_a_response(plato) for plato in platos]
-
-@app.get("/api/menu/platos/postres", response_model=List[PlatoResponse], summary="Obtener postres")
-def obtener_postres():
-    """Obtiene todos los postres"""
-    postres = menu_service.obtener_postres()
-    return [convertir_plato_a_response(plato) for plato in postres]
-
-@app.get("/api/menu/platos/tipo/{tipo}", response_model=List[PlatoResponse], summary="Obtener platos por tipo")
-def obtener_platos_por_tipo(tipo: str):
-    """Obtiene platos filtrados por tipo (ENTRADA, FONDO, POSTRE)"""
-    platos = menu_service.obtener_platos_por_tipo(tipo)
-    return [convertir_plato_a_response(plato) for plato in platos]
+# Endpoints específicos de platos eliminados - usar /api/menu/items/categoria/{categoria}
 
 # =========================
 # Endpoints de Bebidas
 # =========================
 
-@app.get("/api/menu/bebidas", response_model=List[BebidaResponse], summary="Obtener todas las bebidas")
-def obtener_bebidas():
-    """Obtiene todas las bebidas"""
-    bebidas = menu_service.obtener_bebidas()
-    return [convertir_bebida_a_response(bebida) for bebida in bebidas]
-
-@app.get("/api/menu/bebidas/sin-alcohol", response_model=List[BebidaResponse], summary="Obtener bebidas sin alcohol")
-def obtener_bebidas_sin_alcohol():
-    """Obtiene bebidas sin alcohol"""
-    bebidas = menu_service.obtener_bebidas_sin_alcohol()
-    return [convertir_bebida_a_response(bebida) for bebida in bebidas]
-
-@app.get("/api/menu/bebidas/con-alcohol", response_model=List[BebidaResponse], summary="Obtener bebidas con alcohol")
-def obtener_bebidas_con_alcohol():
-    """Obtiene bebidas con alcohol"""
-    bebidas = menu_service.obtener_bebidas_con_alcohol()
-    return [convertir_bebida_a_response(bebida) for bebida in bebidas]
+# Endpoints específicos de bebidas eliminados - usar /api/menu/items/categoria/{categoria}
 
 # =========================
 # Endpoints de Ingredientes
@@ -226,7 +189,7 @@ def buscar_ingredientes_por_nombre(nombre: str = Query(..., description="Nombre 
 def obtener_categorias():
     """Obtiene todas las categorías disponibles"""
     categorias = menu_service.obtener_categorias()
-    return [CategoriaResponse(nombre=cat.nombre, descripcion=cat.descripcion) for cat in categorias]
+    return [CategoriaResponse(id=cat.id, nombre=cat.nombre, descripcion=cat.descripcion) for cat in categorias]
 
 @app.get("/api/menu/categorias/{nombre_categoria}", response_model=CategoriaResponse, summary="Obtener categoría por nombre")
 def obtener_categoria_por_nombre(nombre_categoria: str):
@@ -234,7 +197,7 @@ def obtener_categoria_por_nombre(nombre_categoria: str):
     categoria = menu_service.obtener_categoria_por_nombre(nombre_categoria)
     if not categoria:
         raise HTTPException(status_code=404, detail="Categoría no encontrada")
-    return CategoriaResponse(nombre=categoria.nombre, descripcion=categoria.descripcion)
+    return CategoriaResponse(id=categoria.id, nombre=categoria.nombre, descripcion=categoria.descripcion)
 
 # =========================
 # Endpoints de Filtros
@@ -275,11 +238,11 @@ def obtener_menu_completo():
     """Obtiene el menú completo organizado por categorías"""
     menu = menu_service.obtener_menu_completo_organizado()
     return MenuCompletoResponse(
-        entradas=[convertir_plato_a_response(plato) for plato in menu["entradas"]],
-        platos_principales=[convertir_plato_a_response(plato) for plato in menu["platos_principales"]],
-        postres=[convertir_plato_a_response(plato) for plato in menu["postres"]],
-        bebidas_sin_alcohol=[convertir_bebida_a_response(bebida) for bebida in menu["bebidas_sin_alcohol"]],
-        bebidas_con_alcohol=[convertir_bebida_a_response(bebida) for bebida in menu["bebidas_con_alcohol"]]
+        entradas=[convertir_item_a_response(item) for item in menu["entradas"]],
+        platos_principales=[convertir_item_a_response(item) for item in menu["platos_principales"]],
+        postres=[convertir_item_a_response(item) for item in menu["postres"]],
+        bebidas_sin_alcohol=[convertir_item_a_response(item) for item in menu["bebidas_sin_alcohol"]],
+        bebidas_con_alcohol=[convertir_item_a_response(item) for item in menu["bebidas_con_alcohol"]]
     )
 
 @app.get("/api/menu/estadisticas", response_model=EstadisticasMenuResponse, summary="Obtener estadísticas del menú")
@@ -424,27 +387,10 @@ def convertir_item_a_response(item: Item) -> ItemResponse:
         tiempo_preparacion=0.0,  # No está en el nuevo modelo
         descripcion=item.descripcion,
         ingredientes=item.ingredientes,
-        grupo_personalizacion=[convertir_grupo_personalizacion(grupo) for grupo in item.grupo_personalizacion] if item.grupo_personalizacion else None,
-        tipo_item=item.get_tipo_item()
+        grupo_personalizacion=[convertir_grupo_personalizacion(grupo) for grupo in item.grupo_personalizacion] if item.grupo_personalizacion else None
     )
 
-def convertir_plato_a_response(plato: Plato) -> PlatoResponse:
-    """Convierte un Plato a PlatoResponse"""
-    base = convertir_item_a_response(plato)
-    return PlatoResponse(
-        **base.dict(),
-        peso=plato.peso,
-        tipo=plato.tipo.value
-    )
-
-def convertir_bebida_a_response(bebida: Bebida) -> BebidaResponse:
-    """Convierte una Bebida a BebidaResponse"""
-    base = convertir_item_a_response(bebida)
-    return BebidaResponse(
-        **base.dict(),
-        litros=bebida.litros,
-        con_alcohol=bebida.con_alcohol
-    )
+# Funciones de conversión específicas eliminadas - ahora se usa solo convertir_item_a_response
 
 # Función eliminada - ya no hay clase Ingrediente
 
@@ -453,11 +399,13 @@ def convertir_grupo_personalizacion(grupo) -> Optional[GrupoPersonalizacionRespo
     if not grupo:
         return None
     return GrupoPersonalizacionResponse(
+        id=grupo.id,
         etiqueta=grupo.etiqueta,
         tipo=grupo.tipo,
         max_selecciones=grupo.max_selecciones,
         opciones=[
             OpcionResponse(
+                id=opcion.id,
                 etiqueta=opcion.etiqueta,
                 precio_adicional=opcion.precio_adicional,
                 es_default=opcion.es_default,

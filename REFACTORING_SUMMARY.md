@@ -33,12 +33,20 @@
 
 ### Modelos
 - `app/models/menu_y_carta/domain.py` - Refactorizado completamente
+  - **Agregados IDs a todas las entidades:**
+    - `Categoria`: `id`, `nombre`, `descripcion`
+    - `Opcion`: `id`, `etiqueta`, `precio_adicional`, `es_default`, `seleccionado`
+    - `GrupoPersonalizacion`: `id`, `etiqueta`, `tipo`, `opciones[]`, `max_selecciones`
 - `app/models/menu_y_carta/enums.py` - **ELIMINADO**
 - `app/models/gestion_pedidos/domain.py` - Actualizado import
 
 ### Datos
 - `app/data/menu_data.py` - Refactorizado para usar el nuevo modelo
   - Función `obtener_categoria_por_nombre` corregida para buscar por nombre de categoría
+  - **Agregados IDs a todos los datos:**
+    - Categorías: IDs 1-5
+    - Grupos de personalización: IDs 1-3
+    - Opciones: IDs 1-11
 
 ### Servicios
 - `app/services/menu_service.py` - Actualizado para trabajar con el nuevo modelo
@@ -48,8 +56,9 @@
   - Ingredientes ahora se devuelven como `List[str]` en lugar de objetos
   - **Alérgenos ahora se devuelven como `List[str]` en lugar de string concatenado**
   - **Grupo de personalización ahora tiene DTOs específicos:**
-    - `OpcionResponse`: `etiqueta`, `precio_adicional`, `es_default`, `seleccionado`
-    - `GrupoPersonalizacionResponse`: `etiqueta`, `tipo`, `opciones[]`, `max_selecciones`
+    - `OpcionResponse`: `id`, `etiqueta`, `precio_adicional`, `es_default`, `seleccionado`
+    - `GrupoPersonalizacionResponse`: `id`, `etiqueta`, `tipo`, `opciones[]`, `max_selecciones`
+  - **CategoriaResponse actualizado:** `id`, `nombre`, `descripcion`
   - Eliminada clase `IngredienteResponse`
   - Endpoints de ingredientes actualizados para devolver strings directamente
   - **Agregados endpoints de categorías:**
@@ -90,6 +99,7 @@ Categoria (1) ──────→ (*) Item
 - ✅ Alérgenos se devuelven como lista de strings: `['PESCADO']`, `['MARISCOS', 'MOLUSCOS']`
 - ✅ Ingredientes se devuelven como lista de strings: `['Pescado', 'Limón', 'Cebolla']`
 - ✅ Grupo de personalización con estructura específica y documentación clara en FastAPI
+- ✅ Todos los elementos tienen IDs únicos: categorías (1-5), grupos (1-3), opciones (1-11)
 
 ### Funcionalidad
 - ✅ API mantiene compatibilidad con endpoints existentes

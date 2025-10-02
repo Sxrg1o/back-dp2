@@ -4,11 +4,13 @@ from pydantic import BaseModel, Field
 
 class Categoria(BaseModel):
     """Modelo para categorías de items"""
+    id: int
     nombre: str
     descripcion: str
 
 class Opcion(BaseModel):
     """Modelo para opciones de personalización"""
+    id: int
     etiqueta: str
     precio_adicional: float = 0.0
     es_default: bool = False
@@ -16,13 +18,14 @@ class Opcion(BaseModel):
 
 class GrupoPersonalizacion(BaseModel):
     """Modelo para grupos de personalización de items"""
+    id: int
     etiqueta: str
     tipo: str
     opciones: List[Opcion] = []
     max_selecciones: int = 1
 
-class Item(BaseModel, ABC):
-    """Clase base abstracta para items del menú"""
+class Item(BaseModel):
+    """Modelo unificado para items del menú (platos y bebidas)"""
     id: int
     nombre: str
     imagen: str
@@ -34,28 +37,26 @@ class Item(BaseModel, ABC):
     descripcion: str
     ingredientes: List[str] = []  # Lista de strings en lugar de objetos Ingrediente
     grupo_personalizacion: Optional[List[GrupoPersonalizacion]] = None  # Lista de grupos
+    
+    # Campos específicos para platos
+    peso: Optional[float] = None  # en gramos, solo para platos
+    tipo: Optional[str] = None  # String para tipo de plato (ej: "ENTRADA", "FONDO", "POSTRE")
+    
+    # Campos específicos para bebidas
+    litros: Optional[float] = None  # solo para bebidas
+    con_alcohol: Optional[bool] = None  # solo para bebidas
 
     def verificar_stock(self) -> bool:
         """Verifica si el item tiene stock disponible"""
         return self.disponible and self.stock > 0
 
-    @abstractmethod
     def get_tipo_item(self) -> str:
-        """Método abstracto para obtener el tipo de item"""
-        pass
+        """Determina el tipo de item basado en los campos presentes"""
+        if self.litros is not None or self.con_alcohol is not None:
+            return "BEBIDA"
+        elif self.peso is not None or self.tipo is not None:
+            return "PLATO"
+        else:
+            return "ITEM"
 
-class Plato(Item):
-    """Modelo para platos que hereda de Item"""
-    peso: float  # en gramos
-    tipo: str  # String en lugar de enum (ej: "ENTRADA", "FONDO", "POSTRE")
-
-    def get_tipo_item(self) -> str:
-        return "PLATO"
-
-class Bebida(Item):
-    """Modelo para bebidas que hereda de Item"""
-    litros: float
-    con_alcohol: bool
-
-    def get_tipo_item(self) -> str:
-        return "BEBIDA"
+# Clases Plato y Bebida eliminadas - ahora se usa solo Item
