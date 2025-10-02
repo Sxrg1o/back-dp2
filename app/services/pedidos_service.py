@@ -97,9 +97,6 @@ class PedidosService:
         # Generar número de orden único
         numero_orden = max([o.numero_orden for o in self.ordenes.values()], default=1000) + 1
         
-        # Obtener mesa si se especifica
-        mesa = self.mesas.get(mesa_id) if mesa_id else None
-        
         # Obtener meseros
         meseros = [self.meseros[mid] for mid in mesero_ids if mid in self.meseros]
         
@@ -107,7 +104,7 @@ class PedidosService:
         orden = Orden(
             id=len(self.ordenes) + 1,
             numero_orden=numero_orden,
-            mesa=mesa,
+            # mesa=mesa,  # Temporalmente removido
             # clientes=clientes,  # Estará en módulo estancia_cliente
             comentarios=comentarios,
             meseros=meseros
@@ -129,9 +126,10 @@ class PedidosService:
         return [orden for orden in self.ordenes.values() if orden.estado == estado]
     
     def obtener_ordenes_por_mesa(self, mesa_id: int) -> List[Orden]:
-        """Obtiene órdenes de una mesa específica"""
-        return [orden for orden in self.ordenes.values() 
-                if orden.mesa and orden.mesa.id == mesa_id]
+        """Obtiene órdenes de una mesa específica - Temporalmente deshabilitado"""
+        # return [orden for orden in self.ordenes.values() 
+        #         if orden.mesa and orden.mesa.id == mesa_id]
+        return []  # Temporalmente retorna lista vacía
     
     def obtener_ordenes_por_mesero(self, mesero_id: int) -> List[Orden]:
         """Obtiene órdenes de un mesero específico"""
@@ -149,8 +147,8 @@ class PedidosService:
         if estado:
             ordenes = [o for o in ordenes if o.estado == estado]
         
-        if mesa_id:
-            ordenes = [o for o in ordenes if o.mesa and o.mesa.id == mesa_id]
+        # if mesa_id:
+        #     ordenes = [o for o in ordenes if o.mesa and o.mesa.id == mesa_id]
         
         if mesero_id:
             ordenes = [o for o in ordenes if any(m.id == mesero_id for m in o.meseros)]
@@ -190,8 +188,7 @@ class PedidosService:
     # =========================
     
     def agregar_item_a_orden(self, orden_id: int, item_id: int, cantidad: int,
-                            comentarios: str = "", acompanamientos: List[int] = None,
-                            opciones_adicionales: List[int] = None) -> bool:
+                            comentarios: str = "") -> bool:
         """Agrega un item a una orden"""
         orden = self.obtener_orden_por_id(orden_id)
         if not orden:
@@ -206,23 +203,11 @@ class PedidosService:
         if not item.verificar_stock() or item.stock < cantidad:
             return False
         
-        # Obtener opciones de personalización
-        acompanamientos_opciones = []
-        opciones_adicionales_opciones = []
-        
-        if item.grupo_personalizacion:
-            if acompanamientos:
-                for opcion_id in acompanamientos:
-                    if opcion_id < len(item.grupo_personalizacion.opciones):
-                        acompanamientos_opciones.append(item.grupo_personalizacion.opciones[opcion_id])
-        
         # Agregar item a la orden
         return orden.agregar_item(
             item=item,
             cantidad=cantidad,
-            comentarios=comentarios,
-            acompanamientos=acompanamientos_opciones,
-            opciones_adicionales=opciones_adicionales_opciones
+            comentarios=comentarios
         )
     
     def modificar_item_orden(self, orden_id: int, item_orden_id: int, 
@@ -346,14 +331,13 @@ class PedidosService:
         return list(self.mesas.values())
     
     def obtener_mesas_disponibles(self) -> List[GrupoMesa]:
-        """Obtiene mesas que no tienen órdenes activas"""
-        mesas_ocupadas = set()
-        for orden in self.ordenes.values():
-            if orden.activo and orden.mesa and orden.estado != EstadoOrden.DESPACHADO:
-                mesas_ocupadas.add(orden.mesa.id)
+        """Obtiene mesas que no tienen órdenes activas - Temporalmente simplificado"""
+        # mesas_ocupadas = set()
+        # for orden in self.ordenes.values():
+        #     if orden.activo and orden.mesa and orden.estado != EstadoOrden.DESPACHADO:
+        #         mesas_ocupadas.add(orden.mesa.id)
         
-        return [mesa for mesa in self.mesas.values() 
-                if mesa.activa and mesa.id not in mesas_ocupadas]
+        return [mesa for mesa in self.mesas.values() if mesa.activa]
     
     # =========================
     # Gestión de Clientes - Estará en módulo estancia_cliente
@@ -409,13 +393,12 @@ class PedidosService:
             resumen = ResumenOrden(
                 id=orden.id,
                 numero_orden=orden.numero_orden,
-                mesa_nombre=orden.mesa.nombre if orden.mesa else None,
+                mesa_nombre=None,  # Temporalmente removido
                 estado=orden.estado.value,
                 num_items=orden.num_items,
                 monto_total=orden.monto_total,
                 hora_registro=orden.hora_registro,
-                meseros_nombres=[mesero.nombre for mesero in orden.meseros],
-                tiempo_estimado=orden.obtener_tiempo_estimado()
+                meseros_nombres=[mesero.nombre for mesero in orden.meseros]
             )
             resumenes.append(resumen)
         

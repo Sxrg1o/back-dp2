@@ -272,23 +272,31 @@ def obtener_acompanamientos_item(item_id: int):
     
     # Filtrar solo acompañamientos del grupo de personalización
     acompanamientos = []
-    if item.grupo_personalizacion.tipo == "acompanamiento":
-        acompanamientos = [
-            {
-                "etiqueta": opcion.etiqueta,
-                "precio_adicional": opcion.precio_adicional,
-                "es_default": opcion.es_default,
-                "seleccionado": opcion.seleccionado
-            }
-            for opcion in item.grupo_personalizacion.opciones
-        ]
+    max_selecciones = 1
+    tipo_personalizacion = ""
+    
+    if item.grupo_personalizacion:
+        for grupo in item.grupo_personalizacion:
+            if grupo.tipo == "acompanamiento":
+                acompanamientos = [
+                    {
+                        "etiqueta": opcion.etiqueta,
+                        "precio_adicional": opcion.precio_adicional,
+                        "es_default": opcion.es_default,
+                        "seleccionado": opcion.seleccionado
+                    }
+                    for opcion in grupo.opciones
+                ]
+                max_selecciones = grupo.max_selecciones
+                tipo_personalizacion = grupo.tipo
+                break
     
     return {
         "item_id": item_id,
         "item_nombre": item.nombre,
         "acompanamientos": acompanamientos,
-        "max_selecciones": item.grupo_personalizacion.max_selecciones,
-        "tipo_personalizacion": item.grupo_personalizacion.tipo
+        "max_selecciones": max_selecciones,
+        "tipo_personalizacion": tipo_personalizacion
     }
 
 @app.get("/api/menu/acompanamientos", summary="Obtener todos los acompañamientos disponibles")
@@ -298,19 +306,21 @@ def obtener_todos_acompanamientos():
     acompanamientos_unicos = {}
     
     for item in items.values():
-        if item.grupo_personalizacion and item.grupo_personalizacion.tipo == "acompanamiento":
-            for opcion in item.grupo_personalizacion.opciones:
-                if opcion.etiqueta not in acompanamientos_unicos:
-                    acompanamientos_unicos[opcion.etiqueta] = {
-                        "etiqueta": opcion.etiqueta,
-                        "precio_adicional": opcion.precio_adicional,
-                        "es_default": opcion.es_default,
-                        "items_disponibles": []
-                    }
-                acompanamientos_unicos[opcion.etiqueta]["items_disponibles"].append({
-                    "item_id": item.id,
-                    "item_nombre": item.nombre
-                })
+        if item.grupo_personalizacion:
+            for grupo in item.grupo_personalizacion:
+                if grupo.tipo == "acompanamiento":
+                    for opcion in grupo.opciones:
+                        if opcion.etiqueta not in acompanamientos_unicos:
+                            acompanamientos_unicos[opcion.etiqueta] = {
+                                "etiqueta": opcion.etiqueta,
+                                "precio_adicional": opcion.precio_adicional,
+                                "es_default": opcion.es_default,
+                                "items_disponibles": []
+                            }
+                        acompanamientos_unicos[opcion.etiqueta]["items_disponibles"].append({
+                            "item_id": item.id,
+                            "item_nombre": item.nombre
+                        })
     
     return {
         "acompanamientos": list(acompanamientos_unicos.values()),
@@ -423,7 +433,7 @@ def convertir_grupo_personalizacion(grupo) -> Optional[GrupoPersonalizacionRespo
 def crear_orden(request: CrearOrdenRequest):
     """Crea una nueva orden de pedido"""
     orden = pedidos_service.crear_orden(
-        mesa_id=request.mesa_id,
+        # mesa_id=request.mesa_id,  # Temporalmente removido
         comentarios=request.comentarios,
         mesero_ids=request.mesero_ids
     )
@@ -435,7 +445,7 @@ def obtener_ordenes(estado: Optional[EstadoOrden] = None, mesa_id: Optional[int]
     """Obtiene todas las órdenes con filtros opcionales"""
     ordenes = pedidos_service.filtrar_ordenes(
         estado=estado,
-        mesa_id=mesa_id,
+        # mesa_id=mesa_id,  # Temporalmente removido
         mesero_id=mesero_id
     )
     
@@ -452,8 +462,7 @@ def obtener_ordenes(estado: Optional[EstadoOrden] = None, mesa_id: Optional[int]
         num_items=o.num_items,
         monto_total=o.monto_total,
         hora_registro=o.hora_registro,
-        meseros_nombres=[m.nombre for m in o.meseros],
-        tiempo_estimado=o.obtener_tiempo_estimado()
+        meseros_nombres=[m.nombre for m in o.meseros]
     )) for o in ordenes_paginadas]
     
     total_paginas = (len(ordenes) + por_pagina - 1) // por_pagina
@@ -497,9 +506,7 @@ def agregar_item_a_orden(orden_id: int, request: AgregarItemOrdenRequest):
         orden_id=orden_id,
         item_id=request.item_id,
         cantidad=request.cantidad,
-        comentarios=request.comentarios,
-        acompanamientos=request.acompanamientos,
-        opciones_adicionales=request.opciones_adicionales
+        comentarios=request.comentarios
     ):
         return {"mensaje": "Item agregado a la orden exitosamente"}
     else:
@@ -642,7 +649,7 @@ def convertir_orden_a_response(orden: Orden) -> OrdenResponse:
     return OrdenResponse(
         id=orden.id,
         numero_orden=orden.numero_orden,
-        mesa=convertir_grupo_mesa_a_dict(orden.mesa) if orden.mesa else None,
+        # mesa=convertir_grupo_mesa_a_dict(orden.mesa) if orden.mesa else None,  # Temporalmente removido
         linea_pedidos=[convertir_item_orden_a_response(item) for item in orden.linea_pedidos],
         num_items=orden.num_items,
         monto_total=orden.monto_total,
@@ -650,8 +657,7 @@ def convertir_orden_a_response(orden: Orden) -> OrdenResponse:
         comentarios=orden.comentarios,
         activo=orden.activo,
         hora_registro=orden.hora_registro,
-        meseros=[convertir_mesero_a_dict(m) for m in orden.meseros],
-        tiempo_estimado=orden.obtener_tiempo_estimado()
+        meseros=[convertir_mesero_a_dict(m) for m in orden.meseros]
     )
 
 def convertir_item_orden_a_response(item_orden: ItemOrden) -> ItemOrdenResponse:
@@ -663,9 +669,7 @@ def convertir_item_orden_a_response(item_orden: ItemOrden) -> ItemOrdenResponse:
         item_precio=item_orden.item.precio,
         cant_pedida=item_orden.cant_pedida,
         subtotal=item_orden.subtotal,
-        comentarios=item_orden.comentarios,
-        acompanamientos=[{"etiqueta": op.etiqueta, "precio_adicional": op.precio_adicional} for op in item_orden.acompanamientos],
-        opciones_adicionales=[{"etiqueta": op.etiqueta, "precio_adicional": op.precio_adicional} for op in item_orden.opciones_adicionales]
+        comentarios=item_orden.comentarios
     )
 
 def convertir_resumen_orden_a_response(resumen: ResumenOrden) -> ResumenOrdenResponse:
@@ -673,13 +677,12 @@ def convertir_resumen_orden_a_response(resumen: ResumenOrden) -> ResumenOrdenRes
     return ResumenOrdenResponse(
         id=resumen.id,
         numero_orden=resumen.numero_orden,
-        mesa_nombre=resumen.mesa_nombre,
+        # mesa_nombre=resumen.mesa_nombre,  # Temporalmente removido
         estado=resumen.estado,
         num_items=resumen.num_items,
         monto_total=resumen.monto_total,
         hora_registro=resumen.hora_registro,
-        meseros_nombres=resumen.meseros_nombres,
-        tiempo_estimado=resumen.tiempo_estimado
+        meseros_nombres=resumen.meseros_nombres
     )
 
 def convertir_mesero_a_response(mesero: Mesero) -> MeseroResponse:

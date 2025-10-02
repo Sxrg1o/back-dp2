@@ -50,7 +50,7 @@ class TestBase:
     
     def print_test_result(self, test_name: str, success: bool, details: str = ""):
         """Imprime el resultado de un test de forma consistente"""
-        status = "✅" if success else "❌"
+        status = "OK" if success else "ERROR"
         print(f"{status} {test_name}")
         if details:
             print(f"   {details}")
@@ -88,8 +88,8 @@ class TestRunner:
             raise ValueError(f"Módulo '{module_name}' no encontrado. Módulos disponibles: {list(self.modules.keys())}")
         
         module_info = self.modules[module_name]
-        print(f"🧪 Ejecutando tests del módulo: {module_info['name']}")
-        print(f"📁 Ruta: {module_info['path']}")
+        print(f" Ejecutando tests del módulo: {module_info['name']}")
+        print(f" Ruta: {module_info['path']}")
         print("=" * 60)
         
         try:
@@ -118,7 +118,7 @@ class TestRunner:
         Returns:
             Dict con resultados de la ejecución
         """
-        print("🚀 Ejecutando todos los tests del proyecto")
+        print(" Ejecutando todos los tests del proyecto")
         print("=" * 60)
         
         results = {}
@@ -126,7 +126,7 @@ class TestRunner:
         total_modules = len(self.modules)
         
         for module_name in self.modules:
-            print(f"\n📦 Módulo: {self.modules[module_name]['name']}")
+            print(f"\n Módulo: {self.modules[module_name]['name']}")
             print("-" * 40)
             
             result = self.run_module_tests(module_name)
@@ -134,15 +134,15 @@ class TestRunner:
             
             if result['success']:
                 total_success += 1
-                print(f"✅ {self.modules[module_name]['name']} - Tests completados")
+                print(f"OK {self.modules[module_name]['name']} - Tests completados")
             else:
-                print(f"❌ {self.modules[module_name]['name']} - Error: {result.get('error', 'Desconocido')}")
+                print(f"ERROR {self.modules[module_name]['name']} - Error: {result.get('error', 'Desconocido')}")
         
         print("\n" + "=" * 60)
-        print(f"📊 Resumen Final:")
-        print(f"✅ Módulos exitosos: {total_success}/{total_modules}")
-        print(f"❌ Módulos con errores: {total_modules - total_success}/{total_modules}")
-        print(f"🎯 Tasa de éxito: {(total_success / total_modules) * 100:.1f}%")
+        print(f" Resumen Final:")
+        print(f"OK Módulos exitosos: {total_success}/{total_modules}")
+        print(f"ERROR Módulos con errores: {total_modules - total_success}/{total_modules}")
+        print(f" Tasa de éxito: {(total_success / total_modules) * 100:.1f}%")
         
         return {
             'success': total_success == total_modules,
@@ -153,7 +153,7 @@ class TestRunner:
     
     def list_modules(self) -> None:
         """Lista todos los módulos de tests disponibles"""
-        print("📋 Módulos de tests disponibles:")
+        print(" Módulos de tests disponibles:")
         print("=" * 40)
         
         for module_name, info in self.modules.items():

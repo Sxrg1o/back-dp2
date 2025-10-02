@@ -9,7 +9,7 @@ from app.models.gestion_pedidos.enums import EstadoOrden, TipoMesa, PrioridadOrd
 
 class CrearOrdenRequest(BaseModel):
     """DTO para crear una nueva orden"""
-    mesa_id: Optional[int] = None
+    # mesa_id: Optional[int] = None  # Temporalmente removido
     # cliente_ids: List[int] = []  # Estará en módulo estancia_cliente
     comentarios: str = ""
     mesero_ids: List[int] = []
@@ -19,16 +19,12 @@ class AgregarItemOrdenRequest(BaseModel):
     item_id: int
     cantidad: int = Field(gt=0, description="Cantidad debe ser mayor a 0")
     comentarios: str = ""
-    acompanamientos: List[int] = []  # IDs de opciones de acompañamiento
-    opciones_adicionales: List[int] = []  # IDs de opciones adicionales
 
 class ModificarItemOrdenRequest(BaseModel):
     """DTO para modificar un item en una orden"""
     item_orden_id: int
     cantidad: Optional[int] = Field(None, gt=0)
     comentarios: Optional[str] = None
-    acompanamientos: Optional[List[int]] = None
-    opciones_adicionales: Optional[List[int]] = None
 
 class CambiarEstadoOrdenRequest(BaseModel):
     """DTO para cambiar el estado de una orden"""
@@ -68,7 +64,7 @@ class CrearGrupoMesaRequest(BaseModel):
 class FiltrarOrdenesRequest(BaseModel):
     """DTO para filtrar órdenes"""
     estado: Optional[EstadoOrden] = None
-    mesa_id: Optional[int] = None
+    # mesa_id: Optional[int] = None  # Temporalmente removido
     mesero_id: Optional[int] = None
     fecha_desde: Optional[datetime] = None
     fecha_hasta: Optional[datetime] = None
@@ -88,14 +84,12 @@ class ItemOrdenResponse(BaseModel):
     cant_pedida: int
     subtotal: float
     comentarios: str
-    acompanamientos: List[Dict] = []
-    opciones_adicionales: List[Dict] = []
 
 class OrdenResponse(BaseModel):
     """DTO de respuesta para Orden"""
     id: int
     numero_orden: int
-    mesa: Optional[Dict] = None
+    # mesa: Optional[Dict] = None  # Temporalmente removido
     # clientes: List[Dict] = []  # Estará en módulo estancia_cliente
     linea_pedidos: List[ItemOrdenResponse] = []
     num_items: int
@@ -107,19 +101,17 @@ class OrdenResponse(BaseModel):
     # cuentas: List[Dict] = []  # Estará en módulo division_de_cuenta
     # num_cuentas: int
     meseros: List[Dict] = []
-    tiempo_estimado: float = 0.0
 
 class ResumenOrdenResponse(BaseModel):
     """DTO de respuesta para ResumenOrden"""
     id: int
     numero_orden: int
-    mesa_nombre: Optional[str] = None
+    # mesa_nombre: Optional[str] = None  # Temporalmente removido
     estado: str
     num_items: int
     monto_total: float
     hora_registro: datetime
     meseros_nombres: List[str] = []
-    tiempo_estimado: float = 0.0
 
 class MeseroResponse(BaseModel):
     """DTO de respuesta para Mesero"""
@@ -178,7 +170,6 @@ class OrdenCompletaResponse(BaseModel):
     """DTO de respuesta para orden completa con todos los detalles"""
     orden: OrdenResponse
     validacion_disponibilidad: ValidacionDisponibilidadResponse
-    tiempo_estimado_total: float
     puede_cambiar_estado: bool
     estados_disponibles: List[str] = []
 

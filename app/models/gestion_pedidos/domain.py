@@ -10,7 +10,7 @@ class Mesero(BaseModel):
     id: int
     nombre: str
     activo: bool = True
-    ordenes: List[int] = []  # IDs de órdenes asignadas
+    ordenes: List['Orden'] = []  # Lista de órdenes asignadas
 
 class GrupoMesa(BaseModel):
     """Modelo para grupos de mesas"""
@@ -29,28 +29,14 @@ class ItemOrden(BaseModel):
     """Modelo para líneas de pedido (composición de Orden)"""
     id: int
     item: Item
-    orden_id: int
+    pedido: 'Orden'  # Referencia al pedido
     cant_pedida: int
     subtotal: float = 0.0
     comentarios: str = ""
-    acompanamientos: List[Opcion] = []
-    opciones_adicionales: List[Opcion] = []
     
     def calcular_subtotal(self) -> float:
-        """Calcula el subtotal incluyendo opciones adicionales"""
-        subtotal_base = self.item.precio * self.cant_pedida
-        
-        # Sumar precios de acompañamientos
-        precio_acompanamientos = sum(
-            opcion.precio_adicional for opcion in self.acompanamientos
-        )
-        
-        # Sumar precios de opciones adicionales
-        precio_opciones = sum(
-            opcion.precio_adicional for opcion in self.opciones_adicionales
-        )
-        
-        self.subtotal = subtotal_base + precio_acompanamientos + precio_opciones
+        """Calcula el subtotal del item"""
+        self.subtotal = self.item.precio * self.cant_pedida
         return self.subtotal
 
 class Orden(BaseModel):
@@ -85,9 +71,7 @@ class Orden(BaseModel):
     #     self.num_cuentas = len(self.cuentas)
     #     return self.num_cuentas
     
-    def agregar_item(self, item: Item, cantidad: int, comentarios: str = "", 
-                    acompanamientos: List[Opcion] = None, 
-                    opciones_adicionales: List[Opcion] = None) -> bool:
+    def agregar_item(self, item: Item, cantidad: int, comentarios: str = "") -> bool:
         """Agrega un item a la orden"""
         # Validar disponibilidad
         if not item.verificar_stock() or item.stock < cantidad:
@@ -97,11 +81,9 @@ class Orden(BaseModel):
         item_orden = ItemOrden(
             id=len(self.linea_pedidos) + 1,
             item=item,
-            orden_id=self.id,
+            pedido=self,
             cant_pedida=cantidad,
-            comentarios=comentarios,
-            acompanamientos=acompanamientos or [],
-            opciones_adicionales=opciones_adicionales or []
+            comentarios=comentarios
         )
         
         # Calcular subtotal
@@ -168,7 +150,7 @@ class Orden(BaseModel):
         """Asigna un mesero a la orden"""
         if mesero not in self.meseros:
             self.meseros.append(mesero)
-            mesero.ordenes.append(self.id)
+            mesero.ordenes.append(self)
             return True
         return False
     
@@ -177,20 +159,11 @@ class Orden(BaseModel):
         for i, mesero in enumerate(self.meseros):
             if mesero.id == mesero_id:
                 del self.meseros[i]
-                if self.id in mesero.ordenes:
-                    mesero.ordenes.remove(self.id)
+                if self in mesero.ordenes:
+                    mesero.ordenes.remove(self)
                 return True
         return False
     
-    def obtener_tiempo_estimado(self) -> float:
-        """Calcula el tiempo estimado de preparación"""
-        if not self.linea_pedidos:
-            return 0.0
-        
-        # Tiempo máximo de preparación + buffer
-        tiempo_max = max(item.item.tiempo_preparacion for item in self.linea_pedidos)
-        buffer = 5.0  # 5 minutos de buffer
-        return tiempo_max + buffer
     
     def validar_disponibilidad_items(self) -> Dict[int, bool]:
         """Valida la disponibilidad de todos los items de la orden"""
@@ -213,7 +186,6 @@ class ResumenOrden(BaseModel):
     monto_total: float
     hora_registro: datetime
     meseros_nombres: List[str] = []
-    tiempo_estimado: float = 0.0
     # clientes_nombres: List[str] = []  # Estará en módulo estancia_cliente
     # num_cuentas: int = 0  # Estará en módulo division_de_cuenta
 

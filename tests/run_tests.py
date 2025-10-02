@@ -57,8 +57,8 @@ Ejemplos de uso:
     
     # Verificar que estamos en el directorio correcto
     if not os.path.exists("app/main.py"):
-        print("❌ Error: No se encontró app/main.py")
-        print("💡 Asegúrate de ejecutar este script desde el directorio raíz del proyecto")
+        print("ERROR Error: No se encontró app/main.py")
+        print(" Asegúrate de ejecutar este script desde el directorio raíz del proyecto")
         return 1
     
     runner = TestRunner()
@@ -74,7 +74,7 @@ Ejemplos de uso:
         import io
         sys.stdout = io.StringIO()
     
-    print("🧪 Sistema de Tests - API de Gestión de Restaurante")
+    print("Sistema de Tests - API de Gestion de Restaurante")
     print("=" * 60)
     
     try:
@@ -83,10 +83,10 @@ Ejemplos de uso:
             result = runner.run_all_tests()
             
             if result['success']:
-                print("\n🎉 ¡Todos los tests pasaron exitosamente!")
+                print("\n ¡Todos los tests pasaron exitosamente!")
                 return 0
             else:
-                print(f"\n⚠️  {result['total_modules'] - result['successful_modules']} módulo(s) fallaron")
+                print(f"\n  {result['total_modules'] - result['successful_modules']} módulo(s) fallaron")
                 return 1
                 
         else:
@@ -100,17 +100,17 @@ Ejemplos de uso:
             result = runner.run_module_tests(module_name)
             
             if result['success']:
-                print(f"\n🎉 ¡Tests del módulo {module_name} completados exitosamente!")
+                print(f"\n ¡Tests del módulo {module_name} completados exitosamente!")
                 return 0
             else:
-                print(f"\n❌ Error en módulo {module_name}: {result.get('error', 'Desconocido')}")
+                print(f"\nERROR Error en módulo {module_name}: {result.get('error', 'Desconocido')}")
                 return 1
                 
     except KeyboardInterrupt:
-        print("\n\n⏹️  Ejecución interrumpida por el usuario")
+        print("\n\n  Ejecución interrumpida por el usuario")
         return 130
     except Exception as e:
-        print(f"\n❌ Error inesperado: {str(e)}")
+        print(f"\nERROR Error inesperado: {str(e)}")
         if args.verbose:
             import traceback
             traceback.print_exc()
