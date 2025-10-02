@@ -30,6 +30,19 @@ pedidos_service = PedidosService()
 # =========================
 # DTOs para respuestas
 # =========================
+
+class OpcionResponse(BaseModel):
+    etiqueta: str
+    precio_adicional: float
+    es_default: bool
+    seleccionado: bool = False
+
+class GrupoPersonalizacionResponse(BaseModel):
+    etiqueta: str
+    tipo: str
+    opciones: List[OpcionResponse]
+    max_selecciones: int
+
 class ItemResponse(BaseModel):
     id: int
     nombre: str
@@ -42,7 +55,7 @@ class ItemResponse(BaseModel):
     tiempo_preparacion: float
     descripcion: str
     ingredientes: List[str]
-    grupo_personalizacion: Optional[Dict] = None
+    grupo_personalizacion: Optional[List[GrupoPersonalizacionResponse]] = None
     tipo_item: str
 
 class PlatoResponse(ItemResponse):
@@ -411,7 +424,7 @@ def convertir_item_a_response(item: Item) -> ItemResponse:
         tiempo_preparacion=0.0,  # No está en el nuevo modelo
         descripcion=item.descripcion,
         ingredientes=item.ingredientes,
-        grupo_personalizacion=convertir_grupo_personalizacion(item.grupo_personalizacion[0]) if item.grupo_personalizacion else None,
+        grupo_personalizacion=[convertir_grupo_personalizacion(grupo) for grupo in item.grupo_personalizacion] if item.grupo_personalizacion else None,
         tipo_item=item.get_tipo_item()
     )
 
@@ -435,24 +448,24 @@ def convertir_bebida_a_response(bebida: Bebida) -> BebidaResponse:
 
 # Función eliminada - ya no hay clase Ingrediente
 
-def convertir_grupo_personalizacion(grupo) -> Optional[Dict]:
-    """Convierte un GrupoPersonalizacion a diccionario"""
+def convertir_grupo_personalizacion(grupo) -> Optional[GrupoPersonalizacionResponse]:
+    """Convierte un GrupoPersonalizacion a GrupoPersonalizacionResponse"""
     if not grupo:
         return None
-    return {
-        "etiqueta": grupo.etiqueta,
-        "tipo": grupo.tipo,
-        "max_selecciones": grupo.max_selecciones,
-        "opciones": [
-            {
-                "etiqueta": opcion.etiqueta,
-                "precio_adicional": opcion.precio_adicional,
-                "es_default": opcion.es_default,
-                "seleccionado": opcion.seleccionado
-            }
+    return GrupoPersonalizacionResponse(
+        etiqueta=grupo.etiqueta,
+        tipo=grupo.tipo,
+        max_selecciones=grupo.max_selecciones,
+        opciones=[
+            OpcionResponse(
+                etiqueta=opcion.etiqueta,
+                precio_adicional=opcion.precio_adicional,
+                es_default=opcion.es_default,
+                seleccionado=opcion.seleccionado
+            )
             for opcion in grupo.opciones
         ]
-    }
+    )
 
 # =========================
 # Endpoints de Gestión de Pedidos

@@ -47,6 +47,9 @@
 - `app/main.py` - Actualizado endpoints y funciones de conversión
   - Ingredientes ahora se devuelven como `List[str]` en lugar de objetos
   - **Alérgenos ahora se devuelven como `List[str]` en lugar de string concatenado**
+  - **Grupo de personalización ahora tiene DTOs específicos:**
+    - `OpcionResponse`: `etiqueta`, `precio_adicional`, `es_default`, `seleccionado`
+    - `GrupoPersonalizacionResponse`: `etiqueta`, `tipo`, `opciones[]`, `max_selecciones`
   - Eliminada clase `IngredienteResponse`
   - Endpoints de ingredientes actualizados para devolver strings directamente
   - **Agregados endpoints de categorías:**
@@ -86,6 +89,7 @@ Categoria (1) ──────→ (*) Item
 - ✅ Los endpoints responden correctamente
 - ✅ Alérgenos se devuelven como lista de strings: `['PESCADO']`, `['MARISCOS', 'MOLUSCOS']`
 - ✅ Ingredientes se devuelven como lista de strings: `['Pescado', 'Limón', 'Cebolla']`
+- ✅ Grupo de personalización con estructura específica y documentación clara en FastAPI
 
 ### Funcionalidad
 - ✅ API mantiene compatibilidad con endpoints existentes
