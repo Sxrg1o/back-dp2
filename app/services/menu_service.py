@@ -1,35 +1,36 @@
 from typing import List, Dict, Optional, Tuple
 from app.models.menu_y_carta.domain import Item, Plato, Bebida, Ingrediente
 from app.models.menu_y_carta.enums import EtiquetaPlato, TipoAlergeno
-from app.data.menu_data import (
-    obtener_todos_los_items, 
-    obtener_platos_por_tipo, 
-    obtener_bebidas_sin_alcohol, 
-    obtener_bebidas_con_alcohol,
-    PLATOS,
-    BEBIDAS,
-    INGREDIENTES
-)
+from app.repositories.interfaces import IMenuRepository
+from app.repositories.repository_factory import RepositoryFactory
 
 class MenuService:
     """Servicio para gestión del menú y carta"""
 
+    def __init__(self, repository_type: str = "mock"):
+        """
+        Inicializa el servicio con un repositorio específico
+        
+        Args:
+            repository_type: Tipo de repositorio a usar ("mock", "database", "api")
+        """
+        self.repository: IMenuRepository = RepositoryFactory.create_menu_repository(repository_type)
+
     def obtener_todos_los_items(self) -> Dict[int, Item]:
         """Obtiene todos los items del menú"""
-        return obtener_todos_los_items()
+        return self.repository.obtener_todos_los_items()
 
     def obtener_item_por_id(self, item_id: int) -> Optional[Item]:
         """Obtiene un item específico por ID"""
-        items = self.obtener_todos_los_items()
-        return items.get(item_id)
+        return self.repository.obtener_item_por_id(item_id)
 
     def obtener_platos(self) -> List[Plato]:
         """Obtiene todos los platos"""
-        return list(PLATOS.values())
+        return self.repository.obtener_platos()
 
     def obtener_platos_por_tipo(self, tipo: EtiquetaPlato) -> List[Plato]:
         """Obtiene platos filtrados por tipo"""
-        return obtener_platos_por_tipo(tipo)
+        return self.repository.obtener_platos_por_tipo(tipo)
 
     def obtener_entradas(self) -> List[Plato]:
         """Obtiene todas las entradas"""
@@ -45,98 +46,55 @@ class MenuService:
 
     def obtener_bebidas(self) -> List[Bebida]:
         """Obtiene todas las bebidas"""
-        return list(BEBIDAS.values())
+        return self.repository.obtener_bebidas()
 
     def obtener_bebidas_sin_alcohol(self) -> List[Bebida]:
         """Obtiene bebidas sin alcohol"""
-        return obtener_bebidas_sin_alcohol()
+        return self.repository.obtener_bebidas_sin_alcohol()
 
     def obtener_bebidas_con_alcohol(self) -> List[Bebida]:
         """Obtiene bebidas con alcohol"""
-        return obtener_bebidas_con_alcohol()
+        return self.repository.obtener_bebidas_con_alcohol()
 
     def buscar_items_por_nombre(self, nombre: str) -> List[Item]:
         """Busca items por nombre (búsqueda parcial)"""
-        items = self.obtener_todos_los_items()
-        nombre_lower = nombre.lower()
-        return [
-            item for item in items.values() 
-            if nombre_lower in item.nombre.lower()
-        ]
+        return self.repository.buscar_items_por_nombre(nombre)
 
     def filtrar_por_categoria(self, categoria: str) -> List[Item]:
         """Filtra items por categoría"""
-        items = self.obtener_todos_los_items()
-        return [
-            item for item in items.values() 
-            if categoria.lower() in item.categoria.lower()
-        ]
+        return self.repository.filtrar_por_categoria(categoria)
 
     def filtrar_por_alergenos(self, alergenos: List[TipoAlergeno]) -> List[Item]:
         """Filtra items que contengan los alérgenos especificados"""
-        items = self.obtener_todos_los_items()
-        alergenos_str = [alergeno.value for alergeno in alergenos]
-        
-        return [
-            item for item in items.values()
-            if any(alergeno in item.alergenos.upper() for alergeno in alergenos_str)
-        ]
+        return self.repository.filtrar_por_alergenos(alergenos)
 
     def filtrar_sin_alergenos(self, alergenos: List[TipoAlergeno]) -> List[Item]:
         """Filtra items que NO contengan los alérgenos especificados"""
-        items = self.obtener_todos_los_items()
-        alergenos_str = [alergeno.value for alergeno in alergenos]
-        
-        return [
-            item for item in items.values()
-            if not any(alergeno in item.alergenos.upper() for alergeno in alergenos_str)
-        ]
+        return self.repository.filtrar_sin_alergenos(alergenos)
 
     def obtener_items_disponibles(self) -> List[Item]:
         """Obtiene solo items que están disponibles y tienen stock"""
-        items = self.obtener_todos_los_items()
-        return [
-            item for item in items.values()
-            if item.verificar_stock()
-        ]
+        return self.repository.obtener_items_disponibles()
 
     def obtener_ingredientes(self) -> List[Ingrediente]:
         """Obtiene todos los ingredientes"""
-        return list(INGREDIENTES.values())
+        return self.repository.obtener_ingredientes()
 
     def obtener_ingrediente_por_id(self, ingrediente_id: int) -> Optional[Ingrediente]:
         """Obtiene un ingrediente por ID"""
-        return INGREDIENTES.get(ingrediente_id)
+        return self.repository.obtener_ingrediente_por_id(ingrediente_id)
 
     def buscar_ingredientes_por_nombre(self, nombre: str) -> List[Ingrediente]:
         """Busca ingredientes por nombre"""
-        nombre_lower = nombre.lower()
-        return [
-            ingrediente for ingrediente in INGREDIENTES.values()
-            if nombre_lower in ingrediente.nombre.lower()
-        ]
+        return self.repository.buscar_ingredientes_por_nombre(nombre)
 
     def obtener_items_por_ingrediente(self, ingrediente_id: int) -> List[Item]:
         """Obtiene items que contengan un ingrediente específico"""
-        items = self.obtener_todos_los_items()
-        return [
-            item for item in items.values()
-            if any(ing.id == ingrediente_id for ing in item.ingredientes)
-        ]
+        return self.repository.obtener_items_por_ingrediente(ingrediente_id)
 
     def verificar_disponibilidad_item(self, item_id: int, cantidad: int = 1) -> Tuple[bool, str]:
         """Verifica si un item está disponible en la cantidad solicitada"""
-        item = self.obtener_item_por_id(item_id)
-        if not item:
-            return False, "Item no encontrado"
-        
-        if not item.disponible:
-            return False, "Item no disponible"
-        
-        if item.stock < cantidad:
-            return False, f"Stock insuficiente (disponible: {item.stock})"
-        
-        return True, "Disponible"
+        return self.repository.verificar_disponibilidad_item(item_id, cantidad)
 
     def obtener_menu_completo_organizado(self) -> Dict[str, List[Item]]:
         """Obtiene el menú completo organizado por categorías"""

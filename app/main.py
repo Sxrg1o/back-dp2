@@ -16,17 +16,18 @@ from app.models.gestion_pedidos.dto import (
 )
 from app.services.menu_service import MenuService
 from app.services.pedidos_service import PedidosService
+from app.config import Config
 
 # Inicializar FastAPI
 app = FastAPI(
-    title="Menu API - Sistema de Gestión de Menú y Carta",
-    description="API para gestión completa del menú, platos, bebidas e ingredientes",
-    version="1.0.0"
+    title=Config.API_TITLE,
+    description=Config.API_DESCRIPTION,
+    version=Config.API_VERSION
 )
 
-# Inicializar servicios
-menu_service = MenuService()
-pedidos_service = PedidosService()
+# Inicializar servicios con el tipo de repositorio configurado
+menu_service = MenuService(Config.REPOSITORY_TYPE)
+pedidos_service = PedidosService(Config.REPOSITORY_TYPE)
 
 # =========================
 # DTOs para respuestas
@@ -84,9 +85,15 @@ class EstadisticasMenuResponse(BaseModel):
 @app.get("/", summary="Información de la API")
 def root():
     """Endpoint raíz con información de la API"""
+    from app.repositories.repository_factory import RepositoryFactory
+    
+    available_types = RepositoryFactory.get_available_repository_types()
+    
     return {
         "message": "API de Gestión de Menú y Carta",
-        "version": "1.0.0",
+        "version": Config.API_VERSION,
+        "repository_type": Config.REPOSITORY_TYPE,
+        "available_repositories": available_types,
         "docs": "/docs",
         "health": "/health"
     }
