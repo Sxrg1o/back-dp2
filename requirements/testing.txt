@@ -1,0 +1,25 @@
+# Testing dependencies
+-r base.txt
+
+# Core testing
+pytest==8.3.4
+pytest-asyncio==0.24.0
+pytest-cov==6.0.0
+pytest-mock==3.14.0
+pytest-xdist==3.6.0
+
+# HTTP testing
+httpx==0.27.0
+
+# Database testing
+pytest-alembic==0.11.1
+sqlalchemy-utils==0.41.2
+
+# Factory fixtures
+factory-boy==3.3.1
+
+# Mocking
+responses==0.25.3
+
+# Performance testing
+pytest-benchmark==4.0.0

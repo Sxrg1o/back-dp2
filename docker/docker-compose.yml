@@ -1,0 +1,79 @@
+version: '3.8'
+
+services:
+  # FastAPI Application
+  restaurant-api:
+    build: ..
+    container_name: restaurant-backend-api
+    ports:
+      - "8000:8000"
+    environment:
+      - ENVIRONMENT=development
+      - DEBUG=true
+      - DATABASE_URL=mysql+aiomysql://restaurant_user:restaurant_password@mysql:3306/restaurant_db
+      - REDIS_URL=redis://redis:6379/0
+      - SECRET_KEY=your-super-secret-key-change-in-production
+    volumes:
+      - ../:/app
+      - /app/__pycache__
+    depends_on:
+      - mysql
+      - redis
+    restart: unless-stopped
+    networks:
+      - restaurant-network
+
+  # MySQL Database
+  mysql:
+    image: mysql:8.0
+    container_name: restaurant-mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: root_password
+      MYSQL_DATABASE: restaurant_db
+      MYSQL_USER: restaurant_user
+      MYSQL_PASSWORD: restaurant_password
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ../docker/mysql/init.sql:/docker-entrypoint-initdb.d/init.sql
+    command: --default-authentication-plugin=mysql_native_password
+    restart: unless-stopped
+    networks:
+      - restaurant-network
+
+  # Redis Cache
+  redis:
+    image: redis:7-alpine
+    container_name: restaurant-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    restart: unless-stopped
+    networks:
+      - restaurant-network
+
+  # MySQL Admin (phpMyAdmin)
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    container_name: restaurant-phpmyadmin
+    environment:
+      PMA_HOST: mysql
+      PMA_USER: restaurant_user
+      PMA_PASSWORD: restaurant_password
+    ports:
+      - "8080:80"
+    depends_on:
+      - mysql
+    restart: unless-stopped
+    networks:
+      - restaurant-network
+
+volumes:
+  mysql_data:
+  redis_data:
+
+networks:
+  restaurant-network:
+    driver: bridge

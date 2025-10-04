@@ -137,3 +137,6 @@ logs/
 # Temporary files
 *.tmp
 *.temp
+
+
+.claude
