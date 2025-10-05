@@ -1,0 +1,32 @@
+services:
+  - type: web
+    name: restaurant-backend-api
+    env: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: ENVIRONMENT
+        value: production
+      - key: DATABASE_HOST
+        fromDatabase:
+          name: restaurant-db
+          property: host
+      - key: DATABASE_PORT
+        fromDatabase:
+          name: restaurant-db
+          property: port
+      - key: DATABASE_USER
+        fromDatabase:
+          name: restaurant-db
+          property: user
+      - key: DATABASE_PASSWORD
+        fromDatabase:
+          name: restaurant-db
+          property: password
+      - key: DATABASE_NAME
+        value: restaurant_dp2
+
+databases:
+  - name: restaurant-db
+    databaseName: restaurant_dp2
+    user: restaurant_user

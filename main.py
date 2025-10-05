@@ -72,11 +72,13 @@ def create_app() -> FastAPI:
     from app.presentation.api.v1.endpoints.roles import router as roles_router
     from app.presentation.api.v1.endpoints.alergenos import router as alergenos_router
     from app.presentation.api.v1.endpoints.categorias import router as categorias_router
+    from app.presentation.api.v1.endpoints.cliente import router as cliente_router
 
     app.include_router(usuarios_router, prefix="/api/v1", tags=["Usuarios"])
     app.include_router(roles_router, prefix="/api/v1", tags=["Roles"])
     app.include_router(alergenos_router, prefix="/api/v1", tags=["Alergenos"])
     app.include_router(categorias_router, prefix="/api/v1", tags=["Categorias"])
+    app.include_router(cliente_router, prefix="/api", tags=["Cliente - Pantallas"])
 
     # TODO: Add other routers when created
     # app.include_router(menu_router, prefix="/api/v1/menu", tags=["Menu"])
