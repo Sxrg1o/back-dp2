@@ -1,38 +1,34 @@
 FROM python:3.11-slim
 
+# Set working directory
 WORKDIR /app
 
-# Instalar dependencias del sistema
+# Install system dependencies
 RUN apt-get update && apt-get install -y \
-    curl \
-    supervisor \
-    nginx \
+    gcc \
+    default-libmysqlclient-dev \
+    pkg-config \
     && rm -rf /var/lib/apt/lists/*
 
-# Copiar los requisitos de ambos microservicios
-COPY users-ms/requirements.txt /app/users-ms-requirements.txt
-COPY menu-ms/requirements.txt /app/menu-ms-requirements.txt
+# Copy requirements
+COPY requirements.txt requirements.txt
 
-# Instalar todas las dependencias
-RUN pip install --no-cache-dir -r /app/users-ms-requirements.txt
-RUN pip install --no-cache-dir -r /app/menu-ms-requirements.txt
+# Install Python dependencies
+RUN pip install --no-cache-dir -r requirements.txt
 
-# Copiar configuración
-COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
-COPY nginx.conf /etc/nginx/nginx.conf
+# Copy application code
+COPY . .
 
-# Copiar código fuente de ambos microservicios
-COPY users-ms/ /app/users-ms/
-COPY menu-ms/ /app/menu-ms/
+# Create non-root user
+RUN useradd --create-home --shell /bin/bash app && chown -R app:app /app
+USER app
 
-# Crear directorios para datos persistentes
-RUN mkdir -p /app/menu-ms/data
+# Expose port
+EXPOSE 8000
 
-# Crear directorios para logs
-RUN mkdir -p /var/log
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
+    CMD curl -f http://localhost:8000/health || exit 1
 
-# Exponer puerto 80 para Nginx que funcionará como proxy reverso
-EXPOSE 80
-
-# Comando de inicio para supervisord con configuración explícita
-CMD ["/usr/bin/supervisord", "-c", "/etc/supervisor/conf.d/supervisord.conf"]
+# Run the application
+CMD ["uvicorn", "src.main:app", "--host", "0.0.0.0", "--port", "8000"]
