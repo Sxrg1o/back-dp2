@@ -2,8 +2,8 @@
 Endpoints para gestión de roles.
 """
 
-from typing import List
-from fastapi import APIRouter, Depends, HTTPException, status
+from uuid import UUID
+from fastapi import APIRouter, Depends, HTTPException, status, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.core.database import get_database_session
@@ -12,163 +12,206 @@ from src.api.schemas.rol_schema import (
     RolCreate,
     RolResponse,
     RolUpdate,
-    RolSummary
+    RolList,
 )
-from src.business_logic.exceptions.base_exceptions import ValidationError, NotFoundError
+from src.business_logic.exceptions.rol_exceptions import (
+    RolValidationError,
+    RolNotFoundError,
+    RolConflictError,
+)
 
-router = APIRouter(prefix="/roles", tags=["roles"])
-
-# Service instance
-rol_service = RolService()
+router = APIRouter(prefix="/roles", tags=["Roles"])
 
 
-@router.post("/", response_model=RolResponse, status_code=status.HTTP_201_CREATED)
+@router.post(
+    "",
+    response_model=RolResponse,
+    status_code=status.HTTP_201_CREATED,
+    summary="Crear un nuevo rol",
+    description="Crea un nuevo rol en el sistema con los datos proporcionados.",
+)
 async def create_rol(
-    rol_data: RolCreate,
-    db: AsyncSession = Depends(get_database_session)
-):
-    """Crear un nuevo rol."""
-    try:
-        new_rol = await rol_service.create_rol(
-            db=db,
-            nombre=rol_data.nombre,
-            descripcion=rol_data.descripcion
-        )
-        return RolResponse.from_orm(new_rol)
+    rol_data: RolCreate, session: AsyncSession = Depends(get_database_session)
+) -> RolResponse:
+    """
+    Crea un nuevo rol en el sistema.
+    
+    Args:
+        rol_data: Datos del rol a crear.
+        session: Sesión de base de datos.
 
-    except ValidationError as e:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=str(e)
-        )
+    Returns:
+        El rol creado con todos sus datos.
+
+    Raises:
+        HTTPException:
+            - 409: Si ya existe un rol con el mismo nombre.
+            - 500: Si ocurre un error interno del servidor.
+    """
+    try:
+        rol_service = RolService(session)
+        return await rol_service.create_rol(rol_data)
+    except RolConflictError as e:
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=str(e))
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Error creating rol: {str(e)}"
+            detail=f"Error interno del servidor: {str(e)}",
         )
 
 
-@router.get("/{rol_id}", response_model=RolResponse)
+@router.get(
+    "/{rol_id}",
+    response_model=RolResponse,
+    status_code=status.HTTP_200_OK,
+    summary="Obtener un rol por ID",
+    description="Obtiene los detalles de un rol específico por su ID.",
+)
 async def get_rol(
-    rol_id: int,
-    db: AsyncSession = Depends(get_database_session)
-):
-    """Obtener rol por ID."""
+    rol_id: UUID, session: AsyncSession = Depends(get_database_session)
+) -> RolResponse:
+    """
+    Obtiene un rol específico por su ID.
+
+    Args:
+        rol_id: ID del rol a buscar.
+        session: Sesión de base de datos.
+
+    Returns:
+        El rol encontrado con todos sus datos.
+
+    Raises:
+        HTTPException:
+            - 404: Si no se encuentra el rol.
+            - 500: Si ocurre un error interno del servidor.
+    """
     try:
-        rol = await rol_service.get_rol_by_id(db, rol_id)
-        return RolResponse.from_orm(rol)
-
-    except NotFoundError as e:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=str(e)
-        )
-
-
-@router.get("/", response_model=List[RolResponse])
-async def list_roles(
-    skip: int = 0,
-    limit: int = 100,
-    db: AsyncSession = Depends(get_database_session)
-):
-    """Listar roles con paginación."""
-    roles = await rol_service.list_roles(
-        db=db,
-        skip=skip,
-        limit=limit
-    )
-    return [RolResponse.from_orm(rol) for rol in roles]
-
-
-@router.put("/{rol_id}", response_model=RolResponse)
-async def update_rol(
-    rol_id: int,
-    rol_data: RolUpdate,
-    db: AsyncSession = Depends(get_database_session)
-):
-    """Actualizar rol."""
-    try:
-        updated_rol = await rol_service.update_rol(
-            db=db,
-            rol_id=rol_id,
-            nombre=rol_data.nombre,
-            descripcion=rol_data.descripcion
-        )
-        return RolResponse.from_orm(updated_rol)
-
-    except NotFoundError as e:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=str(e)
-        )
-    except ValidationError as e:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=str(e)
-        )
-
-
-@router.delete("/{rol_id}", status_code=status.HTTP_204_NO_CONTENT)
-async def delete_rol(
-    rol_id: int,
-    db: AsyncSession = Depends(get_database_session)
-):
-    """Eliminar rol."""
-    try:
-        await rol_service.delete_rol(db, rol_id)
-    except NotFoundError as e:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=str(e)
-        )
-
-
-@router.get("/nombre/{nombre}", response_model=RolResponse)
-async def get_rol_by_nombre(
-    nombre: str,
-    db: AsyncSession = Depends(get_database_session)
-):
-    """Obtener rol por nombre."""
-    try:
-        rol = await rol_service.get_rol_by_nombre(db, nombre)
-        return RolResponse.from_orm(rol)
-
-    except NotFoundError as e:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=str(e)
-        )
-
-
-@router.get("/summary/all", response_model=List[RolSummary])
-async def get_roles_summary(
-    db: AsyncSession = Depends(get_database_session)
-):
-    """Obtener resumen de todos los roles (solo ID y nombre)."""
-    roles = await rol_service.list_roles(db, skip=0, limit=1000)
-    return [RolSummary.from_orm(rol) for rol in roles]
-
-
-@router.get("/count/total")
-async def count_roles(
-    db: AsyncSession = Depends(get_database_session)
-):
-    """Contar total de roles."""
-    count = await rol_service.get_roles_count(db)
-    return {"total_roles": count}
-
-
-@router.post("/initialize", response_model=List[RolResponse])
-async def initialize_default_roles(
-    db: AsyncSession = Depends(get_database_session)
-):
-    """Inicializar roles por defecto del sistema."""
-    try:
-        roles = await rol_service.initialize_default_roles(db)
-        return [RolResponse.from_orm(rol) for rol in roles]
-
+        rol_service = RolService(session)
+        return await rol_service.get_rol_by_id(rol_id)
+    except RolNotFoundError as e:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Error initializing default roles: {str(e)}"
+            detail=f"Error interno del servidor: {str(e)}",
+        )
+
+
+@router.get(
+    "",
+    response_model=RolList,
+    status_code=status.HTTP_200_OK,
+    summary="Listar roles",
+    description="Obtiene una lista paginada de roles.",
+)
+async def list_roles(
+    skip: int = Query(0, ge=0, description="Número de registros a omitir (paginación)"),
+    limit: int = Query(
+        100, gt=0, le=500, description="Número máximo de registros a retornar"
+    ),
+    session: AsyncSession = Depends(get_database_session),
+) -> RolList:
+    """
+    Obtiene una lista paginada de roles.
+    
+    Args:
+        skip: Número de registros a omitir (offset), por defecto 0.
+        limit: Número máximo de registros a retornar, por defecto 100.
+        session: Sesión de base de datos.
+
+    Returns:
+        Lista paginada de roles y el número total de registros.
+
+    Raises:
+        HTTPException:
+            - 400: Si los parámetros de paginación son inválidos.
+            - 500: Si ocurre un error interno del servidor.
+    """
+    try:
+        rol_service = RolService(session)
+        return await rol_service.get_roles(skip, limit)
+    except RolValidationError as e:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error interno del servidor: {str(e)}",
+        )
+
+
+@router.put(
+    "/{rol_id}",
+    response_model=RolResponse,
+    status_code=status.HTTP_200_OK,
+    summary="Actualizar un rol",
+    description="Actualiza los datos de un rol existente.",
+)
+async def update_rol(
+    rol_id: UUID,
+    rol_data: RolUpdate,
+    session: AsyncSession = Depends(get_database_session),
+) -> RolResponse:
+    """
+    Actualiza un rol existente.
+
+    Args:
+        rol_id: ID del rol a actualizar.
+        rol_data: Datos del rol a actualizar.
+        session: Sesión de base de datos.
+
+    Returns:
+        El rol actualizado con todos sus datos.
+
+    Raises:
+        HTTPException:
+            - 404: Si no se encuentra el rol.
+            - 409: Si hay un conflicto (e.g., nombre duplicado).
+            - 500: Si ocurre un error interno del servidor.
+    """
+    try:
+        rol_service = RolService(session)
+        return await rol_service.update_rol(rol_id, rol_data)
+    except RolNotFoundError as e:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
+    except RolConflictError as e:
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=str(e))
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error interno del servidor: {str(e)}",
+        )
+
+
+@router.delete(
+    "/{rol_id}",
+    status_code=status.HTTP_204_NO_CONTENT,
+    summary="Eliminar un rol",
+    description="Elimina un rol existente del sistema.",
+)
+async def delete_rol(
+    rol_id: UUID, session: AsyncSession = Depends(get_database_session)
+) -> None:
+    """
+    Elimina un rol existente.
+
+    Args:
+        rol_id: ID del rol a eliminar.
+        session: Sesión de base de datos.
+
+    Raises:
+        HTTPException:
+            - 404: Si no se encuentra el rol.
+            - 500: Si ocurre un error interno del servidor.
+    """
+    try:
+        rol_service = RolService(session)
+        result = await rol_service.delete_rol(rol_id)
+        # No es necesario verificar el resultado aquí ya que delete_rol
+        # lanza RolNotFoundError si no encuentra el rol
+    except RolNotFoundError as e:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error interno del servidor: {str(e)}",
         )

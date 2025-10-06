@@ -1,68 +1,91 @@
 """
-Role model for user authentication and authorization.
-Adapted to match existing MySQL schema restaurant_dp2.rol
+Modelo de roles para autenticación y autorización de usuarios.
+
+Implementa la estructura de datos para los roles de usuario en el sistema,
+adaptado para coincidir con el esquema existente de MySQL restaurant_dp2.rol.
 """
 
-from sqlalchemy import Column, Integer, String, TIMESTAMP, func
-from sqlalchemy.orm import relationship
+from typing import Any, Dict, Optional, Type, TypeVar
+from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy import String, Boolean, inspect
+from src.models.base_model import BaseModel
+from src.models.mixins.audit_mixin import AuditMixin
 
-from src.core.database import Base
+# Definimos un TypeVar para el tipado genérico
+T = TypeVar("T", bound="RolModel")
 
 
-class RolModel(Base):
-    """Role model matching restaurant_dp2.rol table."""
+class RolModel(BaseModel, AuditMixin):
+    """Modelo para representar roles de usuario en el sistema.
+
+    Define los roles que pueden ser asignados a los usuarios para
+    controlar permisos y acceso a funcionalidades específicas.
+
+    Attributes
+    ----------
+    nombre : str
+        Nombre del rol, debe ser único en el sistema.
+    descripcion : str, optional
+        Descripción detallada del propósito y alcance del rol.
+    activo : bool
+        Indica si el rol está activo en el sistema.
+    fecha_creacion : datetime
+        Fecha y hora de creación del registro (heredado de AuditableModel).
+    fecha_modificacion : datetime
+        Fecha y hora de última modificación (heredado de AuditableModel).
+    creado_por : str, optional
+        Usuario que creó el registro (heredado de AuditableModel).
+    modificado_por : str, optional
+        Usuario que realizó la última modificación (heredado de AuditableModel).
+    """
 
     __tablename__ = "rol"
-    __table_args__ = {
-        'schema': 'restaurant_dp2',
-        'comment': 'Roles del sistema (cliente, mesero, cocina, admin)'
-    }
 
-    # Primary key matching your schema
-    id_rol = Column(
-        Integer,
-        primary_key=True,
-        autoincrement=True,
-        comment="Primary key"
-    )
+    # Columnas específicas del modelo de rol
+    nombre: Mapped[str] = mapped_column(String(50), nullable=False, unique=True)
+    descripcion: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
+    activo: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
 
-    nombre = Column(
-        String(50),
-        nullable=False,
-        unique=True,
-        comment="Role name"
-    )
+    # Métodos comunes para todos los modelos
+    def to_dict(self) -> Dict[str, Any]:
+        """Convierte la instancia del modelo a un diccionario.
 
-    descripcion = Column(
-        String(255),
-        nullable=True,
-        comment="Role description"
-    )
+        Transforma todos los atributos del modelo en un diccionario para
+        facilitar su serialización y uso en APIs.
 
-    fecha_creacion = Column(
-        TIMESTAMP,
-        nullable=True,
-        default=func.current_timestamp(),
-        comment="Creation timestamp"
-    )
+        Returns
+        -------
+        Dict[str, Any]
+            Diccionario con los nombres de columnas como claves y sus valores correspondientes.
+        """
+        return {c.name: getattr(self, c.name) for c in self.__table__.columns}
 
-    fecha_modificacion = Column(
-        TIMESTAMP,
-        nullable=True,
-        default=func.current_timestamp(),
-        onupdate=func.current_timestamp(),
-        comment="Last modification timestamp"
-    )
+    @classmethod
+    def from_dict(cls: Type[T], data: Dict[str, Any]) -> T:
+        """Crea una instancia del modelo a partir de un diccionario.
 
-    # Relationships (will be added when other models are adapted)
-    # usuarios = relationship("UsuarioModel", back_populates="rol")
+        Parameters
+        ----------
+        data : Dict[str, Any]
+            Diccionario con los datos para crear la instancia.
 
-    def to_dict(self):
-        """Convert to dictionary."""
-        return {
-            'id_rol': self.id_rol,
-            'nombre': self.nombre,
-            'descripcion': self.descripcion,
-            'fecha_creacion': self.fecha_creacion,
-            'fecha_modificacion': self.fecha_modificacion
-        }
+        Returns
+        -------
+        T
+            Nueva instancia del modelo con los datos proporcionados.
+        """
+        return cls(
+            **{k: v for k, v in data.items() if k in inspect(cls).columns.keys()}
+        )
+
+    def update_from_dict(self, data: Dict[str, Any]) -> None:
+        """Actualiza la instancia con datos de un diccionario.
+
+        Parameters
+        ----------
+        data : Dict[str, Any]
+            Diccionario con los datos para actualizar la instancia.
+        """
+        for key, value in data.items():
+            if hasattr(self, key):
+                setattr(self, key, value)

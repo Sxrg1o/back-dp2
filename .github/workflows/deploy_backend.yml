@@ -1,16 +1,34 @@
 name: Backend CD
 
-# Triggers ( configurar entorno a qa y dev tambien )
 on:
   push:
     branches:
       - main
-
+    paths-ignore:
+      - '**/*.md'
+      - '**/*.txt'
+      - '.github/**'
   workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Environment to deploy to'
+        required: true
+        default: 'production'
+        type: choice
+        options:
+          - production
+          - staging
 
 jobs:
+  test:
+    name: Run Tests
+    uses: ./.github/workflows/test_backend.yml
+
   deploy:
-    runs-on: ubuntu-latest # VM
+    name: Deploy to Server
+    needs: test
+    runs-on: ubuntu-latest
+    environment: ${{ github.event.inputs.environment || 'production' }}
 
     steps:
       - name: Code Checkout
@@ -19,18 +37,38 @@ jobs:
       - name: Connect and Deploy on EC2
         uses: appleboy/ssh-action@master
         with:
-          # una vez tengamos configurados los secrets
           host: ${{ secrets.SERVER_HOST }}
           username: ${{ secrets.SERVER_USERNAME }}
-          key: ${{ secrets.SSH_PRIVATE_KEY }} # necesitamos generar esta
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
           port: 22
           script: |
             cd /back-dp2
-
+            
+            echo "Pulling latest changes..."
             git pull origin main
-
-            echo "Executing docker compose up..."
+            
+            echo "Stopping current containers..."
+            docker compose down || true
+            
+            echo "Building and starting new containers..."
             docker compose up -d --build
-
-            echo "Deleting unused Docker image files..."
+            
+            echo "Cleaning up unused resources..."
             docker image prune -f
+            
+            echo "Checking container status..."
+            docker compose ps
+            
+            echo "Checking application health..."
+            for i in {1..10}; do
+              if curl -s http://localhost:8000/health | grep -q "healthy"; then
+                echo "Application is healthy!"
+                exit 0
+              else
+                echo "Waiting for application to become healthy... ($i/10)"
+                sleep 5
+              fi
+            done
+            
+            echo "WARNING: Application health check timed out"
+            docker compose logs --tail=50
