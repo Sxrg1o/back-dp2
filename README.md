@@ -1,91 +1,136 @@
-# 🍽️ Restaurant Backend API
+# Restaurant Backend API
 
-Sistema completo de gestión de restaurantes desarrollado con **Arquitectura en Capas (Layered Architecture)** usando FastAPI, SQLAlchemy y MySQL.
+Sistema completo de gestión de restaurantes desarrollado con **Clean Architecture** usando FastAPI, SQLAlchemy y MySQL.
 
-## 🏗️ Arquitectura
+## Arquitectura
 
-### Estructura en Capas
+### Estructura del Proyecto
 
 ```
-📁 app/
-├── 🎨 presentation/     # Capa de Presentación
-│   ├── api/            # Endpoints REST
-│   ├── schemas/        # DTOs/Modelos Pydantic
-│   ├── middleware/     # Middlewares
-│   └── dependencies/   # Dependencias FastAPI
-├── 🧠 business/        # Capa de Negocio
-│   ├── services/       # Servicios de dominio
-│   ├── validators/     # Validadores
-│   ├── rules/          # Reglas de negocio
-│   └── exceptions/     # Excepciones de dominio
-├── 💾 data/            # Capa de Datos
-│   ├── models/         # Modelos SQLAlchemy
-│   ├── repositories/   # Repositorios
-│   ├── database/       # Configuración BD
-│   └── migrations/     # Migraciones Alembic
-├── 🔄 shared/          # Capa Compartida
-│   ├── entities/       # Entidades de dominio
-│   ├── enums/          # Enumeraciones
-│   ├── utils/          # Utilidades
-│   └── constants/      # Constantes
-└── ⚙️ config/          # Configuración
-    └── settings/       # Configuración por entorno
+proyecto-rpa/
+├── src/
+│   ├── api/
+│   │   ├── controllers/     # FastAPI routers (endpoints REST)
+│   │   └── schemas/         # Pydantic models (DTOs)
+│   ├── business_logic/      # Lógica de negocio
+│   │   ├── auth/           # Servicios de autenticación
+│   │   ├── menu/           # Servicios de menú
+│   │   ├── exceptions/     # Excepciones personalizadas
+│   │   └── validators/     # Validadores de negocio
+│   ├── repositories/        # Acceso a datos (patrón Repository)
+│   │   ├── auth/
+│   │   └── menu/
+│   ├── models/              # SQLAlchemy models (entidades BD)
+│   │   ├── auth/
+│   │   ├── menu/
+│   │   ├── mesas/
+│   │   ├── pedidos/
+│   │   └── pagos/
+│   ├── core/
+│   │   ├── config.py        # Configuración centralizada
+│   │   ├── database.py      # Gestión de BD
+│   │   ├── dependencies.py  # Dependencias y middleware
+│   │   ├── enums/          # Enumeraciones del sistema
+│   │   └── utils/          # Utilidades compartidas
+│   └── main.py              # Punto de entrada FastAPI
+├── tests/
+│   ├── unit/               # Tests unitarios
+│   ├── integration/        # Tests de integración
+│   └── e2e/                # Tests end-to-end
+├── docker/
+│   ├── docker-compose.yml  # Orquestación de servicios
+│   ├── mysql/              # Configuración MySQL
+│   └── nginx/              # Configuración Nginx
+├── requirements.txt         # Dependencias Python
+├── Dockerfile              # Imagen Docker
+└── README.md
 ```
 
-## 🚀 Características
+### Capas de la Arquitectura
 
-### 🍽️ Gestión de Carta Digital
-- ✅ Categorías de productos organizadas
-- ✅ Productos con precios y opciones personalizables
-- ✅ Sistema de alérgenos con niveles de riesgo
-- ✅ Búsqueda y filtros avanzados
-- ✅ Productos destacados
+#### API Layer (`src/api/`)
+- **Controllers**: Endpoints REST que manejan HTTP requests/responses
+- **Schemas**: DTOs (Data Transfer Objects) con validación Pydantic
 
-### 🛒 Sistema de Carrito
-- ✅ Carrito temporal por sesión de mesa
-- ✅ Personalización de opciones por producto
-- ✅ Cálculo automático de precios
-- ✅ Validación de disponibilidad
+#### Business Layer (`src/business_logic/`)
+- Lógica de negocio pura
+- Validaciones complejas
+- Reglas de dominio
+- Excepciones personalizadas
 
-### 🍴 Gestión de Pedidos
-- ✅ Estados de pedido en tiempo real
-- ✅ Sistema de prioridades
-- ✅ Notas de personalización
-- ✅ Trazabilidad completa
+#### Data Layer (`src/repositories/` + `src/models/`)
+- **Models**: Entidades de base de datos (SQLAlchemy)
+- **Repositories**: Patrón Repository para acceso a datos
 
-### 💳 Sistema de Pagos
-- ✅ Múltiples métodos de pago (efectivo, tarjeta, Yape, Plin)
-- ✅ División automática de cuenta
-- ✅ Gestión de propinas
-- ✅ Estados de transacción
+#### Core Layer (`src/core/`)
+- Configuración global
+- Gestión de base de datos
+- Middleware y dependencias
+- Utilidades compartidas
 
-### 🏪 Gestión de Mesas
-- ✅ Códigos QR únicos por mesa
-- ✅ Sesiones de mesa para múltiples comensales
-- ✅ Control de ocupación y estados
+## Características
 
-## 📊 Modelo de Datos
+### Gestión de Carta Digital
+- Categorías de productos organizadas
+- Productos con precios y opciones personalizables
+- Sistema de alérgenos con niveles de riesgo
+- Búsqueda y filtros avanzados
+- Productos destacados
 
-### 20 Tablas Principales:
+### Sistema de Carrito
+- Carrito temporal por sesión de mesa
+- Personalización de opciones por producto
+- Cálculo automático de precios
+- Validación de disponibilidad
 
-1. **rol** - Roles de usuario
-2. **usuario** - Gestión de usuarios
-3. **alergeno** - Catálogo de alérgenos
-4. **categoria** - Categorías de productos
-5. **producto** - Productos del menú
-6. **producto_alergeno** - Relación productos-alérgenos
-7. **tipo_opcion** - Tipos de opciones (nivel ají, acompañamiento, etc.)
-8. **producto_opcion** - Opciones personalizables por producto
-9. **mesa** - Mesas del restaurante
-10. **sesiones_mesa** - Sesiones de comensales por mesa
-11. **pedido** - Pedidos de clientes
-12. **pedido_producto** - Items dentro de cada pedido
-13. **pedido_opcion** - Opciones seleccionadas por item
-14. **division_cuenta** - División de cuentas
-15. **division_cuenta_detalle** - Detalle de división por persona
-16. **pago** - Pagos realizados
+### Gestión de Pedidos
+- Estados de pedido en tiempo real
+- Sistema de prioridades
+- Notas de personalización
+- Trazabilidad completa
 
-## 🛠️ Stack Tecnológico
+### Sistema de Pagos
+- Múltiples métodos de pago (efectivo, tarjeta, Yape, Plin)
+- División automática de cuenta
+- Gestión de propinas
+- Estados de transacción
+
+### Gestión de Mesas
+- Códigos QR únicos por mesa
+- Sesiones de mesa para múltiples comensales
+- Control de ocupación y estados
+
+## Modelo de Datos
+
+### Módulos Principales:
+
+1. **Autenticación** (`auth`)
+   - `rol` - Roles de usuario
+   - `usuario` - Gestión de usuarios
+
+2. **Menú** (`menu`)
+   - `alergeno` - Catálogo de alérgenos
+   - `categoria` - Categorías de productos
+   - `producto` - Productos del menú
+   - `producto_alergeno` - Relación productos-alérgenos
+   - `tipo_opcion` - Tipos de opciones
+   - `producto_opcion` - Opciones personalizables
+
+3. **Mesas** (`mesas`)
+   - `mesa` - Mesas del restaurante
+   - `sesiones_mesa` - Sesiones de comensales
+
+4. **Pedidos** (`pedidos`)
+   - `pedido` - Pedidos de clientes
+   - `pedido_producto` - Items dentro de cada pedido
+   - `pedido_opcion` - Opciones seleccionadas por item
+
+5. **Pagos** (`pagos`)
+   - `division_cuenta` - División de cuentas
+   - `division_cuenta_detalle` - Detalle de división
+   - `pago` - Pagos realizados
+
+## Stack Tecnológico
 
 - **Backend**: Python 3.11+ con FastAPI
 - **Base de datos**: MySQL 8.0+
@@ -97,7 +142,7 @@ Sistema completo de gestión de restaurantes desarrollado con **Arquitectura en 
 - **Contenedores**: Docker & Docker Compose
 - **Testing**: pytest + pytest-asyncio
 
-## 📦 Instalación y Configuración
+## Instalación y Configuración
 
 ### Prerequisitos
 
@@ -109,7 +154,7 @@ Sistema completo de gestión de restaurantes desarrollado con **Arquitectura en 
 
 ```bash
 git clone <repository-url>
-cd restaurant-backend
+cd back-dp2
 ```
 
 ### 2. Configurar Variables de Entorno
@@ -138,7 +183,7 @@ source venv/bin/activate  # Linux/Mac
 # venv\Scripts\activate   # Windows
 
 # Instalar dependencias
-pip install -r requirements/development.txt
+pip install -r requirements.txt
 
 # Configurar base de datos
 # Asegúrate de tener MySQL ejecutándose
@@ -147,12 +192,12 @@ pip install -r requirements/development.txt
 alembic upgrade head
 
 # Ejecutar aplicación
-uvicorn main:app --reload
+uvicorn src.main:app --reload
 ```
 
-## 🌐 Endpoints de la API
+## Endpoints de la API
 
-### 📋 Menu Management
+### Menu Management
 
 ```http
 GET    /api/v1/productos/              # Listar productos con filtros
@@ -172,7 +217,7 @@ GET    /api/v1/alergenos/              # Listar alérgenos
 POST   /api/v1/alergenos/              # Crear alérgeno
 ```
 
-### 🍴 Order Management
+### Order Management
 
 ```http
 GET    /api/v1/pedidos/               # Listar pedidos
@@ -184,7 +229,7 @@ POST   /api/v1/carrito/add-item       # Agregar item al carrito
 GET    /api/v1/carrito/{session_id}   # Obtener carrito por sesión
 ```
 
-### 💳 Payment Management
+### Payment Management
 
 ```http
 POST   /api/v1/pagos/                 # Procesar pago
@@ -192,7 +237,7 @@ GET    /api/v1/pagos/pedido/{id}      # Pagos por pedido
 POST   /api/v1/pagos/division         # Dividir cuenta
 ```
 
-### 🏪 Table Management
+### Table Management
 
 ```http
 GET    /api/v1/mesas/                 # Listar mesas
@@ -200,7 +245,7 @@ POST   /api/v1/mesas/{id}/session     # Crear sesión de mesa
 GET    /api/v1/mesas/{id}/qr          # Generar QR de mesa
 ```
 
-## 📚 Documentación de la API
+## Documentación de la API
 
 Una vez ejecutada la aplicación, puedes acceder a:
 
@@ -208,21 +253,21 @@ Una vez ejecutada la aplicación, puedes acceder a:
 - **ReDoc**: http://localhost:8000/redoc
 - **OpenAPI JSON**: http://localhost:8000/openapi.json
 
-## 🧪 Testing
+## Testing
 
 ```bash
 # Ejecutar tests
 pytest
 
 # Con cobertura
-pytest --cov=app
+pytest --cov=src
 
 # Tests específicos
-pytest tests/unit/business/
+pytest tests/unit/business_logic/
 pytest tests/integration/
 ```
 
-## 🚀 Despliegue
+## Despliegue
 
 ### Variables de Entorno de Producción
 
@@ -248,22 +293,22 @@ docker run -d \
   restaurant-backend
 ```
 
-## 📊 Monitoreo y Logs
+## Monitoreo y Logs
 
 - **Health Check**: `GET /health`
 - **Logs estructurados**: JSON format en producción
 - **Métricas**: Integración con Sentry (configurado)
 
-## 🔒 Seguridad
+## Seguridad
 
-- ✅ Autenticación JWT
-- ✅ Validación de entrada con Pydantic
-- ✅ Manejo seguro de errores
-- ✅ Rate limiting (configurable)
-- ✅ CORS configurado
-- ✅ Sanitización de datos
+- Autenticación JWT
+- Validación de entrada con Pydantic
+- Manejo seguro de errores
+- Rate limiting (configurable)
+- CORS configurado
+- Sanitización de datos
 
-## 🤝 Contribuir
+## Contribuir
 
 1. Fork el proyecto
 2. Crear feature branch (`git checkout -b feature/nueva-funcionalidad`)
@@ -271,18 +316,17 @@ docker run -d \
 4. Push a la branch (`git push origin feature/nueva-funcionalidad`)
 5. Crear Pull Request
 
-## 📄 Licencia
+## Licencia
 
 Este proyecto está bajo la licencia MIT. Ver `LICENSE` para más detalles.
 
-## 🆘 Soporte
+## Soporte
 
 Para soporte técnico o preguntas:
 
-- 📧 Email: desarrollo@restaurante.com
-- 📝 Issues: GitHub Issues
-- 📖 Wiki: GitHub Wiki
+- Email: desarrollo@restaurante.com
+- Issues: GitHub Issues
 
 ---
 
-**Desarrollado con ❤️ usando Arquitectura en Capas y las mejores prácticas de desarrollo**
+**Desarrollado usando Clean Architecture y las mejores prácticas de desarrollo**
