@@ -45,8 +45,8 @@ jobs:
 
       - name: Run tests
         env:
-          DATABASE_URL: "sqlite+aiosqlite://:memory:"
-          DATABASE_TEST_URL: "sqlite+aiosqlite://:memory:"
+          DATABASE_URL: "sqlite+aiosqlite:///:memory:"
+          DATABASE_TEST_URL: "sqlite+aiosqlite:///:memory:"
           SECRET_KEY: "test_secret_key_for_testing_only"
           ENVIRONMENT: "test"
         run: |
