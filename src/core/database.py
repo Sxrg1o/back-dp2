@@ -48,15 +48,27 @@ class DatabaseManager:
         if not hasattr(self, "_initialized") or not self._initialized:
             settings = get_settings()
 
-            # Create async engine with connection pooling
-            self._engine = create_async_engine(
-                settings.database_url,
-                echo=settings.debug,  # Log SQL queries in debug mode
-                pool_pre_ping=True,  # Enable pessimistic disconnect handling
-                pool_size=10,  # Connection pool size
-                max_overflow=20,  # Max overflow connections
-                future=True,  # Enable SQLAlchemy 2.0 features
-            )
+            # Check if we're using SQLite (which doesn't support regular connection pooling)
+            is_sqlite = settings.database_url.startswith("sqlite")
+
+            # Create async engine with appropriate parameters based on DB type
+            if is_sqlite:
+                # SQLite doesn't support the same pooling as server databases
+                self._engine = create_async_engine(
+                    settings.database_url,
+                    echo=settings.debug,  # Log SQL queries in debug mode
+                    future=True,  # Enable SQLAlchemy 2.0 features
+                )
+            else:
+                # For MySQL, PostgreSQL, etc. with full pooling support
+                self._engine = create_async_engine(
+                    settings.database_url,
+                    echo=settings.debug,  # Log SQL queries in debug mode
+                    pool_pre_ping=True,  # Enable pessimistic disconnect handling
+                    pool_size=10,  # Connection pool size
+                    max_overflow=20,  # Max overflow connections
+                    future=True,  # Enable SQLAlchemy 2.0 features
+                )
 
             # Create async session factory
             self._session_factory = async_sessionmaker(
