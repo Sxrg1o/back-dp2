@@ -7,7 +7,7 @@ from fastapi import APIRouter, Depends, HTTPException, status, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.core.database import get_database_session
-from src.business_logic.menu.categoria_service_new import CategoriaService
+from src.business_logic.menu.categoria_service import CategoriaService
 from src.api.schemas.categoria_schema import (
     CategoriaCreate,
     CategoriaResponse,
@@ -61,53 +61,6 @@ async def create_categoria(
 
 
 @router.get(
-    "",
-    response_model=CategoriaList,
-    status_code=status.HTTP_200_OK,
-    summary="Listar categorías",
-    description="Obtiene una lista paginada de categorías.",
-)
-async def list_categorias(
-    skip: int = Query(0, ge=0, description="Número de registros a omitir (paginación)"),
-    limit: int = Query(
-        100, gt=0, le=500, description="Número máximo de registros a retornar"
-    ),
-    activas_only: bool = Query(False, description="Mostrar solo categorías activas"),
-    session: AsyncSession = Depends(get_database_session),
-) -> CategoriaList:
-    """
-    Obtiene una lista paginada de categorías.
-    
-    Args:
-        skip: Número de registros a omitir (offset), por defecto 0.
-        limit: Número máximo de registros a retornar, por defecto 100.
-        activas_only: Si True, solo muestra categorías activas.
-        session: Sesión de base de datos.
-
-    Returns:
-        Lista paginada de categorías y el número total de registros.
-
-    Raises:
-        HTTPException:
-            - 400: Si los parámetros de paginación son inválidos.
-            - 500: Si ocurre un error interno del servidor.
-    """
-    try:
-        categoria_service = CategoriaService(session)
-        if activas_only:
-            return await categoria_service.get_categorias_activas(skip, limit)
-        else:
-            return await categoria_service.get_categorias(skip, limit)
-    except CategoriaValidationError as e:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
-    except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Error interno del servidor: {str(e)}",
-        )
-
-
-@router.get(
     "/{categoria_id}",
     response_model=CategoriaResponse,
     status_code=status.HTTP_200_OK,
@@ -137,6 +90,48 @@ async def get_categoria(
         return await categoria_service.get_categoria_by_id(categoria_id)
     except CategoriaNotFoundError as e:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error interno del servidor: {str(e)}",
+        )
+
+
+@router.get(
+    "",
+    response_model=CategoriaList,
+    status_code=status.HTTP_200_OK,
+    summary="Listar categorías",
+    description="Obtiene una lista paginada de categorías.",
+)
+async def list_categorias(
+    skip: int = Query(0, ge=0, description="Número de registros a omitir (paginación)"),
+    limit: int = Query(
+        100, gt=0, le=500, description="Número máximo de registros a retornar"
+    ),
+    session: AsyncSession = Depends(get_database_session),
+) -> CategoriaList:
+    """
+    Obtiene una lista paginada de categorías.
+    
+    Args:
+        skip: Número de registros a omitir (offset), por defecto 0.
+        limit: Número máximo de registros a retornar, por defecto 100.
+        session: Sesión de base de datos.
+
+    Returns:
+        Lista paginada de categorías y el número total de registros.
+
+    Raises:
+        HTTPException:
+            - 400: Si los parámetros de paginación son inválidos.
+            - 500: Si ocurre un error interno del servidor.
+    """
+    try:
+        categoria_service = CategoriaService(session)
+        return await categoria_service.get_categorias(skip, limit)
+    except CategoriaValidationError as e:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,

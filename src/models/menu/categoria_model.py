@@ -7,7 +7,7 @@ adaptado para coincidir con el esquema de MySQL restaurant_dp2.categoria.
 
 from typing import Any, Dict, Optional, Type, TypeVar
 from sqlalchemy.orm import Mapped, mapped_column
-from sqlalchemy import String, Boolean, Text, inspect
+from sqlalchemy import String, Boolean, Text
 from src.models.base_model import BaseModel
 from src.models.mixins.audit_mixin import AuditMixin
 
@@ -27,24 +27,31 @@ class CategoriaModel(BaseModel, AuditMixin):
         Nombre de la categoría, debe ser único en el sistema.
     descripcion : str, optional
         Descripción detallada de la categoría y sus productos.
+    imagen_path : str, optional
+        Ruta de la imagen representativa de la categoría.
     activo : bool
         Indica si la categoría está activa en el sistema.
     fecha_creacion : datetime
-        Fecha y hora de creación del registro (heredado de AuditableModel).
+        Fecha y hora de creación del registro (heredado de AuditMixin).
     fecha_modificacion : datetime
-        Fecha y hora de última modificación (heredado de AuditableModel).
+        Fecha y hora de última modificación (heredado de AuditMixin).
     creado_por : str, optional
-        Usuario que creó el registro (heredado de AuditableModel).
+        Usuario que creó el registro (heredado de AuditMixin).
     modificado_por : str, optional
-        Usuario que realizó la última modificación (heredado de AuditableModel).
+        Usuario que realizó la última modificación (heredado de AuditMixin).
     """
 
     __tablename__ = "categoria"
 
     # Columnas específicas del modelo de categoría
-    nombre: Mapped[str] = mapped_column(String(100), nullable=False, unique=True)
+    nombre: Mapped[str] = mapped_column(
+        String(100), nullable=False, unique=True, index=True
+    )
     descripcion: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
-    activo: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True, server_default="1")
+    imagen_path: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
+    activo: Mapped[bool] = mapped_column(
+        Boolean, nullable=False, default=True, server_default="1", index=True
+    )
 
     # Métodos comunes para todos los modelos
     def to_dict(self) -> Dict[str, Any]:
@@ -74,9 +81,13 @@ class CategoriaModel(BaseModel, AuditMixin):
         T
             Nueva instancia del modelo con los datos proporcionados.
         """
-        return cls(
-            **{k: v for k, v in data.items() if k in inspect(cls).columns.keys()}
-        )
+        # Filtrar solo columnas válidas, ignorar relaciones
+        valid_columns = [c.name for c in cls.__table__.columns]
+        filtered_data = {
+            k: v for k, v in data.items() 
+            if k in valid_columns
+        }
+        return cls(**filtered_data)
 
     def update_from_dict(self, data: Dict[str, Any]) -> None:
         """Actualiza la instancia con datos de un diccionario.
@@ -87,5 +98,10 @@ class CategoriaModel(BaseModel, AuditMixin):
             Diccionario con los datos para actualizar la instancia.
         """
         for key, value in data.items():
+            # Ignorar relaciones, solo actualizar columnas directas
             if hasattr(self, key):
                 setattr(self, key, value)
+
+    def __repr__(self) -> str:
+        """Representación en string del modelo Categoría."""
+        return f"<CategoriaModel(id={self.id}, nombre='{self.nombre}', activo={self.activo})>"

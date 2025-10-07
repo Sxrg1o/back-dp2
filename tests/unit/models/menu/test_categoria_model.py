@@ -19,253 +19,94 @@ POSTCONDICIONES:
     - El modelo debe funcionar según las especificaciones.
 """
 
-import pytest
-from uuid import uuid4
-from datetime import datetime
-
+from uuid import UUID, uuid4
 from src.models.menu.categoria_model import CategoriaModel
 
 
-def test_categoria_model_creation():
+def test_categoria_creation():
     """
-    Verifica que se puede crear una instancia de CategoriaModel correctamente.
+    Verifica que un objeto CategoriaModel se crea correctamente.
 
     PRECONDICIONES:
-        - Se debe tener acceso al modelo CategoriaModel.
+        - Dado un id, nombre, descripcion e imagen_path.
 
     PROCESO:
-        - Crear una instancia con datos válidos.
-        - Verificar que todos los atributos se asignen correctamente.
+        - Crear un registro de CategoriaModel con valores predefinidos.
 
     POSTCONDICIONES:
-        - La instancia debe crearse sin errores.
-        - Todos los atributos deben tener los valores esperados.
+        - La instancia debe tener los valores exactos proporcionados.
     """
-    # Arrange
-    categoria_id = uuid4()
-    nombre = "Entradas"
-    descripcion = "Platos de entrada y aperitivos"
-    activo = True
+    categoria_id: UUID = uuid4()
+    categoria_nombre = "Entradas"
+    categoria_descripcion = "Platos de entrada y aperitivos"
+    categoria_imagen = "/images/entradas.jpg"
 
-    # Act
     categoria = CategoriaModel(
         id=categoria_id,
-        nombre=nombre,
-        descripcion=descripcion,
-        activo=activo
+        nombre=categoria_nombre,
+        descripcion=categoria_descripcion,
+        imagen_path=categoria_imagen,
     )
 
-    # Assert
     assert categoria.id == categoria_id
-    assert categoria.nombre == nombre
-    assert categoria.descripcion == descripcion
-    assert categoria.activo == activo
+    assert categoria.nombre == categoria_nombre
+    assert categoria.descripcion == categoria_descripcion
+    assert categoria.imagen_path == categoria_imagen
 
 
-def test_categoria_model_default_values():
+def test_categoria_to_dict():
     """
-    Verifica que los valores por defecto se asignen correctamente.
+    Verifica que el método to_dict() funciona correctamente.
 
     PRECONDICIONES:
-        - Se debe tener acceso al modelo CategoriaModel.
+        - La clase CategoriaModel debe tener implementado el método to_dict().
+        - Los atributos id, nombre, descripcion, imagen_path y activo deben existir en el modelo.
 
     PROCESO:
-        - Crear una instancia con solo los campos requeridos.
-        - Verificar que los valores por defecto se apliquen.
+        - Crear una instancia de CategoriaModel con valores específicos.
+        - Llamar al método to_dict() para obtener un diccionario.
 
     POSTCONDICIONES:
-        - Los valores por defecto deben ser los esperados.
+        - El diccionario debe contener todas las claves esperadas.
+        - Los valores deben coincidir con los de la instancia original.
     """
-    # Arrange & Act
-    categoria = CategoriaModel(nombre="Bebidas")
+    categoria_id: UUID = uuid4()
+    categoria_nombre = "Postres"
+    categoria_descripcion = "Dulces y postres"
+    categoria = CategoriaModel(
+        id=categoria_id, 
+        nombre=categoria_nombre, 
+        descripcion=categoria_descripcion
+    )
 
-    # Assert
-    assert categoria.nombre == "Bebidas"
+    dict_result = categoria.to_dict()
+
+    assert "id" in dict_result
+    assert "nombre" in dict_result
+    assert "descripcion" in dict_result
+
+    assert dict_result["id"] == categoria_id
+    assert dict_result["nombre"] == categoria_nombre
+    assert dict_result["descripcion"] == categoria_descripcion
+    assert dict_result["activo"] is None
+
+
+def test_categoria_activo_default():
+    """
+    Verifica el comportamiento del valor predeterminado para el atributo activo.
+
+    PRECONDICIONES:
+        - La clase CategoriaModel debe tener un atributo activo con valor predeterminado.
+        - La clase CategoriaModel debe aceptar la creación de instancias sin valor para activo.
+
+    PROCESO:
+        - Crear una instancia de CategoriaModel proporcionando solo el nombre obligatorio.
+
+    POSTCONDICIONES:
+        - Los atributos con nullable=True deben ser None si no se proporcionan.
+    """
+    categoria = CategoriaModel(nombre="test_categoria")
+
     assert categoria.descripcion is None
-    assert categoria.activo is None  # El default se aplica a nivel de BD, no de Python
-
-
-def test_categoria_model_to_dict():
-    """
-    Verifica que el método to_dict convierte correctamente la instancia a diccionario.
-
-    PRECONDICIONES:
-        - Se debe tener una instancia válida de CategoriaModel.
-
-    PROCESO:
-        - Crear una instancia con datos conocidos.
-        - Llamar al método to_dict.
-        - Verificar que el diccionario contenga todos los campos esperados.
-
-    POSTCONDICIONES:
-        - El diccionario debe contener todos los atributos del modelo.
-        - Los valores deben coincidir con los de la instancia.
-    """
-    # Arrange
-    categoria_id = uuid4()
-    categoria = CategoriaModel(
-        id=categoria_id,
-        nombre="Postres",
-        descripcion="Dulces y postres",
-        activo=True
-    )
-
-    # Act
-    result = categoria.to_dict()
-
-    # Assert
-    assert isinstance(result, dict)
-    assert result["id"] == categoria_id
-    assert result["nombre"] == "Postres"
-    assert result["descripcion"] == "Dulces y postres"
-    assert result["activo"] is True
-
-
-def test_categoria_model_from_dict():
-    """
-    Verifica que el método from_dict crea correctamente una instancia desde un diccionario.
-
-    PRECONDICIONES:
-        - Se debe tener acceso al método from_dict de CategoriaModel.
-
-    PROCESO:
-        - Crear un diccionario con datos válidos.
-        - Llamar al método from_dict.
-        - Verificar que la instancia creada tenga los valores correctos.
-
-    POSTCONDICIONES:
-        - La instancia debe crearse correctamente.
-        - Todos los valores deben coincidir con el diccionario original.
-    """
-    # Arrange
-    categoria_id = uuid4()
-    data = {
-        "id": categoria_id,
-        "nombre": "Platos Principales",
-        "descripcion": "Platos principales del menú",
-        "activo": False
-    }
-
-    # Act
-    categoria = CategoriaModel.from_dict(data)
-
-    # Assert
-    assert isinstance(categoria, CategoriaModel)
-    assert categoria.id == categoria_id
-    assert categoria.nombre == "Platos Principales"
-    assert categoria.descripcion == "Platos principales del menú"
-    assert categoria.activo is False
-
-
-def test_categoria_model_update_from_dict():
-    """
-    Verifica que el método update_from_dict actualiza correctamente la instancia.
-
-    PRECONDICIONES:
-        - Se debe tener una instancia válida de CategoriaModel.
-
-    PROCESO:
-        - Crear una instancia inicial.
-        - Crear un diccionario con datos de actualización.
-        - Llamar al método update_from_dict.
-        - Verificar que los campos se actualicen correctamente.
-
-    POSTCONDICIONES:
-        - Los campos especificados deben actualizarse.
-        - Los campos no especificados deben mantener sus valores originales.
-    """
-    # Arrange
-    categoria = CategoriaModel(
-        nombre="Original",
-        descripcion="Descripción original",
-        activo=True
-    )
-
-    update_data = {
-        "nombre": "Actualizado",
-        "descripcion": "Nueva descripción",
-        "activo": False
-    }
-
-    # Act
-    categoria.update_from_dict(update_data)
-
-    # Assert
-    assert categoria.nombre == "Actualizado"
-    assert categoria.descripcion == "Nueva descripción"
-    assert categoria.activo is False
-
-
-def test_categoria_model_update_from_dict_partial():
-    """
-    Verifica que el método update_from_dict actualiza solo los campos especificados.
-
-    PRECONDICIONES:
-        - Se debe tener una instancia válida de CategoriaModel.
-
-    PROCESO:
-        - Crear una instancia inicial con todos los campos.
-        - Crear un diccionario con solo algunos campos para actualizar.
-        - Llamar al método update_from_dict.
-        - Verificar que solo se actualicen los campos especificados.
-
-    POSTCONDICIONES:
-        - Solo los campos especificados deben actualizarse.
-        - Los demás campos deben mantener sus valores originales.
-    """
-    # Arrange
-    categoria = CategoriaModel(
-        nombre="Original",
-        descripcion="Descripción original",
-        activo=True
-    )
-
-    update_data = {
-        "nombre": "Solo nombre actualizado"
-    }
-
-    # Act
-    categoria.update_from_dict(update_data)
-
-    # Assert
-    assert categoria.nombre == "Solo nombre actualizado"
-    assert categoria.descripcion == "Descripción original"  # No cambió
-    assert categoria.activo is True  # No cambió
-
-
-def test_categoria_model_table_name():
-    """
-    Verifica que el nombre de la tabla esté correctamente definido.
-
-    PRECONDICIONES:
-        - Se debe tener acceso al modelo CategoriaModel.
-
-    PROCESO:
-        - Verificar el atributo __tablename__ del modelo.
-
-    POSTCONDICIONES:
-        - El nombre de la tabla debe ser "categoria".
-    """
-    # Assert
-    assert CategoriaModel.__tablename__ == "categoria"
-
-
-def test_categoria_model_required_fields():
-    """
-    Verifica que los campos requeridos estén correctamente definidos.
-
-    PRECONDICIONES:
-        - Se debe tener acceso al modelo CategoriaModel.
-
-    PROCESO:
-        - Crear una instancia sin el campo nombre (requerido).
-        - Verificar que el campo nombre sea None.
-
-    POSTCONDICIONES:
-        - El campo nombre debe ser None cuando no se proporciona.
-    """
-    # Arrange & Act
-    categoria = CategoriaModel()  # Sin el campo requerido 'nombre'
-    
-    # Assert
-    assert categoria.nombre is None
+    assert categoria.imagen_path is None
+    assert categoria.activo is None

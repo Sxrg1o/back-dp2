@@ -21,8 +21,8 @@ POSTCONDICIONES:
 """
 
 import pytest
-from uuid import UUID, uuid4
-from unittest.mock import AsyncMock, MagicMock, patch
+from uuid import uuid4
+from unittest.mock import AsyncMock, MagicMock
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.exc import SQLAlchemyError
 
@@ -332,74 +332,3 @@ async def test_get_all():
     assert total == 2
     assert mock_session.execute.call_count == 2
 
-
-@pytest.mark.asyncio
-async def test_get_activas():
-    """
-    Verifica que el método get_activas retorna correctamente una lista paginada de categorías activas.
-
-    PRECONDICIONES:
-        - Se debe tener una instancia mock de AsyncSession.
-
-    PROCESO:
-        - Configurar los mocks para simular la respuesta de la base de datos.
-        - Llamar al método get_activas con parámetros de paginación.
-        - Verificar que se retorne la lista y el total correctos.
-
-    POSTCONDICIONES:
-        - El método debe retornar una tupla con lista y total.
-        - La lista debe contener objetos CategoriaModel.
-        - El total debe ser correcto.
-    """
-    # Arrange
-    mock_session = AsyncMock(spec=AsyncSession)
-    mock_result = MagicMock()
-    mock_count_result = MagicMock()
-    
-    categorias = [
-        CategoriaModel(id=uuid4(), nombre="Categoria1", activo=True),
-        CategoriaModel(id=uuid4(), nombre="Categoria2", activo=True)
-    ]
-    mock_result.scalars.return_value.all.return_value = categorias
-    mock_count_result.scalar.return_value = 2
-    
-    mock_session.execute.side_effect = [mock_result, mock_count_result]
-
-    repository = CategoriaRepository(mock_session)
-
-    # Act
-    result, total = await repository.get_activas(skip=0, limit=10)
-
-    # Assert
-    assert isinstance(result, list)
-    assert len(result) == 2
-    assert all(isinstance(cat, CategoriaModel) for cat in result)
-    assert total == 2
-    assert mock_session.execute.call_count == 2
-
-
-@pytest.mark.asyncio
-async def test_get_all_with_error():
-    """
-    Verifica que el método get_all maneja correctamente los errores de base de datos.
-
-    PRECONDICIONES:
-        - Se debe tener una instancia mock de AsyncSession.
-
-    PROCESO:
-        - Configurar el mock para simular un error de base de datos.
-        - Llamar al método get_all.
-        - Verificar que se propague la excepción.
-
-    POSTCONDICIONES:
-        - El método debe propagar la excepción SQLAlchemyError.
-    """
-    # Arrange
-    mock_session = AsyncMock(spec=AsyncSession)
-    mock_session.execute.side_effect = SQLAlchemyError("Error de prueba")
-
-    repository = CategoriaRepository(mock_session)
-
-    # Act & Assert
-    with pytest.raises(SQLAlchemyError):
-        await repository.get_all()

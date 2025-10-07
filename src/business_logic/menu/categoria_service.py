@@ -1,167 +1,224 @@
 """
-Categoria service for business logic related to category management.
+Servicio para la gestión de categorías en el sistema.
 """
 
-from typing import List, Optional
+from uuid import UUID
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.exc import IntegrityError
 
-from src.repositories.menu.categoria_mysql_repository import CategoriaMySQLRepository
+from src.repositories.menu.categoria_repository import CategoriaRepository
 from src.models.menu.categoria_model import CategoriaModel
-from src.business_logic.exceptions.base_exceptions import ValidationError, NotFoundError
+from src.api.schemas.categoria_schema import (
+    CategoriaCreate,
+    CategoriaUpdate,
+    CategoriaResponse,
+    CategoriaSummary,
+    CategoriaList,
+)
+from src.business_logic.exceptions.categoria_exceptions import (
+    CategoriaValidationError,
+    CategoriaNotFoundError,
+    CategoriaConflictError,
+)
 
 
 class CategoriaService:
-    """Categoria service for business operations."""
+    """Servicio para la gestión de categorías en el sistema.
 
-    def __init__(self):
-        self.categoria_repo = CategoriaMySQLRepository()
+    Esta clase implementa la lógica de negocio para operaciones relacionadas
+    con categorías, incluyendo validaciones, transformaciones y manejo de excepciones.
 
-    async def create_categoria(
-        self,
-        db: AsyncSession,
-        nombre: str,
-        descripcion: Optional[str] = None,
-        orden: int = 0,
-        activo: bool = True,
-        imagen_path: Optional[str] = None
-    ) -> CategoriaModel:
-        """Create a new category."""
-        # Validate input
-        if not nombre or len(nombre.strip()) == 0:
-            raise ValidationError("Category name is required")
+    Attributes
+    ----------
+    repository : CategoriaRepository
+        Repositorio para acceso a datos de categorías.
+    """
 
-        if len(nombre) > 100:
-            raise ValidationError("Category name must be 100 characters or less")
+    def __init__(self, session: AsyncSession):
+        """
+        Inicializa el servicio con una sesión de base de datos.
 
-        # Normalize name
-        nombre = nombre.strip().title()
+        Parameters
+        ----------
+        session : AsyncSession
+            Sesión asíncrona de SQLAlchemy para realizar operaciones en la base de datos.
+        """
+        self.repository = CategoriaRepository(session)
 
-        # Validate order
-        if orden < 0:
-            raise ValidationError("Order must be a positive number")
+    async def create_categoria(self, categoria_data: CategoriaCreate) -> CategoriaResponse:
+        """
+        Crea una nueva categoría en el sistema.
+        
+        Parameters
+        ----------
+        categoria_data : CategoriaCreate
+            Datos para crear la nueva categoría.
 
-        # Check if category name already exists
-        existing_categoria = await self.categoria_repo.get_by_nombre(db, nombre)
-        if existing_categoria:
-            raise ValidationError(f"Category with name '{nombre}' already exists")
+        Returns
+        -------
+        CategoriaResponse
+            Esquema de respuesta con los datos de la categoría creada.
 
-        # Create category
-        return await self.categoria_repo.create_categoria(
-            db=db,
-            nombre=nombre,
-            descripcion=descripcion.strip() if descripcion else None,
-            orden=orden,
-            activo=activo,
-            imagen_path=imagen_path.strip() if imagen_path else None
-        )
+        Raises
+        ------
+        CategoriaConflictError
+            Si ya existe una categoría con el mismo nombre.
+        """
+        try:
+            # Crear modelo de categoría desde los datos
+            categoria = CategoriaModel(
+                nombre=categoria_data.nombre,
+                descripcion=categoria_data.descripcion,
+                imagen_path=categoria_data.imagen_path
+            )
 
-    async def get_categoria_by_id(self, db: AsyncSession, categoria_id: int) -> CategoriaModel:
-        """Get category by ID."""
-        categoria = await self.categoria_repo.get_by_id(db, categoria_id)
+            # Persistir en la base de datos
+            created_categoria = await self.repository.create(categoria)
+
+            # Convertir y retornar como esquema de respuesta
+            return CategoriaResponse.model_validate(created_categoria)
+        except IntegrityError:
+            # Capturar errores de integridad (nombre duplicado)
+            raise CategoriaConflictError(
+                f"Ya existe una categoría con el nombre '{categoria_data.nombre}'"
+            )
+
+    async def get_categoria_by_id(self, categoria_id: UUID) -> CategoriaResponse:
+        """
+        Obtiene una categoría por su ID.
+
+        Parameters
+        ----------
+        categoria_id : UUID
+            Identificador único de la categoría a buscar.
+
+        Returns
+        -------
+        CategoriaResponse
+            Esquema de respuesta con los datos de la categoría.
+
+        Raises
+        ------
+        CategoriaNotFoundError
+            Si no se encuentra una categoría con el ID proporcionado.
+        """
+        # Buscar la categoría por su ID
+        categoria = await self.repository.get_by_id(categoria_id)
+
+        # Verificar si existe
         if not categoria:
-            raise NotFoundError(f"Category with ID {categoria_id} not found")
-        return categoria
+            raise CategoriaNotFoundError(f"No se encontró la categoría con ID {categoria_id}")
 
-    async def list_categorias(
-        self,
-        db: AsyncSession,
-        skip: int = 0,
-        limit: int = 100,
-        activo_only: bool = False,
-        order_by_orden: bool = True
-    ) -> List[CategoriaModel]:
-        """List all categories with pagination."""
-        if limit > 100:
-            limit = 100  # Enforce maximum limit
+        # Convertir y retornar como esquema de respuesta
+        return CategoriaResponse.model_validate(categoria)
 
-        return await self.categoria_repo.get_all(
-            db, skip, limit, activo_only, order_by_orden
-        )
+    async def delete_categoria(self, categoria_id: UUID) -> bool:
+        """
+        Elimina una categoría por su ID.
+        
+        Parameters
+        ----------
+        categoria_id : UUID
+            Identificador único de la categoría a eliminar.
 
-    async def update_categoria(
-        self,
-        db: AsyncSession,
-        categoria_id: int,
-        nombre: Optional[str] = None,
-        descripcion: Optional[str] = None,
-        orden: Optional[int] = None,
-        activo: Optional[bool] = None,
-        imagen_path: Optional[str] = None
-    ) -> CategoriaModel:
-        """Update category."""
-        # Check if category exists
-        existing_categoria = await self.categoria_repo.get_by_id(db, categoria_id)
-        if not existing_categoria:
-            raise NotFoundError(f"Category with ID {categoria_id} not found")
+        Returns
+        -------
+        bool
+            True si la categoría fue eliminada correctamente.
 
-        # Validate and prepare update data
-        update_data = {}
+        Raises
+        ------
+        CategoriaNotFoundError
+            Si no se encuentra una categoría con el ID proporcionado.
+        """
+        # Verificar primero si la categoría existe
+        categoria = await self.repository.get_by_id(categoria_id)
+        if not categoria:
+            raise CategoriaNotFoundError(f"No se encontró la categoría con ID {categoria_id}")
 
-        if nombre is not None:
-            if not nombre or len(nombre.strip()) == 0:
-                raise ValidationError("Category name cannot be empty")
+        # Eliminar la categoría
+        result = await self.repository.delete(categoria_id)
+        return result
 
-            if len(nombre) > 100:
-                raise ValidationError("Category name must be 100 characters or less")
+    async def get_categorias(self, skip: int = 0, limit: int = 100) -> CategoriaList:
+        """
+        Obtiene una lista paginada de categorías.
 
-            nombre = nombre.strip().title()
+        Parameters
+        ----------
+        skip : int, optional
+            Número de registros a omitir (offset), por defecto 0.
+        limit : int, optional
+            Número máximo de registros a retornar, por defecto 100.
 
-            # Check if new name already exists (excluding current category)
-            if nombre != existing_categoria.nombre:
-                name_exists = await self.categoria_repo.exists_nombre(db, nombre, categoria_id)
-                if name_exists:
-                    raise ValidationError(f"Category with name '{nombre}' already exists")
+        Returns
+        -------
+        CategoriaList
+            Esquema con la lista de categorías y el total.
+        """
+        # Validar parámetros de entrada
+        if skip < 0:
+            raise CategoriaValidationError(
+                "El parámetro 'skip' debe ser mayor o igual a cero"
+            )
+        if limit < 1:
+            raise CategoriaValidationError("El parámetro 'limit' debe ser mayor a cero")
 
-            update_data['nombre'] = nombre
+        # Obtener categorías desde el repositorio
+        categorias, total = await self.repository.get_all(skip, limit)
 
-        if descripcion is not None:
-            update_data['descripcion'] = descripcion.strip() if descripcion else None
+        # Convertir modelos a esquemas de resumen
+        categoria_summaries = [CategoriaSummary.model_validate(categoria) for categoria in categorias]
 
-        if orden is not None:
-            if orden < 0:
-                raise ValidationError("Order must be a positive number")
-            update_data['orden'] = orden
+        # Retornar esquema de lista
+        return CategoriaList(items=categoria_summaries, total=total)
 
-        if activo is not None:
-            update_data['activo'] = activo
+    async def update_categoria(self, categoria_id: UUID, categoria_data: CategoriaUpdate) -> CategoriaResponse:
+        """
+        Actualiza una categoría existente.
 
-        if imagen_path is not None:
-            update_data['imagen_path'] = imagen_path.strip() if imagen_path else None
+        Parameters
+        ----------
+        categoria_id : UUID
+            Identificador único de la categoría a actualizar.
+        categoria_data : CategoriaUpdate
+            Datos para actualizar la categoría.
 
-        # Update category
-        return await self.categoria_repo.update_categoria(db, categoria_id, **update_data)
+        Returns
+        -------
+        CategoriaResponse
+            Esquema de respuesta con los datos de la categoría actualizada.
 
-    async def delete_categoria(self, db: AsyncSession, categoria_id: int) -> bool:
-        """Delete category."""
-        # Check if category exists
-        existing_categoria = await self.categoria_repo.get_by_id(db, categoria_id)
-        if not existing_categoria:
-            raise NotFoundError(f"Category with ID {categoria_id} not found")
+        Raises
+        ------
+        CategoriaNotFoundError
+            Si no se encuentra una categoría con el ID proporcionado.
+        CategoriaConflictError
+            Si ya existe otra categoría con el mismo nombre.
+        """
+        # Convertir el esquema de actualización a un diccionario,
+        # excluyendo valores None (campos no proporcionados para actualizar)
+        update_data = categoria_data.model_dump(exclude_none=True)
 
-        return await self.categoria_repo.delete_categoria(db, categoria_id)
+        if not update_data:
+            # Si no hay datos para actualizar, simplemente retornar la categoría actual
+            return await self.get_categoria_by_id(categoria_id)
 
-    async def initialize_default_categorias(self, db: AsyncSession) -> List[CategoriaModel]:
-        """Initialize default categories."""
-        default_categorias = [
-            ("Entradas", "Aperitivos y entradas para comenzar", 1),
-            ("Platos Principales", "Platos fuertes y especialidades", 2),
-            ("Postres", "Dulces y postres para finalizar", 3),
-            ("Bebidas", "Bebidas frías y calientes", 4),
-            ("Ensaladas", "Ensaladas frescas y saludables", 5)
-        ]
+        try:
+            # Actualizar la categoría
+            updated_categoria = await self.repository.update(categoria_id, **update_data)
 
-        created_categorias = []
+            # Verificar si la categoría fue encontrada
+            if not updated_categoria:
+                raise CategoriaNotFoundError(f"No se encontró la categoría con ID {categoria_id}")
 
-        for nombre, descripcion, orden in default_categorias:
-            try:
-                # Check if category already exists
-                existing_categoria = await self.categoria_repo.get_by_nombre(db, nombre)
-                if not existing_categoria:
-                    categoria = await self.create_categoria(db, nombre, descripcion, orden)
-                    created_categorias.append(categoria)
-                else:
-                    created_categorias.append(existing_categoria)
-            except ValidationError:
-                pass
-
-        return created_categorias
+            # Convertir y retornar como esquema de respuesta
+            return CategoriaResponse.model_validate(updated_categoria)
+        except IntegrityError:
+            # Capturar errores de integridad (nombre duplicado)
+            if "nombre" in update_data:
+                raise CategoriaConflictError(
+                    f"Ya existe una categoría con el nombre '{update_data['nombre']}'"
+                )
+            # Si no es por nombre, reenviar la excepción original
+            raise

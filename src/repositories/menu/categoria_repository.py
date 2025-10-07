@@ -186,7 +186,10 @@ class CategoriaRepository:
             raise
 
     async def get_all(
-        self, skip: int = 0, limit: int = 100
+        self, 
+        skip: int = 0, 
+        limit: int = 100,
+        activo: Optional[bool] = None
     ) -> Tuple[List[CategoriaModel], int]:
         """
         Obtiene una lista paginada de categorías y el total de registros.
@@ -197,56 +200,25 @@ class CategoriaRepository:
             Número de registros a omitir (offset), por defecto 0.
         limit : int, optional
             Número máximo de registros a retornar, por defecto 100.
+        activo : Optional[bool], optional
+            Si se especifica, filtra por estado activo/inactivo.
 
         Returns
         -------
         Tuple[List[CategoriaModel], int]
             Tupla con la lista de categorías y el número total de registros.
         """
-        # Consulta para obtener las categorías paginadas
-        query = select(CategoriaModel).offset(skip).limit(limit)
-
-        # Consulta para obtener el total de registros
+        # Consulta base para obtener las categorías paginadas
+        query = select(CategoriaModel)
         count_query = select(func.count(CategoriaModel.id))
 
-        try:
-            # Ejecutar ambas consultas
-            result = await self.session.execute(query)
-            count_result = await self.session.execute(count_query)
+        # Aplicar filtro de activo si se especifica
+        if activo is not None:
+            query = query.where(CategoriaModel.activo == activo)
+            count_query = count_query.where(CategoriaModel.activo == activo)
 
-            # Obtener los resultados
-            categorias = result.scalars().all()
-            total = count_result.scalar() or 0
-
-            return list(categorias), total
-        except SQLAlchemyError:
-            # En caso de error, no es necesario hacer rollback aquí
-            # porque no estamos modificando datos
-            raise
-
-    async def get_activas(
-        self, skip: int = 0, limit: int = 100
-    ) -> Tuple[List[CategoriaModel], int]:
-        """
-        Obtiene una lista paginada de categorías activas y el total de registros.
-
-        Parameters
-        ----------
-        skip : int, optional
-            Número de registros a omitir (offset), por defecto 0.
-        limit : int, optional
-            Número máximo de registros a retornar, por defecto 100.
-
-        Returns
-        -------
-        Tuple[List[CategoriaModel], int]
-            Tupla con la lista de categorías activas y el número total de registros.
-        """
-        # Consulta para obtener las categorías activas paginadas
-        query = select(CategoriaModel).where(CategoriaModel.activo == True).offset(skip).limit(limit)
-
-        # Consulta para obtener el total de registros activos
-        count_query = select(func.count(CategoriaModel.id)).where(CategoriaModel.activo == True)
+        # Aplicar paginación
+        query = query.offset(skip).limit(limit)
 
         try:
             # Ejecutar ambas consultas
@@ -259,6 +231,4 @@ class CategoriaRepository:
 
             return list(categorias), total
         except SQLAlchemyError:
-            # En caso de error, no es necesario hacer rollback aquí
-            # porque no estamos modificando datos
             raise
