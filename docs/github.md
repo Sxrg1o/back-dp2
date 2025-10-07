@@ -64,7 +64,7 @@ git commit -m "avance"
 
 # Terrible: cualquier cosa generada por AI
 
-# TIP: mientras menos cambios por commit la ia generara menos trash
+# TIP: mientras menos cambios por commit la AI generará menos basura
 ```
 
 ## 3\. Pull Requests (PRs)
