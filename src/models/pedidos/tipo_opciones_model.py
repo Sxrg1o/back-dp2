@@ -1,93 +1,66 @@
 """
-Modelo de opciones para configuración de productos o servicios.
+Modelo de tipo de opciones disponibles para productos o configuraciones.
 
-Define las opciones disponibles asociadas a un producto o componente configurable,
-incluyendo su etiqueta, precio adicional y estado por defecto. 
-Adaptado para coincidir con el esquema existente de MySQL restaurant_dp2.opciones.
+Define las categorías o tipos de opciones (por ejemplo: nivel de ají, acompañamiento,
+temperatura) que agrupan las opciones disponibles en el sistema.
 """
 
 from typing import Any, Dict, Optional, Type, TypeVar
 from sqlalchemy.orm import Mapped, mapped_column
-from sqlalchemy import String, DECIMAL, Boolean, inspect
+from sqlalchemy import String, Integer, Boolean, inspect
 from src.models.base_model import BaseModel
 from src.models.mixins.audit_mixin import AuditMixin
 
-# Definimos un TypeVar para el tipado genérico
-T = TypeVar("T", bound="OpcionModel")
+# Definimos un TypeVar para tipado genérico
+T = TypeVar("T", bound="TipoOpcionModel")
 
 
-class OpcionModel(BaseModel, AuditMixin):
-    """Modelo para representar las opciones configurables de un producto.
-
-    Permite definir opciones adicionales o alternativas que pueden afectar
-    el precio final de un producto o servicio, con soporte de auditoría y control
-    de estado activo.
+class TipoOpcionModel(BaseModel, AuditMixin):
+    """Modelo para representar los tipos de opciones de productos o configuraciones.
 
     Attributes
     ----------
-    etiqueta : str
-        Nombre o etiqueta visible de la opción.
-    precio_adicional : float
-        Monto adicional que agrega la opción al precio base.
-    es_default : bool
-        Indica si la opción es la predeterminada dentro del conjunto.
+    codigo : str
+        Código interno o identificador corto del tipo de opción (e.g. 'nivel_aji').
+    nombre : str
+        Nombre descriptivo del tipo de opción (e.g. 'Nivel de Ají').
+    descripcion : str, optional
+        Descripción más detallada del propósito o aplicación de este tipo de opción.
     activo : bool
-        Indica si la opción está activa o deshabilitada.
+        Indica si el tipo de opción está activo o no.
+    orden : int
+        Orden de visualización o prioridad para mostrar este tipo.
     fecha_creacion : datetime
-        Fecha y hora de creación del registro (heredado de AuditMixin).
+        Fecha y hora de creación (heredado de AuditMixin).
     fecha_modificacion : datetime
         Fecha y hora de última modificación (heredado de AuditMixin).
-    creado_por : str, optional
-        Usuario que creó el registro (heredado de AuditMixin).
-    modificado_por : str, optional
-        Usuario que modificó por última vez el registro (heredado de AuditMixin).
     """
 
-    __tablename__ = "opciones"
+    __tablename__ = "tipo_opcion"
 
-    # Columnas específicas del modelo de opción
-    etiqueta: Mapped[str] = mapped_column(String(100), nullable=False)
-    precio_adicional: Mapped[float] = mapped_column(DECIMAL(10, 2), nullable=False, default=0.00)
-    es_default: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
-    activo: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
+    # Columnas específicas del modelo
+    codigo: Mapped[str] = mapped_column(String(50), nullable=False, unique=True)
+    nombre: Mapped[str] = mapped_column(String(100), nullable=False)
+    descripcion: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
+    activo: Mapped[bool] = mapped_column(
+        Boolean, nullable=False, default=True, server_default="1"
+    )
+    orden: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
 
-    # Métodos comunes
+    # Métodos utilitarios
     def to_dict(self) -> Dict[str, Any]:
-        """Convierte la instancia del modelo a un diccionario.
-
-        Returns
-        -------
-        Dict[str, Any]
-            Diccionario con los nombres de columnas como claves y sus valores correspondientes.
-        """
+        """Convierte la instancia del modelo a un diccionario."""
         return {c.name: getattr(self, c.name) for c in self.__table__.columns}
 
     @classmethod
     def from_dict(cls: Type[T], data: Dict[str, Any]) -> T:
-        """Crea una instancia del modelo a partir de un diccionario.
-
-        Parameters
-        ----------
-        data : Dict[str, Any]
-            Diccionario con los datos para crear la instancia.
-
-        Returns
-        -------
-        T
-            Nueva instancia del modelo con los datos proporcionados.
-        """
+        """Crea una instancia del modelo a partir de un diccionario."""
         return cls(
             **{k: v for k, v in data.items() if k in inspect(cls).columns.keys()}
         )
 
     def update_from_dict(self, data: Dict[str, Any]) -> None:
-        """Actualiza la instancia con datos de un diccionario.
-
-        Parameters
-        ----------
-        data : Dict[str, Any]
-            Diccionario con los datos para actualizar la instancia.
-        """
+        """Actualiza la instancia con datos de un diccionario."""
         for key, value in data.items():
             if hasattr(self, key):
                 setattr(self, key, value)

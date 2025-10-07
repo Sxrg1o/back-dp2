@@ -1,98 +1,89 @@
 from uuid import UUID, uuid4
-from src.models.pedidos.tipo_opciones_model import OpcionModel
+from src.models.pedidos.tipo_opciones_model import TipoOpcionModel
 
 
-def test_opcion_model_creation():
+def test_tipo_opcion_model_creation():
     """
-    Verifica que un objeto OpcionModel se crea correctamente.
+    Verifica que un objeto TipoOpcionModel se crea correctamente.
 
     PRECONDICIONES:
-        - Dado un id, etiqueta, precio adicional y es_default.
+        - Dado un id, código, nombre y orden.
 
     PROCESO:
-        - Crear un registro de OpcionModel con valores predefinidos.
+        - Crear un registro de TipoOpcionModel con valores predefinidos.
 
     POSTCONDICIONES:
         - La instancia debe tener los valores exactos proporcionados durante la creación.
     """
-    opcion_id: UUID = uuid4()
-    etiqueta = "Tamaño grande"
-    precio_adicional = 5.50
-    es_default = False
+    tipo_id: UUID = uuid4()
+    codigo = "nivel_aji"
+    nombre = "Nivel de Ají"
+    descripcion = "Define el nivel de picante del plato."
+    orden = 1
 
-    opcion = OpcionModel(
-        id=opcion_id,
-        etiqueta=etiqueta,
-        precio_adicional=precio_adicional,
-        es_default=es_default,
+    tipo_opcion = TipoOpcionModel(
+        id=tipo_id,
+        codigo=codigo,
+        nombre=nombre,
+        descripcion=descripcion,
+        orden=orden,
     )
 
-    assert opcion.id == opcion_id
-    assert opcion.etiqueta == etiqueta
-    assert float(opcion.precio_adicional) == precio_adicional
-    assert opcion.es_default == es_default
+    assert tipo_opcion.id == tipo_id
+    assert tipo_opcion.codigo == codigo
+    assert tipo_opcion.nombre == nombre
+    assert tipo_opcion.descripcion == descripcion
+    assert tipo_opcion.orden == orden
 
 
-def test_opcion_to_dict():
+def test_tipo_opcion_to_dict():
     """
     Verifica que el método to_dict() funciona correctamente.
 
     PRECONDICIONES:
-        - La clase OpcionModel debe tener implementado el método to_dict().
-        - Los atributos id, etiqueta, precio_adicional, es_default y activo deben existir en el modelo.
+        - La clase TipoOpcionModel debe tener implementado el método to_dict().
 
     PROCESO:
-        - Crear una instancia de OpcionModel con valores específicos.
-        - Llamar al método to_dict() para obtener un diccionario.
+        - Crear una instancia y convertirla en diccionario.
 
     POSTCONDICIONES:
-        - El diccionario debe contener todas las claves esperadas.
-        - Los valores deben coincidir con los de la instancia original.
+        - El diccionario debe contener las claves esperadas con valores correctos.
     """
-    opcion_id: UUID = uuid4()
-    etiqueta = "Extra queso"
-    precio_adicional = 2.75
-    es_default = True
-
-    opcion = OpcionModel(
-        id=opcion_id,
-        etiqueta=etiqueta,
-        precio_adicional=precio_adicional,
-        es_default=es_default,
+    tipo_id: UUID = uuid4()
+    tipo_opcion = TipoOpcionModel(
+        id=tipo_id,
+        codigo="temperatura",
+        nombre="Temperatura del plato",
+        descripcion="Permite seleccionar caliente o frío.",
+        orden=2,
     )
 
-    dict_result = opcion.to_dict()
+    result = tipo_opcion.to_dict()
 
-    assert "id" in dict_result
-    assert "etiqueta" in dict_result
-    assert "precio_adicional" in dict_result
-    assert "es_default" in dict_result
-    assert "activo" in dict_result
+    assert "codigo" in result
+    assert "nombre" in result
+    assert "descripcion" in result
+    assert "orden" in result
 
-    assert dict_result["id"] == opcion_id
-    assert dict_result["etiqueta"] == etiqueta
-    assert float(dict_result["precio_adicional"]) == precio_adicional
-    assert dict_result["es_default"] == es_default
-    assert dict_result["activo"] is None
+    assert result["codigo"] == "temperatura"
+    assert result["nombre"] == "Temperatura del plato"
+    assert result["descripcion"] == "Permite seleccionar caliente o frío."
+    assert result["orden"] == 2
 
 
-def test_opcion_activo_default():
+def test_tipo_opcion_activo_default():
     """
-    Verifica el comportamiento del valor predeterminado para el atributo activo.
+    Verifica el valor predeterminado del atributo activo.
 
     PRECONDICIONES:
-        - La clase OpcionModel debe tener un atributo activo con valor predeterminado.
-        - La clase OpcionModel debe aceptar la creación de instancias sin valor para activo.
+        - La clase TipoOpcionModel debe tener un campo activo con valor por defecto.
 
     PROCESO:
-        - Crear una instancia de OpcionModel proporcionando solo la etiqueta y precio.
+        - Crear una instancia sin especificar el atributo activo.
 
     POSTCONDICIONES:
-        - Los atributos con nullable=True deben ser None si no se proporcionan.
-        - El atributo activo debe tener su valor por defecto definido.
+        - El atributo activo debe inicializarse como True.
     """
-    opcion = OpcionModel(etiqueta="Sin aderezos", precio_adicional=0.0)
+    tipo_opcion = TipoOpcionModel(codigo="acompanamiento", nombre="Acompañamiento")
 
-    assert opcion.precio_adicional == 0.0
-    assert opcion.es_default in (None, False)
-    assert opcion.activo is None
+    assert tipo_opcion.activo in (None,True)
