@@ -62,7 +62,7 @@ git commit -m "arreglos"
 # Malo: demasiado vago
 git commit -m "avance"
 
-# Terrible: cualquier cosa generada por ia
+# Terrible: cualquier cosa generada por AI
 
 # TIP: mientras menos cambios por commit la ia generara menos trash
 ```
