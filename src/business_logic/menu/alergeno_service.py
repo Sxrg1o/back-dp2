@@ -49,20 +49,6 @@ class AlergenoService:
         """
         Crea un nuevo alérgeno en el sistema.
 
-        PRECONDICIONES:
-            - Los datos del alérgeno deben pasar las validaciones de AlergenoCreate.
-            - El nombre del alérgeno debe ser único.
-
-        PROCESO:
-            - Valida que el nombre del alérgeno sea único.
-            - Crea un nuevo modelo de alérgeno con los datos proporcionados.
-            - Persiste el alérgeno en la base de datos.
-            - Convierte el modelo a un esquema de respuesta.
-
-        POSTCONDICIONES:
-            - El alérgeno es persistido en la base de datos.
-            - Se retorna un objeto AlergenoResponse con los datos del alérgeno creado.
-
         Parameters
         ----------
         alergeno_data : AlergenoCreate
@@ -102,18 +88,6 @@ class AlergenoService:
         """
         Obtiene un alérgeno por su ID.
 
-        PRECONDICIONES:
-            - El ID debe ser un UUID válido.
-
-        PROCESO:
-            - Busca el alérgeno en la base de datos usando el repositorio.
-            - Si existe, lo convierte a un esquema de respuesta.
-            - Si no existe, lanza una excepción.
-
-        POSTCONDICIONES:
-            - Se retorna un objeto AlergenoResponse si el alérgeno existe.
-            - Se lanza AlergenoNotFoundError si no existe.
-
         Parameters
         ----------
         alergeno_id : UUID
@@ -143,17 +117,6 @@ class AlergenoService:
         """
         Elimina un alérgeno por su ID.
 
-        PRECONDICIONES:
-            - El ID debe ser un UUID válido.
-
-        PROCESO:
-            - Verifica que el alérgeno existe.
-            - Elimina el alérgeno de la base de datos.
-
-        POSTCONDICIONES:
-            - El alérgeno es eliminado si existe.
-            - Se lanza AlergenoNotFoundError si no existe.
-
         Parameters
         ----------
         alergeno_id : UUID
@@ -181,16 +144,6 @@ class AlergenoService:
     async def get_alergenos(self, skip: int = 0, limit: int = 100) -> AlergenoList:
         """
         Obtiene una lista paginada de alérgenos.
-
-        PRECONDICIONES:
-            - Los parámetros skip y limit deben ser enteros no negativos.
-
-        PROCESO:
-            - Recupera los alérgenos según los parámetros de paginación.
-            - Convierte los modelos a esquemas de resumen.
-
-        POSTCONDICIONES:
-            - Se retorna un objeto AlergenoList con la lista de alérgenos y el total.
 
         Parameters
         ----------
@@ -224,20 +177,6 @@ class AlergenoService:
     async def update_alergeno(self, alergeno_id: UUID, alergeno_data: AlergenoUpdate) -> AlergenoResponse:
         """
         Actualiza un alérgeno existente.
-
-        PRECONDICIONES:
-            - El ID debe ser un UUID válido.
-            - Los datos de actualización deben pasar las validaciones de AlergenoUpdate.
-            - El alérgeno debe existir.
-
-        PROCESO:
-            - Verifica que el alérgeno existe.
-            - Actualiza solo los campos proporcionados.
-            - Persiste los cambios en la base de datos.
-
-        POSTCONDICIONES:
-            - El alérgeno es actualizado en la base de datos.
-            - Se retorna un objeto AlergenoResponse con los datos actualizados.
 
         Parameters
         ----------
