@@ -226,3 +226,63 @@ El objetivo de las pruebas unitarias es **aislar** un componente (una función, 
     ```
 
   * **Integración Continua (CI)**: En tu archivo `.github/workflows/deploy_backend.yml`, añade un paso **antes** del despliegue para ejecutar las pruebas. Si las pruebas fallan, el flujo de trabajo se detendrá y no se desplegará código roto.
+
+-----
+
+## 5\. Estructura de Docstrings para Pruebas
+
+Cada función de prueba (`test_*`) debe incluir un docstring estructurado con el siguiente formato para facilitar la comprensión y mantenimiento:
+
+```python
+def test_metodo_caso():
+    """
+    Descripción breve de lo que verifica la prueba.
+
+    PRECONDICIONES:
+        - Lista de requisitos previos o estado inicial necesario para la prueba.
+        - Mocks, fixtures o datos requeridos antes de ejecutar la prueba.
+
+    PROCESO:
+        - Pasos detallados de lo que hace la prueba.
+        - Configuración de mocks o simulaciones.
+        - Llamadas a métodos o funciones que se están probando.
+        - Verificaciones o aserciones que se realizan.
+
+    POSTCONDICIONES:
+        - Resultados esperados después de que la prueba se ejecute.
+        - Estado del sistema después de la ejecución.
+        - Efectos secundarios verificables.
+    """
+```
+
+### Ejemplo de docstring en una prueba de repositorio:
+
+```python
+@pytest.mark.asyncio
+async def test_get_rol_by_id():
+    """
+    Verifica que el método get_by_id recupera correctamente un rol por su ID.
+
+    PRECONDICIONES:
+        - Se debe tener una instancia mock de AsyncSession.
+        - Se debe tener un UUID válido para buscar.
+
+    PROCESO:
+        - Configurar el mock para simular la respuesta de la base de datos.
+        - Llamar al método get_by_id con un ID específico.
+        - Verificar que se ejecute la consulta correcta y se retorne el resultado esperado.
+
+    POSTCONDICIONES:
+        - El método debe retornar un objeto RolModel cuando existe el rol.
+        - El método debe retornar None cuando no existe el rol.
+        - La consulta SQL debe formarse correctamente.
+    """
+    # Implementación de la prueba...
+```
+
+Este formato de documentación ayuda a:
+1. **Clarificar el propósito** de cada prueba.
+2. **Documentar las dependencias** necesarias para ejecutar la prueba.
+3. **Explicar el proceso** que sigue la prueba, facilitando su comprensión.
+4. **Definir las expectativas** sobre los resultados y efectos de la prueba.
+5. **Facilitar el mantenimiento** y actualización de las pruebas a lo largo del tiempo.

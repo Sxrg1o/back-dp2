@@ -13,10 +13,20 @@ from src.repositories.auth.rol_repository import RolRepository
 async def test_create_rol_integration(async_client, db_session):
     """
     Prueba de integración para la creación de roles.
+    
+    PRECONDICIONES:
+        - El cliente asincrónico (async_client) debe estar configurado
+        - La sesión de base de datos (db_session) debe estar disponible y en estado limpio
+        - La API y repositorios deben estar funcionando correctamente
 
     PROCESO:
         - Envía una solicitud POST real al endpoint.
         - Verifica la respuesta completa y el estado de la base de datos.
+        
+    POSTCONDICIONES:
+        - La respuesta debe tener código HTTP 201 (Created)
+        - Los datos devueltos deben coincidir con los enviados
+        - El rol debe estar persistido en la base de datos y ser recuperable
     """
     # Arrange
     rol_data = {
@@ -47,10 +57,20 @@ async def test_create_rol_duplicate_integration(async_client, db_session):
     """
     Prueba de integración para la creación de roles con nombre duplicado.
 
+    PRECONDICIONES:
+        - El cliente asincrónico (async_client) debe estar configurado
+        - La sesión de base de datos (db_session) debe estar disponible y en estado limpio
+        - El modelo RolModel debe ser accesible para crear registros directamente
+
     PROCESO:
         - Inserta un rol directamente en la base de datos.
         - Intenta crear un rol con el mismo nombre vía API.
         - Verifica que se retorne el código de error apropiado.
+        
+    POSTCONDICIONES:
+        - La respuesta debe tener código HTTP 409 (Conflict)
+        - El mensaje de error debe indicar la duplicidad del rol
+        - No se debe crear un segundo rol con el mismo nombre en la base de datos
     """
     # Arrange - Create a rol directly in DB
     rol_nombre = "Test Duplicate Rol"
@@ -74,10 +94,20 @@ async def test_get_rol_by_id_integration(async_client, db_session):
     """
     Prueba de integración para obtener un rol por su ID.
 
+    PRECONDICIONES:
+        - El cliente asincrónico (async_client) debe estar configurado
+        - La sesión de base de datos (db_session) debe estar disponible y en estado limpio
+        - El modelo RolModel debe ser accesible para crear registros directamente
+
     PROCESO:
         - Inserta un rol directamente en la base de datos.
         - Solicita el rol por su ID vía API.
         - Verifica la respuesta completa.
+        
+    POSTCONDICIONES:
+        - La respuesta debe tener código HTTP 200 (OK)
+        - Los datos devueltos deben coincidir con los del rol creado
+        - Todos los campos esperados deben estar presentes en la respuesta
     """
     # Arrange - Create a rol directly in DB
     test_rol = RolModel(
@@ -103,9 +133,17 @@ async def test_get_rol_by_id_not_found_integration(async_client):
     """
     Prueba de integración para obtener un rol que no existe.
 
+    PRECONDICIONES:
+        - El cliente asincrónico (async_client) debe estar configurado
+        - La biblioteca uuid debe estar disponible para generar un ID aleatorio
+
     PROCESO:
         - Solicita un rol con ID inexistente.
         - Verifica que se retorne el código de error apropiado.
+        
+    POSTCONDICIONES:
+        - La respuesta debe tener código HTTP 404 (Not Found)
+        - El mensaje de error debe indicar que no se encontró el rol
     """
     # Arrange
     non_existent_id = str(uuid.uuid4())
@@ -127,10 +165,20 @@ async def test_list_roles_integration(async_client, db_session):
     """
     Prueba de integración para listar roles con paginación.
 
+    PRECONDICIONES:
+        - El cliente asincrónico (async_client) debe estar configurado
+        - La sesión de base de datos (db_session) debe estar disponible y en estado limpio
+        - El modelo RolModel debe ser accesible para crear registros directamente
+
     PROCESO:
         - Inserta varios roles directamente en la base de datos.
         - Solicita la lista paginada vía API.
         - Verifica la respuesta completa incluyendo metadatos de paginación.
+        
+    POSTCONDICIONES:
+        - La respuesta debe tener código HTTP 200 (OK)
+        - La respuesta debe incluir una lista de roles y el contador total
+        - La paginación debe funcionar correctamente limitando los resultados
     """
     # Arrange - Create multiple roles
     roles = [
@@ -157,10 +205,20 @@ async def test_update_rol_integration(async_client, db_session):
     """
     Prueba de integración para actualizar un rol.
 
+    PRECONDICIONES:
+        - El cliente asincrónico (async_client) debe estar configurado
+        - La sesión de base de datos (db_session) debe estar disponible y en estado limpio
+        - El modelo RolModel debe ser accesible para crear registros directamente
+
     PROCESO:
         - Inserta un rol directamente en la base de datos.
         - Actualiza el rol vía API.
         - Verifica la respuesta y el estado actualizado en la base de datos.
+        
+    POSTCONDICIONES:
+        - La respuesta debe tener código HTTP 200 (OK)
+        - Los datos devueltos deben reflejar los cambios realizados
+        - El rol debe estar actualizado en la base de datos con los nuevos valores
     """
     # Arrange - Create a rol directly in DB
     test_rol = RolModel(nombre="Test Update Rol", descripcion="Descripción original")
@@ -193,9 +251,17 @@ async def test_update_rol_not_found_integration(async_client):
     """
     Prueba de integración para actualizar un rol que no existe.
 
+    PRECONDICIONES:
+        - El cliente asincrónico (async_client) debe estar configurado
+        - La biblioteca uuid debe estar disponible para generar un ID aleatorio
+
     PROCESO:
         - Intenta actualizar un rol con ID inexistente.
         - Verifica que se retorne el código de error apropiado.
+        
+    POSTCONDICIONES:
+        - La respuesta debe tener código HTTP 404 (Not Found)
+        - El mensaje de error debe indicar que no se encontró el rol
     """
     # Arrange
     non_existent_id = str(uuid.uuid4())
@@ -220,10 +286,20 @@ async def test_update_rol_duplicate_integration(async_client, db_session):
     """
     Prueba de integración para actualizar un rol con nombre duplicado.
 
+    PRECONDICIONES:
+        - El cliente asincrónico (async_client) debe estar configurado
+        - La sesión de base de datos (db_session) debe estar disponible y en estado limpio
+        - El modelo RolModel debe ser accesible para crear registros directamente
+
     PROCESO:
         - Inserta dos roles directamente en la base de datos.
         - Intenta actualizar un rol para tener el mismo nombre que el otro.
         - Verifica que se retorne el código de error apropiado.
+        
+    POSTCONDICIONES:
+        - La respuesta debe tener código HTTP 409 (Conflict)
+        - El mensaje de error debe indicar la duplicidad del nombre
+        - El rol no debe ser actualizado con el nombre duplicado
     """
     # Arrange - Create two roles
     rol1 = RolModel(nombre="Rol Uno", descripcion="Descripción uno")
@@ -250,10 +326,20 @@ async def test_delete_rol_integration(async_client, db_session):
     """
     Prueba de integración para eliminar un rol.
 
+    PRECONDICIONES:
+        - El cliente asincrónico (async_client) debe estar configurado
+        - La sesión de base de datos (db_session) debe estar disponible y en estado limpio
+        - El modelo RolModel debe ser accesible para crear registros directamente
+
     PROCESO:
         - Inserta un rol directamente en la base de datos.
         - Elimina el rol vía API.
         - Verifica la respuesta y que el rol ya no exista en la base de datos.
+        
+    POSTCONDICIONES:
+        - La respuesta debe tener código HTTP 204 (No Content)
+        - La respuesta no debe tener contenido
+        - El rol no debe existir en la base de datos después de la eliminación
     """
     # Arrange - Create a rol directly in DB
     test_rol = RolModel(nombre="Test Delete Rol", descripcion="Rol para eliminar")
@@ -280,9 +366,17 @@ async def test_delete_rol_not_found_integration(async_client):
     """
     Prueba de integración para eliminar un rol que no existe.
 
+    PRECONDICIONES:
+        - El cliente asincrónico (async_client) debe estar configurado
+        - La biblioteca uuid debe estar disponible para generar un ID aleatorio
+
     PROCESO:
         - Intenta eliminar un rol con ID inexistente.
         - Verifica que se retorne el código de error apropiado.
+        
+    POSTCONDICIONES:
+        - La respuesta debe tener código HTTP 404 (Not Found)
+        - El mensaje de error debe indicar que no se encontró el rol
     """
     # Arrange
     non_existent_id = str(uuid.uuid4())

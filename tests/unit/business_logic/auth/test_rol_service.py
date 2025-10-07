@@ -23,12 +23,6 @@ from sqlalchemy.exc import IntegrityError
 def mock_repository():
     """
     Fixture que proporciona un mock del repositorio de roles.
-
-    PROCESO:
-        - Crea un mock del repositorio con métodos asíncronos.
-
-    POSTCONDICIONES:
-        - El mock puede ser utilizado para simular cualquier comportamiento del repositorio.
     """
     repository = AsyncMock()
     return repository
@@ -38,12 +32,6 @@ def mock_repository():
 def rol_service(mock_repository):
     """
     Fixture que proporciona una instancia del servicio de roles con un repositorio mockeado.
-
-    PROCESO:
-        - Crea una instancia del servicio con un mock del repositorio.
-
-    POSTCONDICIONES:
-        - El servicio está listo para ser utilizado en las pruebas.
     """
     service = RolService(AsyncMock())
     service.repository = mock_repository
@@ -54,12 +42,6 @@ def rol_service(mock_repository):
 def sample_rol_data():
     """
     Fixture que proporciona datos de muestra para un rol.
-
-    PROCESO:
-        - Crea datos de muestra para las pruebas.
-
-    POSTCONDICIONES:
-        - Los datos de muestra están disponibles para las pruebas.
     """
     return {
         "id": uuid.uuid4(),

@@ -4,86 +4,18 @@ Pruebas de integración para el repositorio de roles.
 
 import pytest
 from uuid import uuid4
-from typing import AsyncGenerator
-
-from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sessionmaker
-from sqlalchemy.pool import StaticPool
 
 from src.models.auth.rol_model import RolModel
 from src.repositories.auth.rol_repository import RolRepository
-from src.models.base_model import BaseModel
 
 
 @pytest.fixture(scope="function")
-async def async_engine():
-    """
-    Crea un motor SQLAlchemy asíncrono con una base de datos SQLite en memoria.
-
-    PRECONDICIONES:
-        - Se debe tener instalado aiosqlite.
-
-    PROCESO:
-        - Crea un motor de base de datos SQLite en memoria.
-        - Crea las tablas definidas en los modelos.
-        - Cede el control al test.
-        - Elimina el motor y la base de datos en memoria al finalizar.
-
-    POSTCONDICIONES:
-        - El motor se cierra correctamente después de las pruebas.
-        - La base de datos en memoria se destruye.
-    """
-    # Crear motor de base de datos asíncrono en memoria
-    engine = create_async_engine(
-        "sqlite+aiosqlite:///:memory:", echo=False, future=True, poolclass=StaticPool
-    )
-
-    # Crear esquema de base de datos
-    async with engine.begin() as conn:
-        await conn.run_sync(BaseModel.metadata.create_all)
-
-    yield engine
-
-    # Limpiar recursos
-    await engine.dispose()
-
-
-@pytest.fixture(scope="function")
-async def async_session(async_engine) -> AsyncGenerator[AsyncSession, None]:
-    """
-    Crea una sesión asíncrona para interactuar con la base de datos.
-
-    PRECONDICIONES:
-        - El motor de base de datos debe estar inicializado.
-
-    PROCESO:
-        - Crea una fábrica de sesiones asíncronas.
-        - Proporciona una sesión para las pruebas.
-        - Realiza rollback automático al finalizar para limpiar cualquier cambio.
-
-    POSTCONDICIONES:
-        - La sesión se cierra correctamente después de las pruebas.
-        - Los cambios no confirmados explícitamente se revierten.
-    """
-    # Crear una fábrica de sesiones
-    session_factory = async_sessionmaker(
-        bind=async_engine, expire_on_commit=False, autoflush=False
-    )
-
-    # Proporcionar una sesión para la prueba
-    async with session_factory() as session:
-        try:
-            yield session
-        finally:
-            await session.rollback()
-
-
-@pytest.fixture(scope="function")
-def rol_repository(async_session: AsyncSession) -> RolRepository:
+def rol_repository(db_session) -> RolRepository:
     """
     Crea una instancia del repositorio de roles con una sesión de base de datos.
 
     PRECONDICIONES:
-        - La sesión de base de datos debe estar inicializada.
+        - La sesión de base de datos debe estar inicializada en conftest.py.
 
     PROCESO:
         - Crea y retorna una instancia del repositorio con la sesión proporcionada.
@@ -91,7 +23,7 @@ def rol_repository(async_session: AsyncSession) -> RolRepository:
     POSTCONDICIONES:
         - El repositorio está listo para ser utilizado en las pruebas.
     """
-    return RolRepository(async_session)
+    return RolRepository(db_session)
 
 
 @pytest.mark.asyncio
