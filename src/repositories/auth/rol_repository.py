@@ -114,19 +114,6 @@ class RolRepository:
         """
         Actualiza un rol existente con los valores proporcionados.
 
-        PRECONDICIONES:
-            - El ID debe corresponder a un rol existente.
-            - Los campos a actualizar deben ser válidos para el modelo RolModel.
-
-        PROCESO:
-            - Construye una sentencia de actualización con los campos proporcionados.
-            - Ejecuta la actualización en la base de datos.
-            - Recupera el rol actualizado para retornarlo.
-
-        POSTCONDICIONES:
-            - El rol es actualizado en la base de datos.
-            - Se retorna el rol actualizado o None si no existe.
-
         Parameters
         ----------
         rol_id : UUID
@@ -185,18 +172,6 @@ class RolRepository:
     ) -> Tuple[List[RolModel], int]:
         """
         Obtiene una lista paginada de roles y el total de registros.
-
-        PRECONDICIONES:
-            - Los parámetros skip y limit deben ser enteros no negativos.
-
-        PROCESO:
-            - Construye dos consultas: una para obtener los registros paginados
-              y otra para contar el total de registros.
-            - Ejecuta ambas consultas.
-            - Retorna los resultados.
-
-        POSTCONDICIONES:
-            - Se retorna una tupla con la lista de roles y el total de registros.
 
         Parameters
         ----------
