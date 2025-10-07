@@ -1,243 +1,281 @@
 """
-Rol service for business logic related to role management.
+Servicio para la gestión de roles en el sistema.
 """
 
-from typing import List, Optional, Dict, Any
+from uuid import UUID
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.exc import IntegrityError
 
-from src.repositories.auth.rol_mysql_repository import RolMySQLRepository
+from src.repositories.auth.rol_repository import RolRepository
 from src.models.auth.rol_model import RolModel
-from src.business_logic.exceptions.base_exceptions import ValidationError, NotFoundError
+from src.api.schemas.rol_schema import (
+    RolCreate,
+    RolUpdate,
+    RolResponse,
+    RolSummary,
+    RolList,
+)
+from src.business_logic.exceptions.rol_exceptions import (
+    RolValidationError,
+    RolNotFoundError,
+    RolConflictError,
+)
 
 
 class RolService:
-    """Rol service for business operations."""
+    """Servicio para la gestión de roles en el sistema.
 
-    def __init__(self):
-        self.rol_repo = RolMySQLRepository()
+    Esta clase implementa la lógica de negocio para operaciones relacionadas
+    con roles, incluyendo validaciones, transformaciones y manejo de excepciones.
 
-    async def create_rol(
-        self,
-        db: AsyncSession,
-        nombre: str,
-        descripcion: Optional[str] = None
-    ) -> RolModel:
+    Attributes
+    ----------
+    repository : RolRepository
+        Repositorio para acceso a datos de roles.
+    """
+
+    def __init__(self, session: AsyncSession):
         """
-        Create a new role.
+        Inicializa el servicio con una sesión de base de datos.
 
-        Args:
-            db: Database session
-            nombre: Role name
-            descripcion: Role description
-
-        Returns:
-            Created role
-
-        Raises:
-            ValidationError: If role name already exists or validation fails
+        Parameters
+        ----------
+        session : AsyncSession
+            Sesión asíncrona de SQLAlchemy para realizar operaciones en la base de datos.
         """
-        # Validate input
-        if not nombre or len(nombre.strip()) == 0:
-            raise ValidationError("Role name is required")
+        self.repository = RolRepository(session)
 
-        if len(nombre) > 50:
-            raise ValidationError("Role name must be 50 characters or less")
-
-        # Normalize name (trim and title case)
-        nombre = nombre.strip().title()
-
-        # Check if role name already exists
-        existing_rol = await self.rol_repo.get_by_nombre(db, nombre)
-        if existing_rol:
-            raise ValidationError(f"Role with name '{nombre}' already exists")
-
-        # Create role
-        return await self.rol_repo.create_rol(
-            db=db,
-            nombre=nombre,
-            descripcion=descripcion.strip() if descripcion else None
-        )
-
-    async def get_rol_by_id(self, db: AsyncSession, rol_id: int) -> RolModel:
+    async def create_rol(self, rol_data: RolCreate) -> RolResponse:
         """
-        Get role by ID.
+        Crea un nuevo rol en el sistema.
 
-        Args:
-            db: Database session
-            rol_id: Role ID
+        PRECONDICIONES:
+            - Los datos del rol deben pasar las validaciones de RolCreate.
+            - El nombre del rol debe ser único.
 
-        Returns:
-            Role
+        PROCESO:
+            - Valida que el nombre del rol sea único.
+            - Crea un nuevo modelo de rol con los datos proporcionados.
+            - Persiste el rol en la base de datos.
+            - Convierte el modelo a un esquema de respuesta.
 
-        Raises:
-            NotFoundError: If role not found
+        POSTCONDICIONES:
+            - El rol es persistido en la base de datos.
+            - Se retorna un objeto RolResponse con los datos del rol creado.
+
+        Parameters
+        ----------
+        rol_data : RolCreate
+            Datos para crear el nuevo rol.
+
+        Returns
+        -------
+        RolResponse
+            Esquema de respuesta con los datos del rol creado.
+
+        Raises
+        ------
+        RolConflictError
+            Si ya existe un rol con el mismo nombre.
         """
-        rol = await self.rol_repo.get_by_id(db, rol_id)
+        try:
+            # Crear modelo de rol desde los datos
+            rol = RolModel(nombre=rol_data.nombre, descripcion=rol_data.descripcion)
+
+            # Persistir en la base de datos
+            created_rol = await self.repository.create(rol)
+
+            # Convertir y retornar como esquema de respuesta
+            return RolResponse.model_validate(created_rol)
+        except IntegrityError:
+            # Capturar errores de integridad (nombre duplicado)
+            raise RolConflictError(
+                f"Ya existe un rol con el nombre '{rol_data.nombre}'"
+            )
+
+    async def get_rol_by_id(self, rol_id: UUID) -> RolResponse:
+        """
+        Obtiene un rol por su ID.
+
+        PRECONDICIONES:
+            - El ID debe ser un UUID válido.
+
+        PROCESO:
+            - Busca el rol en la base de datos usando el repositorio.
+            - Si existe, lo convierte a un esquema de respuesta.
+            - Si no existe, lanza una excepción.
+
+        POSTCONDICIONES:
+            - Se retorna un objeto RolResponse si el rol existe.
+            - Se lanza RolNotFoundError si no existe.
+
+        Parameters
+        ----------
+        rol_id : UUID
+            Identificador único del rol a buscar.
+
+        Returns
+        -------
+        RolResponse
+            Esquema de respuesta con los datos del rol.
+
+        Raises
+        ------
+        RolNotFoundError
+            Si no se encuentra un rol con el ID proporcionado.
+        """
+        # Buscar el rol por su ID
+        rol = await self.repository.get_by_id(rol_id)
+
+        # Verificar si existe
         if not rol:
-            raise NotFoundError(f"Role with ID {rol_id} not found")
-        return rol
+            raise RolNotFoundError(f"No se encontró el rol con ID {rol_id}")
 
-    async def get_rol_by_nombre(self, db: AsyncSession, nombre: str) -> RolModel:
+        # Convertir y retornar como esquema de respuesta
+        return RolResponse.model_validate(rol)
+
+    async def delete_rol(self, rol_id: UUID) -> bool:
         """
-        Get role by name.
+        Elimina un rol por su ID.
 
-        Args:
-            db: Database session
-            nombre: Role name
+        PRECONDICIONES:
+            - El ID debe ser un UUID válido.
 
-        Returns:
-            Role
+        PROCESO:
+            - Verifica que el rol existe.
+            - Elimina el rol de la base de datos.
 
-        Raises:
-            NotFoundError: If role not found
+        POSTCONDICIONES:
+            - El rol es eliminado si existe.
+            - Se lanza RolNotFoundError si no existe.
+
+        Parameters
+        ----------
+        rol_id : UUID
+            Identificador único del rol a eliminar.
+
+        Returns
+        -------
+        bool
+            True si el rol fue eliminado correctamente.
+
+        Raises
+        ------
+        RolNotFoundError
+            Si no se encuentra un rol con el ID proporcionado.
         """
-        rol = await self.rol_repo.get_by_nombre(db, nombre)
+        # Verificar primero si el rol existe
+        rol = await self.repository.get_by_id(rol_id)
         if not rol:
-            raise NotFoundError(f"Role with name '{nombre}' not found")
-        return rol
+            raise RolNotFoundError(f"No se encontró el rol con ID {rol_id}")
 
-    async def list_roles(
-        self,
-        db: AsyncSession,
-        skip: int = 0,
-        limit: int = 100
-    ) -> List[RolModel]:
+        # Eliminar el rol
+        result = await self.repository.delete(rol_id)
+        return result
+
+    async def get_roles(self, skip: int = 0, limit: int = 100) -> RolList:
         """
-        List all roles with pagination.
+        Obtiene una lista paginada de roles.
 
-        Args:
-            db: Database session
-            skip: Records to skip
-            limit: Maximum records
+        PRECONDICIONES:
+            - Los parámetros skip y limit deben ser enteros no negativos.
 
-        Returns:
-            List of roles
+        PROCESO:
+            - Recupera los roles según los parámetros de paginación.
+            - Convierte los modelos a esquemas de resumen.
+
+        POSTCONDICIONES:
+            - Se retorna un objeto RolList con la lista de roles y el total.
+
+        Parameters
+        ----------
+        skip : int, optional
+            Número de registros a omitir (offset), por defecto 0.
+        limit : int, optional
+            Número máximo de registros a retornar, por defecto 100.
+
+        Returns
+        -------
+        RolList
+            Esquema con la lista de roles y el total.
         """
-        if limit > 100:
-            limit = 100  # Enforce maximum limit
+        # Validar parámetros de entrada
+        if skip < 0:
+            raise RolValidationError(
+                "El parámetro 'skip' debe ser mayor o igual a cero"
+            )
+        if limit < 1:
+            raise RolValidationError("El parámetro 'limit' debe ser mayor a cero")
 
-        return await self.rol_repo.get_all(db, skip, limit)
+        # Obtener roles desde el repositorio
+        roles, total = await self.repository.get_all(skip, limit)
 
-    async def update_rol(
-        self,
-        db: AsyncSession,
-        rol_id: int,
-        nombre: Optional[str] = None,
-        descripcion: Optional[str] = None
-    ) -> RolModel:
+        # Convertir modelos a esquemas de resumen
+        rol_summaries = [RolSummary.model_validate(rol) for rol in roles]
+
+        # Retornar esquema de lista
+        return RolList(items=rol_summaries, total=total)
+
+    async def update_rol(self, rol_id: UUID, rol_data: RolUpdate) -> RolResponse:
         """
-        Update role.
+        Actualiza un rol existente.
 
-        Args:
-            db: Database session
-            rol_id: Role ID
-            nombre: New role name
-            descripcion: New role description
+        PRECONDICIONES:
+            - El ID debe ser un UUID válido.
+            - Los datos de actualización deben pasar las validaciones de RolUpdate.
+            - El rol debe existir.
 
-        Returns:
-            Updated role
+        PROCESO:
+            - Verifica que el rol existe.
+            - Actualiza solo los campos proporcionados.
+            - Persiste los cambios en la base de datos.
 
-        Raises:
-            NotFoundError: If role not found
-            ValidationError: If validation fails
+        POSTCONDICIONES:
+            - El rol es actualizado en la base de datos.
+            - Se retorna un objeto RolResponse con los datos actualizados.
+
+        Parameters
+        ----------
+        rol_id : UUID
+            Identificador único del rol a actualizar.
+        rol_data : RolUpdate
+            Datos para actualizar el rol.
+
+        Returns
+        -------
+        RolResponse
+            Esquema de respuesta con los datos del rol actualizado.
+
+        Raises
+        ------
+        RolNotFoundError
+            Si no se encuentra un rol con el ID proporcionado.
+        RolConflictError
+            Si ya existe otro rol con el mismo nombre.
         """
-        # Check if role exists
-        existing_rol = await self.rol_repo.get_by_id(db, rol_id)
-        if not existing_rol:
-            raise NotFoundError(f"Role with ID {rol_id} not found")
+        # Convertir el esquema de actualización a un diccionario,
+        # excluyendo valores None (campos no proporcionados para actualizar)
+        update_data = rol_data.model_dump(exclude_none=True)
 
-        # Validate and prepare update data
-        update_data = {}
+        if not update_data:
+            # Si no hay datos para actualizar, simplemente retornar el rol actual
+            return await self.get_rol_by_id(rol_id)
 
-        if nombre is not None:
-            if not nombre or len(nombre.strip()) == 0:
-                raise ValidationError("Role name cannot be empty")
+        try:
+            # Actualizar el rol
+            updated_rol = await self.repository.update(rol_id, **update_data)
 
-            if len(nombre) > 50:
-                raise ValidationError("Role name must be 50 characters or less")
+            # Verificar si el rol fue encontrado
+            if not updated_rol:
+                raise RolNotFoundError(f"No se encontró el rol con ID {rol_id}")
 
-            nombre = nombre.strip().title()
-
-            # Check if new name already exists (excluding current role)
-            if nombre != existing_rol.nombre:
-                name_exists = await self.rol_repo.exists_nombre(db, nombre, rol_id)
-                if name_exists:
-                    raise ValidationError(f"Role with name '{nombre}' already exists")
-
-            update_data['nombre'] = nombre
-
-        if descripcion is not None:
-            update_data['descripcion'] = descripcion.strip() if descripcion else None
-
-        # Update role
-        return await self.rol_repo.update_rol(db, rol_id, **update_data)
-
-    async def delete_rol(self, db: AsyncSession, rol_id: int) -> bool:
-        """
-        Delete role.
-
-        Args:
-            db: Database session
-            rol_id: Role ID
-
-        Returns:
-            True if deleted
-
-        Raises:
-            NotFoundError: If role not found
-        """
-        # Check if role exists
-        existing_rol = await self.rol_repo.get_by_id(db, rol_id)
-        if not existing_rol:
-            raise NotFoundError(f"Role with ID {rol_id} not found")
-
-        # TODO: Check if role is being used by any users before deletion
-        # This would require checking the usuario table
-
-        return await self.rol_repo.delete_rol(db, rol_id)
-
-    async def get_roles_count(self, db: AsyncSession) -> int:
-        """
-        Get total count of roles.
-
-        Args:
-            db: Database session
-
-        Returns:
-            Number of roles
-        """
-        return await self.rol_repo.count_roles(db)
-
-    async def initialize_default_roles(self, db: AsyncSession) -> List[RolModel]:
-        """
-        Initialize default system roles.
-
-        Args:
-            db: Database session
-
-        Returns:
-            List of created default roles
-        """
-        default_roles = [
-            ("Admin", "Administrador del sistema con acceso completo"),
-            ("Mesero", "Personal de servicio en sala"),
-            ("Cocina", "Personal de cocina"),
-            ("Cliente", "Cliente del restaurante")
-        ]
-
-        created_roles = []
-
-        for nombre, descripcion in default_roles:
-            try:
-                # Check if role already exists
-                existing_rol = await self.rol_repo.get_by_nombre(db, nombre)
-                if not existing_rol:
-                    rol = await self.create_rol(db, nombre, descripcion)
-                    created_roles.append(rol)
-                else:
-                    created_roles.append(existing_rol)
-            except ValidationError:
-                # Role already exists, skip
-                pass
-
-        return created_roles
+            # Convertir y retornar como esquema de respuesta
+            return RolResponse.model_validate(updated_rol)
+        except IntegrityError:
+            # Capturar errores de integridad (nombre duplicado)
+            if "nombre" in update_data:
+                raise RolConflictError(
+                    f"Ya existe un rol con el nombre '{update_data['nombre']}'"
+                )
+            # Si no es por nombre, reenviar la excepción original
+            raise
