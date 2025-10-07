@@ -1,5 +1,5 @@
 """
-Pruebas unitarias para los endpoints de mesas (stand by).
+Pruebas unitarias para los endpoints de roles.
 """
 
 import pytest

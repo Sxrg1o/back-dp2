@@ -1,0 +1,97 @@
+from uuid import UUID, uuid4
+from src.models.auth.rol_model import RolModel
+from src.models.mesas.mesa_model import Mesa
+
+def test_mesa_model_creation():
+    """
+    Verifica que un objeto Mesa se crea correctamente.
+
+    PRECONDICIONES:
+        - Dado un id, numero, zona, capacidad, qr_code.
+
+    PROCESO:
+        - Crear un registro de Mesa con valores predefinidos.
+
+    POSTCONDICIONES:
+        - La sinstancia debe tener los valores exactos proporcionados durante la creación.
+    """
+    mesa_id: UUID = uuid4()
+    mesa_numero = 101
+    mesa_capacidad = 4
+    mesa_zona = "zone 1"
+    mesa_qr_code = "QR123456"
+
+    mesa = Mesa(
+        id=mesa_id,
+        numero=mesa_numero,
+        capacidad=mesa_capacidad,
+        zona=mesa_zona,
+        qr_code=mesa_qr_code
+    )
+
+    assert mesa.id == mesa_id
+    assert mesa.numero == mesa_numero
+    assert mesa.capacidad == mesa_capacidad
+    assert mesa.zona == mesa_zona
+    assert mesa.qr_code == mesa_qr_code
+
+   
+def test_rol_to_dict():
+    """
+    Verifica que el método to_dict() funciona correctamente.
+
+    PRECONDICIONES:
+        - La clase RolModel debe tener implementado el método to_dict().
+        - Los atributos id, nombre, descripcion y activo deben existir en el modelo.
+
+    PROCESO:
+        - Crear una instancia de RolModel con valores específicos.
+        - Llamar al método to_dict() para obtener un diccionario.
+
+    POSTCONDICIONES:
+        - El diccionario debe contener todas las claves esperadas.
+        - Los valores deben coincidir con los de la instancia original.
+    """
+    mesa_id: UUID = uuid4()
+    mesa_numero = 105
+    mesa_capacidad = 6
+    mesa_zona = "zone 2"
+    mesa_qr_code = "QR123434156"
+
+    mesa = Mesa(id=mesa_id, numero=mesa_numero, capacidad=mesa_capacidad, 
+                zona=mesa_zona, qr_code=mesa_qr_code)
+
+    dict_result = mesa.to_dict()
+
+    assert "id" in dict_result
+    assert "numero" in dict_result
+    assert "capacidad" in dict_result
+    assert "zona" in dict_result
+    assert "qr_code" in dict_result
+
+    assert dict_result["id"] == mesa_id
+    assert dict_result["numero"] == mesa_numero
+    assert dict_result["capacidad"] == mesa_capacidad
+    assert dict_result["zona"] == mesa_zona
+    assert dict_result["qr_code"] == mesa_qr_code
+    assert dict_result["activo"] is None
+
+
+def test_mesa_activo_default():
+    """
+    Verifica el comportamiento del valor predeterminado para el atributo activo.
+
+    PRECONDICIONES:
+        - La clase Mesa debe tener un atributo activo con valor predeterminado.
+        - La clase Mesa debe aceptar la creación de instancias sin valor para activo.
+
+    PROCESO:
+        - Crear una instancia de Mesa proporcionando solo el nombre obligatorio.
+
+    POSTCONDICIONES:
+        - Los atributos con nullable=True deben ser None si no se proporcionan.
+    """
+    mesa = Mesa(numero=101)
+
+    # El default debería ser True según el modelo
+    assert mesa.activo is None
