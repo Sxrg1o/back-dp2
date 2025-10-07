@@ -77,9 +77,8 @@ def register_routers(app: FastAPI) -> None:
     controllers = [
         ("src.api.controllers.rol_controller", "Roles"),
         ("src.api.controllers.categoria_controller", "Categorías"),
-        # Estos están comentados hasta que estén implementados:
+        ("src.api.controllers.alergeno_controller", "Alérgenos"),
         # ("src.api.controllers.usuarios_controller", "Usuarios"),
-        # ("src.api.controllers.alergenos_controller", "Alérgenos"),
         # ("src.api.controllers.productos_controller", "Productos"),
         # ("src.api.controllers.mesas_controller", "Mesas"),
         # ("src.api.controllers.pedidos_controller", "Pedidos"),
