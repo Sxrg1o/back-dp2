@@ -1,39 +1,50 @@
 """
-Modelo de categorías para la gestión del menú del restaurante.
+Modelo de productos para la gestión del menú del restaurante.
 
-Implementa la estructura de datos para las categorías de productos en el sistema,
-adaptado para coincidir con el esquema de MySQL restaurant_dp2.categoria.
+Implementa la estructura de datos para los productos (platos) disponibles en el menú,
+adaptado para coincidir con el esquema de MySQL restaurant_dp2.producto.
 """
 
-from typing import Any, Dict, Optional, Type, TypeVar, TYPE_CHECKING, List
+from typing import Any, Dict, Optional, Type, TypeVar, TYPE_CHECKING
+from decimal import Decimal
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from sqlalchemy import String, Boolean, Text
+from sqlalchemy import String, Boolean, Text, DECIMAL, ForeignKey, Index
+from uuid import UUID
 from src.models.base_model import BaseModel
 from src.models.mixins.audit_mixin import AuditMixin
 
 if TYPE_CHECKING:
-    from src.models.menu.producto_model import ProductoModel
+    from src.models.menu.categoria_model import CategoriaModel
 
 # Definimos un TypeVar para el tipado genérico
-T = TypeVar("T", bound="CategoriaModel")
+T = TypeVar("T", bound="ProductoModel")
 
 
-class CategoriaModel(BaseModel, AuditMixin):
-    """Modelo para representar categorías de productos en el sistema.
+class ProductoModel(BaseModel, AuditMixin):
+    """Modelo para representar productos (platos) del menú en el sistema.
 
-    Define las categorías que organizan los productos del menú del restaurante
-    para facilitar la navegación y gestión de la carta digital.
+    Define los productos disponibles en el menú del restaurante, organizados
+    por categorías y con toda la información necesaria para su visualización
+    y gestión en la carta digital.
 
     Attributes
     ----------
+    id_categoria : UUID
+        Identificador de la categoría a la que pertenece el producto.
     nombre : str
-        Nombre de la categoría, debe ser único en el sistema.
+        Nombre del producto/plato.
     descripcion : str, optional
-        Descripción detallada de la categoría y sus productos.
+        Descripción detallada del producto.
+    precio_base : Decimal
+        Precio base del producto (debe ser mayor a 0).
     imagen_path : str, optional
-        Ruta de la imagen representativa de la categoría.
-    activo : bool
-        Indica si la categoría está activa en el sistema.
+        Ruta de la imagen del producto.
+    imagen_alt_text : str, optional
+        Texto alternativo para la imagen (accesibilidad).
+    disponible : bool
+        Indica si el producto está disponible actualmente.
+    destacado : bool
+        Indica si el producto es destacado en el menú.
     fecha_creacion : datetime
         Fecha y hora de creación del registro (heredado de AuditMixin).
     fecha_modificacion : datetime
@@ -44,24 +55,42 @@ class CategoriaModel(BaseModel, AuditMixin):
         Usuario que realizó la última modificación (heredado de AuditMixin).
     """
 
-    __tablename__ = "categoria"
+    __tablename__ = "producto"
 
-    # Columnas específicas del modelo de categoría
+    # Foreign Key - Relación con categoría
+    id_categoria: Mapped[UUID] = mapped_column(
+        ForeignKey("categoria.id", ondelete="RESTRICT"),
+        nullable=False,
+        index=True
+    )
+
+    # Columnas específicas del modelo de producto
     nombre: Mapped[str] = mapped_column(
-        String(100), nullable=False, unique=True, index=True
+        String(255), nullable=False, index=True
     )
     descripcion: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    precio_base: Mapped[Decimal] = mapped_column(
+        DECIMAL(10, 2), nullable=False, index=True
+    )
     imagen_path: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
-    activo: Mapped[bool] = mapped_column(
+    imagen_alt_text: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
+    disponible: Mapped[bool] = mapped_column(
         Boolean, nullable=False, default=True, server_default="1", index=True
     )
+    destacado: Mapped[bool] = mapped_column(
+        Boolean, nullable=False, default=False, server_default="0", index=True
+    )
 
-    # Relación con Productos (one-to-many)
-    productos: Mapped[List["ProductoModel"]] = relationship(
-        "ProductoModel",
-        back_populates="categoria",
-        lazy="selectin",
-        cascade="all, delete-orphan"
+    # Relación con Categoría
+    categoria: Mapped["CategoriaModel"] = relationship(
+        "CategoriaModel",
+        back_populates="productos",
+        lazy="selectin"
+    )
+
+    # Índices adicionales
+    __table_args__ = (
+        Index('idx_busqueda', 'nombre', 'descripcion', mysql_prefix='FULLTEXT'),
     )
 
     # Métodos comunes para todos los modelos
@@ -110,9 +139,12 @@ class CategoriaModel(BaseModel, AuditMixin):
         """
         for key, value in data.items():
             # Ignorar relaciones, solo actualizar columnas directas
-            if hasattr(self, key):
+            if hasattr(self, key) and key != 'id':
                 setattr(self, key, value)
 
     def __repr__(self) -> str:
-        """Representación en string del modelo Categoría."""
-        return f"<CategoriaModel(id={self.id}, nombre='{self.nombre}', activo={self.activo})>"
+        """Representación en string del modelo Producto."""
+        return (
+            f"<ProductoModel(id={self.id}, nombre='{self.nombre}', "
+            f"precio_base={self.precio_base}, disponible={self.disponible})>"
+        )
