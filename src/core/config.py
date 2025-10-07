@@ -1,112 +1,124 @@
 """
-Configuration settings for the restaurant backend application.
-Unified configuration file with support for different environments.
+Configuración de la aplicación Restaurant Backend.
 """
 
 import os
-from typing import List, Optional
-from pydantic import Field, validator
-from pydantic_settings import BaseSettings
+from typing import List, Optional, ClassVar
+from pydantic import field_validator, Field
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Settings(BaseSettings):
-    """Application settings with environment-specific configurations."""
+    """
+    Configuración de la aplicación con soporte para diferentes entornos.
+
+    Esta clase define todas las configuraciones disponibles para la aplicación,
+    incluyendo valores por defecto y validaciones. Los valores se pueden sobrescribir
+    con variables de entorno o archivos .env.
+
+    Attributes
+    ----------
+    app_name : str
+        Nombre de la aplicación
+    app_version : str
+        Versión actual de la aplicación
+    database_url : str
+        URL de conexión a la base de datos
+    secret_key : str
+        Clave secreta para encriptación y tokens
+    ... y más configuraciones
+    """
+
+    # Model configuration
+    model_config: ClassVar[SettingsConfigDict] = SettingsConfigDict(
+        env_file=".env", case_sensitive=False, env_prefix="", extra="ignore"
+    )
 
     # Application info
-    app_name: str = Field(default="Restaurant Backend API", env="APP_NAME")
-    app_version: str = Field(default="1.0.0", env="APP_VERSION")
-    app_description: str = Field(
-        default="Sistema de gestión de restaurantes con arquitectura en capas",
-        env="APP_DESCRIPTION"
+    app_name: str = "Restaurant Backend API"
+    app_version: str = "1.0.0"
+    app_description: str = (
+        "Sistema de gestión de restaurantes con arquitectura en capas"
     )
-    debug: bool = Field(default=False, env="DEBUG")
-    environment: str = Field(default="production", env="ENVIRONMENT")
+    debug: bool = False
+    environment: str = "production"
 
     # Server configuration
-    host: str = Field(default="0.0.0.0", env="HOST")
-    port: int = Field(default=8000, env="PORT")
+    host: str = "0.0.0.0"
+    port: int = 8000
 
     # Database
-    database_url: str = Field(..., env="DATABASE_URL")
-    database_test_url: Optional[str] = Field(None, env="DATABASE_TEST_URL")
+    database_url: str
+    database_test_url: Optional[str] = None
 
     # Redis
-    redis_url: str = Field(default="redis://localhost:6379/0", env="REDIS_URL")
+    redis_url: str = "redis://localhost:6379/0"
 
     # Security
-    secret_key: str = Field(..., env="SECRET_KEY")
-    algorithm: str = Field(default="HS256", env="ALGORITHM")
-    access_token_expire_minutes: int = Field(default=30, env="ACCESS_TOKEN_EXPIRE_MINUTES")
-    refresh_token_expire_days: int = Field(default=30, env="REFRESH_TOKEN_EXPIRE_DAYS")
+    secret_key: str
+    algorithm: str = "HS256"
+    access_token_expire_minutes: int = 30
+    refresh_token_expire_days: int = 30
 
     # CORS
-    allowed_origins: List[str] = Field(
-        default=["http://localhost:3000"],
-        env="ALLOWED_ORIGINS"
-    )
-    allowed_methods: List[str] = Field(
-        default=["GET", "POST", "PUT", "DELETE", "PATCH"],
-        env="ALLOWED_METHODS"
-    )
-    allowed_headers: List[str] = Field(default=["*"], env="ALLOWED_HEADERS")
+    allowed_origins: List[str] = ["http://localhost:3000"]
+    allowed_methods: List[str] = ["GET", "POST", "PUT", "DELETE", "PATCH"]
+    allowed_headers: List[str] = ["*"]
 
     # File uploads
-    max_file_size: int = Field(default=10485760, env="MAX_FILE_SIZE")  # 10MB
-    upload_dir: str = Field(default="uploads", env="UPLOAD_DIR")
-    allowed_extensions: List[str] = Field(
-        default=["jpg", "jpeg", "png", "gif", "webp"],
-        env="ALLOWED_EXTENSIONS"
-    )
+    max_file_size: int = 10485760  # 10MB
+    upload_dir: str = "uploads"
+    allowed_extensions: List[str] = ["jpg", "jpeg", "png", "gif", "webp"]
 
     # Email configuration (optional)
-    smtp_host: Optional[str] = Field(None, env="SMTP_HOST")
-    smtp_port: Optional[int] = Field(None, env="SMTP_PORT")
-    smtp_user: Optional[str] = Field(None, env="SMTP_USER")
-    smtp_password: Optional[str] = Field(None, env="SMTP_PASSWORD")
-    email_from: Optional[str] = Field(None, env="EMAIL_FROM")
+    smtp_host: Optional[str] = None
+    smtp_port: Optional[int] = None
+    smtp_user: Optional[str] = None
+    smtp_password: Optional[str] = None
+    email_from: Optional[str] = None
 
     # WebSocket
-    ws_heartbeat_interval: int = Field(default=30, env="WS_HEARTBEAT_INTERVAL")
+    ws_heartbeat_interval: int = 30
 
     # Logging
-    log_level: str = Field(default="INFO", env="LOG_LEVEL")
-    log_format: str = Field(default="json", env="LOG_FORMAT")
+    log_level: str = "INFO"
+    log_format: str = "json"
 
     # Pagination
-    default_page_size: int = Field(default=20, env="DEFAULT_PAGE_SIZE")
-    max_page_size: int = Field(default=100, env="MAX_PAGE_SIZE")
+    default_page_size: int = 20
+    max_page_size: int = 100
 
-    @validator("allowed_origins", pre=True)
+    @field_validator("allowed_origins", mode="before")
+    @classmethod
     def parse_cors_origins(cls, v):
         """Parse CORS origins from string or list."""
         if isinstance(v, str):
             return [origin.strip() for origin in v.split(",")]
         return v
 
-    @validator("allowed_methods", pre=True)
+    @field_validator("allowed_methods", mode="before")
+    @classmethod
     def parse_cors_methods(cls, v):
         """Parse CORS methods from string or list."""
         if isinstance(v, str):
             return [method.strip() for method in v.split(",")]
         return v
 
-    @validator("allowed_headers", pre=True)
+    @field_validator("allowed_headers", mode="before")
+    @classmethod
     def parse_cors_headers(cls, v):
         """Parse CORS headers from string or list."""
         if isinstance(v, str):
             return [header.strip() for header in v.split(",")]
         return v
 
-    @validator("allowed_extensions", pre=True)
+    @field_validator("allowed_extensions", mode="before")
+    @classmethod
     def parse_allowed_extensions(cls, v):
         """Parse allowed file extensions from string or list."""
         if isinstance(v, str):
             return [ext.strip() for ext in v.split(",")]
         return v
-
-    class Config:
-        env_file = ".env"
-        case_sensitive = False
 
 
 # Singleton instance
@@ -115,12 +127,24 @@ _settings_instance: Optional[Settings] = None
 
 def get_settings() -> Settings:
     """
-    Get or create the settings instance (singleton pattern).
+    Obtiene o crea la instancia de configuración (patrón singleton).
 
-    Returns:
-        Settings instance
+    Esta función garantiza que solo exista una instancia de Settings
+    en toda la aplicación, evitando cargar múltiples veces las
+    configuraciones desde el entorno.
+
+    Returns
+    -------
+    Settings
+        Instancia única de configuración de la aplicación
     """
     global _settings_instance
     if _settings_instance is None:
-        _settings_instance = Settings()
+        _settings_instance = Settings(
+            secret_key=os.getenv("SECRET_KEY", "your-default-secret-key"),
+            database_test_url=os.getenv(
+                "DATABASE_TEST_URL", "sqlite+aiosqlite:///test.db"
+            ),
+            database_url=os.getenv("DATABASE_URL", "sqlite+aiosqlite:///app.db"),
+        )  # Pydantic cargará valores desde variables de entorno
     return _settings_instance
