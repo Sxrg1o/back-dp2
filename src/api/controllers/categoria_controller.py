@@ -13,6 +13,7 @@ from src.api.schemas.categoria_schema import (
     CategoriaResponse,
     CategoriaUpdate,
     CategoriaList,
+    CategoriaConProductosCardList,
 )
 from src.business_logic.exceptions.categoria_exceptions import (
     CategoriaValidationError,
@@ -210,6 +211,50 @@ async def delete_categoria(
         # lanza CategoriaNotFoundError si no encuentra la categoría
     except CategoriaNotFoundError as e:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error interno del servidor: {str(e)}",
+        )
+
+
+@router.get(
+    "/productos/cards",
+    response_model=CategoriaConProductosCardList,
+    status_code=status.HTTP_200_OK,
+    summary="Listar categorías con sus productos (formato minimal)",
+    description="Obtiene todas las categorías con sus productos. Solo devuelve ID, nombre e imagen para categorías y productos.",
+)
+async def get_categorias_con_productos_cards(
+    skip: int = Query(0, ge=0, description="Número de registros a omitir"),
+    limit: int = Query(100, ge=1, le=500, description="Número máximo de registros a retornar"),
+    session: AsyncSession = Depends(get_database_session)
+) -> CategoriaConProductosCardList:
+    """
+    Obtiene todas las categorías con sus productos en formato minimal.
+
+    Cada categoría y producto contiene SOLO:
+    - id: UUID del elemento
+    - nombre: Nombre del elemento
+    - imagen_path: Ruta de la imagen
+
+    NO incluye precio, descripción, ni otros campos.
+
+    Args:
+        skip: Número de registros a omitir (paginación).
+        limit: Número máximo de registros a retornar.
+        session: Sesión de base de datos.
+
+    Returns:
+        Lista de categorías con sus productos en formato minimal.
+
+    Raises:
+        HTTPException:
+            - 500: Si ocurre un error interno del servidor.
+    """
+    try:
+        categoria_service = CategoriaService(session)
+        return await categoria_service.get_categorias_con_productos_cards(skip=skip, limit=limit)
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,

@@ -290,6 +290,8 @@ def test_list_categorias_success(
     categoria_summary = {
         "id": sample_categoria_data["id"],
         "nombre": sample_categoria_data["nombre"],
+        "descripcion": sample_categoria_data.get("descripcion"),
+        "imagen_path": sample_categoria_data.get("imagen_path"),
         "activo": True,
     }
     categoria_list = {"items": [categoria_summary, categoria_summary], "total": 2}

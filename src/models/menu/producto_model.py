@@ -5,7 +5,7 @@ Implementa la estructura de datos para los productos (platos) disponibles en el 
 adaptado para coincidir con el esquema de MySQL restaurant_dp2.producto.
 """
 
-from typing import Any, Dict, Optional, Type, TypeVar, TYPE_CHECKING
+from typing import Any, Dict, Optional, Type, TypeVar, TYPE_CHECKING, List
 from decimal import Decimal
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy import String, Boolean, Text, DECIMAL, ForeignKey, Index
@@ -15,6 +15,7 @@ from src.models.mixins.audit_mixin import AuditMixin
 
 if TYPE_CHECKING:
     from src.models.menu.categoria_model import CategoriaModel
+    from src.models.pedidos.producto_opcion_model import ProductoOpcionModel
 
 # Definimos un TypeVar para el tipado genérico
 T = TypeVar("T", bound="ProductoModel")
@@ -86,6 +87,14 @@ class ProductoModel(BaseModel, AuditMixin):
         "CategoriaModel",
         back_populates="productos",
         lazy="selectin"
+    )
+
+    # Relación con ProductoOpcion (opciones disponibles para este producto)
+    opciones: Mapped[List["ProductoOpcionModel"]] = relationship(
+        "ProductoOpcionModel",
+        back_populates="producto",
+        lazy="selectin",
+        cascade="all, delete-orphan"
     )
 
     # Índices adicionales

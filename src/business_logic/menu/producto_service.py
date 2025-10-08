@@ -14,6 +14,8 @@ from src.api.schemas.producto_schema import (
     ProductoResponse,
     ProductoSummary,
     ProductoList,
+    ProductoCard,
+    ProductoCardList,
 )
 from src.business_logic.exceptions.producto_exceptions import (
     ProductoValidationError,
@@ -230,3 +232,63 @@ class ProductoService:
                 )
             # Si no es por nombre, reenviar la excepción original
             raise
+
+    async def get_productos_cards_by_categoria(
+        self, 
+        categoria_id: UUID | None = None,
+        skip: int = 0, 
+        limit: int = 100
+    ) -> ProductoCardList:
+        """
+        Obtiene una lista paginada de productos en formato card (nombre, imagen, categoría).
+
+        Parameters
+        ----------
+        categoria_id : UUID | None, optional
+            ID de la categoría para filtrar productos. Si es None, retorna todos los productos.
+        skip : int, optional
+            Número de registros a omitir (offset), por defecto 0.
+        limit : int, optional
+            Número máximo de registros a retornar, por defecto 100.
+
+        Returns
+        -------
+        ProductoCardList
+            Esquema con la lista de productos en formato card y el total.
+        
+        Raises
+        ------
+        ProductoValidationError
+            Si los parámetros de paginación son inválidos.
+        """
+        # Validar parámetros de entrada
+        if skip < 0:
+            raise ProductoValidationError(
+                "El parámetro 'skip' debe ser mayor o igual a cero"
+            )
+        if limit < 1:
+            raise ProductoValidationError("El parámetro 'limit' debe ser mayor a cero")
+
+        # Obtener productos desde el repositorio (con o sin filtro de categoría)
+        productos, total = await self.repository.get_all(skip, limit, categoria_id)
+
+        # Convertir modelos a esquemas de card
+        # Necesitamos incluir la información de la categoría para cada producto
+        producto_cards = []
+        for producto in productos:
+            # Construir el objeto ProductoCard con información de categoría
+            card_data = {
+                "id": producto.id,
+                "nombre": producto.nombre,
+                "imagen_path": producto.imagen_path,
+                "precio_base": producto.precio_base,
+                "categoria": {
+                    "id": producto.categoria.id,
+                    "nombre": producto.categoria.nombre,
+                    "imagen_path": producto.categoria.imagen_path,
+                }
+            }
+            producto_cards.append(ProductoCard.model_validate(card_data))
+
+        # Retornar esquema de lista
+        return ProductoCardList(items=producto_cards, total=total)
