@@ -299,7 +299,7 @@ async def test_get_productos_success(producto_service, mock_repository, sample_p
     assert len(result.items) == 2
     assert result.items[0].nombre == sample_producto_data["nombre"]
     assert result.items[1].nombre == "Otro Producto"
-    mock_repository.get_all.assert_called_once_with(0, 10)
+    mock_repository.get_all.assert_called_once_with(0, 10, None)
 
 
 @pytest.mark.asyncio
@@ -326,6 +326,40 @@ async def test_get_productos_validation_error(producto_service):
     with pytest.raises(ProductoValidationError) as excinfo:
         await producto_service.get_productos(skip=0, limit=0)
     assert "El parámetro 'limit' debe ser mayor a cero" in str(excinfo.value)
+
+
+@pytest.mark.asyncio
+async def test_get_productos_with_categoria_filter(producto_service, mock_repository, sample_producto_data):
+    """
+    Prueba la obtención exitosa de una lista paginada de productos filtrados por categoría.
+
+    PRECONDICIONES:
+        - El servicio y repositorio mock deben estar configurados.
+
+    PROCESO:
+        - Configura el mock para simular una lista de productos de una categoría específica.
+        - Llama al método get_productos con un filtro de categoría.
+        - Verifica el resultado y las llamadas al mock.
+
+    POSTCONDICIONES:
+        - El servicio debe retornar la lista de productos filtrados correctamente.
+        - El repositorio debe ser llamado con el id_categoria correcto.
+    """
+    # Arrange
+    id_categoria = uuid.uuid4()
+    productos = [
+        ProductoModel(**sample_producto_data),
+    ]
+    mock_repository.get_all.return_value = (productos, len(productos))
+
+    # Act
+    result = await producto_service.get_productos(skip=0, limit=10, id_categoria=id_categoria)
+
+    # Assert
+    assert result.total == 1
+    assert len(result.items) == 1
+    assert result.items[0].nombre == sample_producto_data["nombre"]
+    mock_repository.get_all.assert_called_once_with(0, 10, id_categoria)
 
 
 @pytest.mark.asyncio

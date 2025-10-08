@@ -93,3 +93,4 @@ class ProductoList(BaseModel):
     
     items: List[ProductoSummary]
     total: int = Field(description="Total number of products")
+
