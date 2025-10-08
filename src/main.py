@@ -76,11 +76,12 @@ def register_routers(app: FastAPI) -> None:
     # Estructura de controladores a cargar: (módulo, tag)
     controllers = [
         ("src.api.controllers.rol_controller", "Roles"),
-        # Estos están comentados hasta que estén implementados:
+        ("src.api.controllers.categoria_controller", "Categorías"),
+        ("src.api.controllers.alergeno_controller", "Alérgenos"),
         # ("src.api.controllers.usuarios_controller", "Usuarios"),
-        # ("src.api.controllers.alergenos_controller", "Alérgenos"),
-        # ("src.api.controllers.categorias_controller", "Categorías"),
-        # ("src.api.controllers.productos_controller", "Productos"),
+        ("src.api.controllers.producto_controller", "Productos"),
+        ("src.api.controllers.tipo_opciones_controller", "Tipos de Opciones"),
+        ("src.api.controllers.producto_opcion_controller", "Producto Opciones"),
         # ("src.api.controllers.mesas_controller", "Mesas"),
         # ("src.api.controllers.pedidos_controller", "Pedidos"),
         # ("src.api.controllers.pagos_controller", "Pagos"),

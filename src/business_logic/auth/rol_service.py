@@ -48,21 +48,7 @@ class RolService:
     async def create_rol(self, rol_data: RolCreate) -> RolResponse:
         """
         Crea un nuevo rol en el sistema.
-
-        PRECONDICIONES:
-            - Los datos del rol deben pasar las validaciones de RolCreate.
-            - El nombre del rol debe ser único.
-
-        PROCESO:
-            - Valida que el nombre del rol sea único.
-            - Crea un nuevo modelo de rol con los datos proporcionados.
-            - Persiste el rol en la base de datos.
-            - Convierte el modelo a un esquema de respuesta.
-
-        POSTCONDICIONES:
-            - El rol es persistido en la base de datos.
-            - Se retorna un objeto RolResponse con los datos del rol creado.
-
+        
         Parameters
         ----------
         rol_data : RolCreate
@@ -97,18 +83,6 @@ class RolService:
         """
         Obtiene un rol por su ID.
 
-        PRECONDICIONES:
-            - El ID debe ser un UUID válido.
-
-        PROCESO:
-            - Busca el rol en la base de datos usando el repositorio.
-            - Si existe, lo convierte a un esquema de respuesta.
-            - Si no existe, lanza una excepción.
-
-        POSTCONDICIONES:
-            - Se retorna un objeto RolResponse si el rol existe.
-            - Se lanza RolNotFoundError si no existe.
-
         Parameters
         ----------
         rol_id : UUID
@@ -137,18 +111,7 @@ class RolService:
     async def delete_rol(self, rol_id: UUID) -> bool:
         """
         Elimina un rol por su ID.
-
-        PRECONDICIONES:
-            - El ID debe ser un UUID válido.
-
-        PROCESO:
-            - Verifica que el rol existe.
-            - Elimina el rol de la base de datos.
-
-        POSTCONDICIONES:
-            - El rol es eliminado si existe.
-            - Se lanza RolNotFoundError si no existe.
-
+        
         Parameters
         ----------
         rol_id : UUID
@@ -176,16 +139,6 @@ class RolService:
     async def get_roles(self, skip: int = 0, limit: int = 100) -> RolList:
         """
         Obtiene una lista paginada de roles.
-
-        PRECONDICIONES:
-            - Los parámetros skip y limit deben ser enteros no negativos.
-
-        PROCESO:
-            - Recupera los roles según los parámetros de paginación.
-            - Convierte los modelos a esquemas de resumen.
-
-        POSTCONDICIONES:
-            - Se retorna un objeto RolList con la lista de roles y el total.
 
         Parameters
         ----------
@@ -219,20 +172,6 @@ class RolService:
     async def update_rol(self, rol_id: UUID, rol_data: RolUpdate) -> RolResponse:
         """
         Actualiza un rol existente.
-
-        PRECONDICIONES:
-            - El ID debe ser un UUID válido.
-            - Los datos de actualización deben pasar las validaciones de RolUpdate.
-            - El rol debe existir.
-
-        PROCESO:
-            - Verifica que el rol existe.
-            - Actualiza solo los campos proporcionados.
-            - Persiste los cambios en la base de datos.
-
-        POSTCONDICIONES:
-            - El rol es actualizado en la base de datos.
-            - Se retorna un objeto RolResponse con los datos actualizados.
 
         Parameters
         ----------
