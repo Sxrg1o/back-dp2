@@ -46,7 +46,7 @@ async def clear_now() -> None:
         
         await session.execute(text("PRAGMA foreign_keys = OFF"))
         
-        tables = ["producto_alergeno", "producto", "alergeno", "categoria", "rol"]
+        tables = ["producto_opcion", "tipo_opcion", "producto_alergeno", "producto", "alergeno", "categoria", "rol"]
         total: int = 0
         
         for table in tables:

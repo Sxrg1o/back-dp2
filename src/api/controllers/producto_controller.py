@@ -13,6 +13,7 @@ from src.api.schemas.producto_schema import (
     ProductoResponse,
     ProductoUpdate,
     ProductoList,
+    ProductoCardList,
 )
 from src.business_logic.exceptions.producto_exceptions import (
     ProductoValidationError,
@@ -53,6 +54,100 @@ async def create_producto(
         return await producto_service.create_producto(producto_data)
     except ProductoConflictError as e:
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=str(e))
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error interno del servidor: {str(e)}",
+        )
+
+
+@router.get(
+    "/cards",
+    response_model=ProductoCardList,
+    status_code=status.HTTP_200_OK,
+    summary="Listar todos los productos (formato card)",
+    description="Obtiene una lista paginada de todos los productos en formato card con información de categoría.",
+)
+async def list_all_productos_cards(
+    skip: int = Query(0, ge=0, description="Número de registros a omitir (paginación)"),
+    limit: int = Query(
+        100, gt=0, le=500, description="Número máximo de registros a retornar"
+    ),
+    session: AsyncSession = Depends(get_database_session),
+) -> ProductoCardList:
+    """
+    Obtiene una lista paginada de TODOS los productos en formato card.
+    
+    Este endpoint devuelve todos los productos con información completa de categoría:
+    - Datos del producto: ID, nombre, imagen, precio
+    - Datos de la categoría: ID, nombre, imagen
+    
+    Args:
+        skip: Número de registros a omitir (offset), por defecto 0.
+        limit: Número máximo de registros a retornar, por defecto 100.
+        session: Sesión de base de datos.
+        
+    Returns:
+        Lista paginada de productos en formato card con información de categoría.
+
+    Raises:
+        HTTPException:
+            - 400: Si los parámetros de paginación son inválidos.
+            - 500: Si ocurre un error interno del servidor.
+    """
+    try:
+        producto_service = ProductoService(session)
+        return await producto_service.get_productos_cards_by_categoria(None, skip, limit)
+    except ProductoValidationError as e:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error interno del servidor: {str(e)}",
+        )
+
+
+@router.get(
+    "/categoria/{categoria_id}/cards",
+    response_model=ProductoCardList,
+    status_code=status.HTTP_200_OK,
+    summary="Listar productos por categoría (formato card)",
+    description="Obtiene una lista paginada de productos de una categoría específica en formato card con información completa.",
+)
+async def list_productos_cards_by_categoria(
+    categoria_id: UUID,
+    skip: int = Query(0, ge=0, description="Número de registros a omitir (paginación)"),
+    limit: int = Query(
+        100, gt=0, le=500, description="Número máximo de registros a retornar"
+    ),
+    session: AsyncSession = Depends(get_database_session),
+) -> ProductoCardList:
+    """
+    Obtiene una lista paginada de productos de una categoría específica en formato card.
+    
+    Este endpoint devuelve productos filtrados por categoría con información completa:
+    - Datos del producto: ID, nombre, imagen, precio
+    - Datos de la categoría: ID, nombre, imagen
+    
+    Args:
+        categoria_id: ID de la categoría para filtrar productos.
+        skip: Número de registros a omitir (offset), por defecto 0.
+        limit: Número máximo de registros a retornar, por defecto 100.
+        session: Sesión de base de datos.
+        
+    Returns:
+        Lista paginada de productos en formato card con información de categoría.
+
+    Raises:
+        HTTPException:
+            - 400: Si los parámetros de paginación son inválidos.
+            - 500: Si ocurre un error interno del servidor.
+    """
+    try:
+        producto_service = ProductoService(session)
+        return await producto_service.get_productos_cards_by_categoria(categoria_id, skip, limit)
+    except ProductoValidationError as e:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,

@@ -5,11 +5,14 @@ Define las categorías o tipos de opciones (por ejemplo: nivel de ají, acompañ
 temperatura) que agrupan las opciones disponibles en el sistema.
 """
 
-from typing import Any, Dict, Optional, Type, TypeVar
-from sqlalchemy.orm import Mapped, mapped_column
+from typing import Any, Dict, Optional, Type, TypeVar, TYPE_CHECKING, List
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy import String, Integer, Boolean, inspect
 from src.models.base_model import BaseModel
 from src.models.mixins.audit_mixin import AuditMixin
+
+if TYPE_CHECKING:
+    from src.models.pedidos.producto_opcion_model import ProductoOpcionModel
 
 # Definimos un TypeVar para tipado genérico
 T = TypeVar("T", bound="TipoOpcionModel")
@@ -46,6 +49,14 @@ class TipoOpcionModel(BaseModel, AuditMixin):
         Boolean, nullable=False, default=True, server_default="1"
     )
     orden: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
+
+    # Relación con ProductoOpcion
+    producto_opciones: Mapped[List["ProductoOpcionModel"]] = relationship(
+        "ProductoOpcionModel",
+        back_populates="tipo_opcion",
+        lazy="selectin",
+        cascade="all, delete-orphan"
+    )
 
     # Métodos utilitarios
     def to_dict(self) -> Dict[str, Any]:

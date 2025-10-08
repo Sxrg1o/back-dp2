@@ -94,3 +94,32 @@ class ProductoList(BaseModel):
     items: List[ProductoSummary]
     total: int = Field(description="Total number of products")
 
+
+class CategoriaInfo(BaseModel):
+    """Schema for categoria information in product cards."""
+    
+    model_config: ClassVar[ConfigDict] = ConfigDict(from_attributes=True)
+    
+    id: UUID = Field(description="Category ID")
+    nombre: str = Field(description="Category name")
+    imagen_path: Optional[str] = Field(default=None, description="Category image path")
+
+
+class ProductoCard(BaseModel):
+    """Schema for minimal product information (cards/thumbnails)."""
+    
+    model_config: ClassVar[ConfigDict] = ConfigDict(from_attributes=True)
+    
+    id: UUID = Field(description="Product ID")
+    nombre: str = Field(description="Product name")
+    imagen_path: Optional[str] = Field(default=None, description="Product image path")
+    precio_base: Decimal = Field(description="Base price")
+    categoria: CategoriaInfo = Field(description="Category information")
+
+
+class ProductoCardList(BaseModel):
+    """Schema for paginated list of product cards."""
+    
+    items: List[ProductoCard]
+    total: int = Field(description="Total number of products")
+

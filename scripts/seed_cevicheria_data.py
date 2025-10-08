@@ -24,6 +24,8 @@ from src.models.menu.categoria_model import CategoriaModel
 from src.models.menu.alergeno_model import AlergenoModel
 from src.models.menu.producto_model import ProductoModel
 from src.models.menu.producto_alergeno_model import ProductoAlergenoModel
+from src.models.pedidos.tipo_opciones_model import TipoOpcionModel
+from src.models.pedidos.producto_opcion_model import ProductoOpcionModel
 from src.core.enums.alergeno_enums import NivelPresencia
 
 
@@ -52,6 +54,8 @@ class CevicheriaSeeder:
         self.categorias = {}
         self.alergenos = {}
         self.productos = {}
+        self.tipos_opciones = {}
+        self.productos_opciones = {}
     
     async def seed_all(self):
         """Ejecuta todos los seeders en orden."""
@@ -62,12 +66,16 @@ class CevicheriaSeeder:
         await self.seed_alergenos()
         await self.seed_productos()
         await self.seed_productos_alergenos()
+        await self.seed_tipos_opciones()
+        await self.seed_productos_opciones()
         
         print("\n✅ ¡Seed completado exitosamente!")
         print(f"   - {len(self.roles)} roles")
         print(f"   - {len(self.categorias)} categorías")
         print(f"   - {len(self.alergenos)} alérgenos")
         print(f"   - {len(self.productos)} productos")
+        print(f"   - {len(self.tipos_opciones)} tipos de opciones")
+        print(f"   - {len(self.productos_opciones)} opciones de productos")
     
     async def seed_roles(self):
         """Crea roles del sistema."""
@@ -118,36 +126,43 @@ class CevicheriaSeeder:
             {
                 "nombre": "Ceviches",
                 "descripcion": "Ceviches frescos del día con pescados y mariscos selectos",
+                "imagen_path": "/static/categorias/ceviches.jpg",
                 "activo": True
             },
             {
                 "nombre": "Tiraditos",
                 "descripcion": "Finas láminas de pescado fresco con salsas especiales",
+                "imagen_path": "/static/categorias/tiraditos.jpg",
                 "activo": True
             },
             {
                 "nombre": "Chicharrones",
                 "descripcion": "Chicharrones crujientes de pescado y mariscos",
+                "imagen_path": "/static/categorias/chicharrones.jpg",
                 "activo": True
             },
             {
                 "nombre": "Arroces",
                 "descripcion": "Arroces marinos con mariscos frescos",
+                "imagen_path": "/static/categorias/arroces.jpg",
                 "activo": True
             },
             {
                 "nombre": "Causas",
                 "descripcion": "Causas rellenas de diferentes mariscos",
+                "imagen_path": "/static/categorias/causas.jpg",
                 "activo": True
             },
             {
                 "nombre": "Bebidas",
                 "descripcion": "Bebidas refrescantes, chicha morada, limonada y más",
+                "imagen_path": "/static/categorias/bebidas.jpg",
                 "activo": True
             },
             {
                 "nombre": "Postres",
                 "descripcion": "Postres tradicionales peruanos",
+                "imagen_path": "/static/categorias/postres.jpg",
                 "activo": True
             }
         ]
@@ -552,6 +567,171 @@ class CevicheriaSeeder:
         
         await self.session.commit()
         print(f"   → {count} relaciones creadas\n")
+    
+    async def seed_tipos_opciones(self):
+        """Crea tipos de opciones para productos."""
+        print("⚙️  Creando tipos de opciones...")
+        
+        tipos_opciones_data = [
+            {
+                "codigo": "nivel_aji",
+                "nombre": "Nivel de Ají",
+                "descripcion": "Intensidad del picante en el plato",
+                "activo": True,
+                "orden": 1
+            },
+            {
+                "codigo": "acompanamiento",
+                "nombre": "Acompañamiento",
+                "descripcion": "Extras que complementan el plato",
+                "activo": True,
+                "orden": 2
+            },
+            {
+                "codigo": "temperatura",
+                "nombre": "Temperatura",
+                "descripcion": "Temperatura de la bebida",
+                "activo": True,
+                "orden": 3
+            },
+            {
+                "codigo": "tamano",
+                "nombre": "Tamaño",
+                "descripcion": "Tamaño de la porción",
+                "activo": True,
+                "orden": 4
+            }
+        ]
+        
+        for data in tipos_opciones_data:
+            tipo_opcion = TipoOpcionModel(**data)
+            self.session.add(tipo_opcion)
+            self.tipos_opciones[data["codigo"]] = tipo_opcion
+            print(f"   ✓ {data['nombre']}")
+        
+        await self.session.commit()
+        print(f"   → {len(tipos_opciones_data)} tipos de opciones creados\n")
+    
+    async def seed_productos_opciones(self):
+        """Crea opciones específicas para cada producto."""
+        print("🎛️  Creando opciones de productos...")
+        
+        # Refrescar productos y tipos de opciones para tener IDs
+        for producto in self.productos.values():
+            await self.session.refresh(producto)
+        for tipo_opcion in self.tipos_opciones.values():
+            await self.session.refresh(tipo_opcion)
+        
+        # Opciones de Nivel de Ají (aplica a ceviches, tiraditos, arroces)
+        productos_con_aji = [
+            "Ceviche Clásico", "Ceviche Mixto", "Ceviche de Conchas Negras", "Ceviche de Pulpo",
+            "Tiradito Clásico", "Tiradito Nikkei", "Tiradito de Atún",
+            "Arroz con Mariscos", "Arroz Chaufa de Mariscos", "Tacu Tacu con Mariscos"
+        ]
+        
+        opciones_nivel_aji = [
+            ("Sin ají", Decimal("0.00"), 1),
+            ("Ají suave", Decimal("0.00"), 2),
+            ("Ají normal", Decimal("0.00"), 3),
+            ("Ají picante", Decimal("0.00"), 4),
+            ("Ají extra picante", Decimal("2.00"), 5),  # Cobra extra por rocoto especial
+        ]
+        
+        count = 0
+        for nombre_producto in productos_con_aji:
+            if nombre_producto in self.productos:
+                for nombre, precio, orden in opciones_nivel_aji:
+                    opcion = ProductoOpcionModel(
+                        id_producto=self.productos[nombre_producto].id,
+                        id_tipo_opcion=self.tipos_opciones["nivel_aji"].id,
+                        nombre=nombre,
+                        precio_adicional=precio,
+                        activo=True,
+                        orden=orden
+                    )
+                    self.session.add(opcion)
+                    count += 1
+        
+        # Opciones de Acompañamiento (para ceviches y chicharrones)
+        productos_con_acompanamiento = [
+            "Ceviche Clásico", "Ceviche Mixto", "Ceviche de Conchas Negras", "Ceviche de Pulpo",
+            "Chicharrón de Pescado", "Chicharrón de Calamar", "Chicharrón Mixto"
+        ]
+        
+        opciones_acompanamiento = [
+            ("Con camote", Decimal("3.00"), 1),
+            ("Con choclo", Decimal("3.00"), 2),
+            ("Con yuca", Decimal("3.50"), 3),
+            ("Con cancha", Decimal("2.00"), 4),
+            ("Mixto (camote + choclo)", Decimal("5.00"), 5),
+        ]
+        
+        for nombre_producto in productos_con_acompanamiento:
+            if nombre_producto in self.productos:
+                for nombre, precio, orden in opciones_acompanamiento:
+                    opcion = ProductoOpcionModel(
+                        id_producto=self.productos[nombre_producto].id,
+                        id_tipo_opcion=self.tipos_opciones["acompanamiento"].id,
+                        nombre=nombre,
+                        precio_adicional=precio,
+                        activo=True,
+                        orden=orden
+                    )
+                    self.session.add(opcion)
+                    count += 1
+        
+        # Opciones de Temperatura (para bebidas)
+        productos_bebidas = ["Chicha Morada", "Limonada Frozen", "Inca Kola"]
+        
+        opciones_temperatura = [
+            ("Natural", Decimal("0.00"), 1),
+            ("Helada", Decimal("1.00"), 2),
+            ("Con hielo", Decimal("0.50"), 3),
+        ]
+        
+        for nombre_producto in productos_bebidas:
+            if nombre_producto in self.productos:
+                for nombre, precio, orden in opciones_temperatura:
+                    opcion = ProductoOpcionModel(
+                        id_producto=self.productos[nombre_producto].id,
+                        id_tipo_opcion=self.tipos_opciones["temperatura"].id,
+                        nombre=nombre,
+                        precio_adicional=precio,
+                        activo=True,
+                        orden=orden
+                    )
+                    self.session.add(opcion)
+                    count += 1
+        
+        # Opciones de Tamaño (para algunos platos)
+        productos_con_tamano = [
+            "Ceviche Clásico", "Ceviche Mixto", "Arroz con Mariscos", 
+            "Chicha Morada", "Limonada Frozen"
+        ]
+        
+        opciones_tamano = [
+            ("Personal", Decimal("0.00"), 1),
+            ("Para 2 personas", Decimal("15.00"), 2),
+            ("Familiar (4 personas)", Decimal("30.00"), 3),
+        ]
+        
+        for nombre_producto in productos_con_tamano:
+            if nombre_producto in self.productos:
+                for nombre, precio, orden in opciones_tamano:
+                    opcion = ProductoOpcionModel(
+                        id_producto=self.productos[nombre_producto].id,
+                        id_tipo_opcion=self.tipos_opciones["tamano"].id,
+                        nombre=nombre,
+                        precio_adicional=precio,
+                        activo=True,
+                        orden=orden
+                    )
+                    self.session.add(opcion)
+                    self.productos_opciones[count] = opcion
+                    count += 1
+        
+        await self.session.commit()
+        print(f"   → {count} opciones de productos creadas\n")
 
 
 async def main():

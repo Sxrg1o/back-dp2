@@ -8,6 +8,7 @@ from uuid import UUID
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, delete, update, func
+from sqlalchemy.orm import selectinload
 
 from src.models.menu.producto_model import ProductoModel
 
@@ -191,8 +192,8 @@ class ProductoRepository:
             Tupla con la lista de productos y el número total de registros.
         """
         try:
-            # Query base
-            query = select(ProductoModel)
+            # Query base con carga eager de la relación categoria
+            query = select(ProductoModel).options(selectinload(ProductoModel.categoria))
             
             # ✅ Aplicar filtro de categoría si se proporciona
             if id_categoria is not None:
