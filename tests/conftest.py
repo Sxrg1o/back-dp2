@@ -5,6 +5,10 @@ Global fixtures for all tests.
 import pytest
 import asyncio
 import httpx
+from uuid import uuid4
+from decimal import Decimal
+from datetime import datetime
+from faker import Faker
 from fastapi.testclient import TestClient
 from unittest.mock import MagicMock, AsyncMock
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, AsyncSession
@@ -12,6 +16,9 @@ from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, Asyn
 from src.main import app
 from src.core.database import get_database_session as get_db, DatabaseManager
 from src.models.base_model import BaseModel as Base
+
+# Inicializar Faker para español
+fake = Faker('es_ES')
 
 # Database fixtures for integration tests
 TEST_DATABASE_URL = "sqlite+aiosqlite:///:memory:"
@@ -128,3 +135,254 @@ def cleanup_app():
     """Limpia dependency_overrides después de cada test"""
     yield
     app.dependency_overrides = {}
+
+
+# ============================================================================
+# FAKE DATA GENERATORS - Para crear datos de prueba reutilizables
+# ============================================================================
+
+@pytest.fixture
+def fake_rol_data():
+    """
+    Genera datos fake para un Rol.
+    
+    Returns:
+        dict: Datos de rol con valores fake realistas
+    
+    Uso:
+        def test_ejemplo(fake_rol_data):
+            rol = RolModel(**fake_rol_data)
+    """
+    return {
+        "id": uuid4(),
+        "nombre": fake.job()[:50],  # Máximo 50 caracteres
+        "descripcion": fake.text(max_nb_chars=200),
+        "activo": True,
+    }
+
+
+@pytest.fixture
+def fake_usuario_data(fake_rol_data):
+    """
+    Genera datos fake para un Usuario.
+    
+    Returns:
+        dict: Datos de usuario con valores fake realistas
+    
+    Uso:
+        def test_ejemplo(fake_usuario_data):
+            usuario = UsuarioModel(**fake_usuario_data)
+    """
+    return {
+        "id": uuid4(),
+        "id_rol": fake_rol_data["id"],
+        "email": fake.email(),
+        "password_hash": fake.sha256(),
+        "nombre": fake.name(),
+        "telefono": fake.phone_number()[:20],  # Máximo 20 caracteres
+        "activo": True,
+        "ultimo_acceso": fake.date_time_this_year(),
+    }
+
+
+@pytest.fixture
+def fake_categoria_data():
+    """
+    Genera datos fake para una Categoría.
+    
+    Returns:
+        dict: Datos de categoría con valores fake realistas
+    """
+    return {
+        "id": uuid4(),
+        "nombre": fake.word().capitalize()[:50],
+        "descripcion": fake.sentence(),
+        "imagen_path": f"/images/{fake.file_name(extension='jpg')}",
+        "activo": True,
+    }
+
+
+@pytest.fixture
+def fake_producto_data(fake_categoria_data):
+    """
+    Genera datos fake para un Producto.
+    
+    Returns:
+        dict: Datos de producto con valores fake realistas
+    """
+    return {
+        "id": uuid4(),
+        "id_categoria": fake_categoria_data["id"],
+        "nombre": f"{fake.word().capitalize()} {fake.word()}",
+        "descripcion": fake.text(max_nb_chars=200),
+        "precio_base": Decimal(fake.pyfloat(left_digits=2, right_digits=2, positive=True, min_value=5, max_value=100)),
+        "imagen_path": f"/images/{fake.file_name(extension='jpg')}",
+        "imagen_alt_text": fake.sentence(nb_words=5),
+        "disponible": True,
+        "destacado": fake.boolean(),
+        "fecha_creacion": datetime.now(),
+        "fecha_modificacion": datetime.now(),
+    }
+
+
+@pytest.fixture
+def fake_alergeno_data():
+    """
+    Genera datos fake para un Alérgeno.
+    
+    Returns:
+        dict: Datos de alérgeno con valores fake realistas
+    """
+    alergenos = [
+        "Gluten", "Crustáceos", "Huevos", "Pescado", "Cacahuetes",
+        "Soja", "Lácteos", "Frutos secos", "Apio", "Mostaza",
+        "Sésamo", "Sulfitos", "Altramuces", "Moluscos"
+    ]
+    return {
+        "id": uuid4(),
+        "nombre": fake.random_element(elements=alergenos),
+        "descripcion": fake.sentence(),
+        "icono_path": f"/icons/{fake.file_name(extension='svg')}",
+        "activo": True,
+    }
+
+
+@pytest.fixture
+def fake_producto_alergeno_data(fake_producto_data, fake_alergeno_data):
+    """
+    Genera datos fake para una relación Producto-Alérgeno.
+    
+    Returns:
+        dict: Datos de producto-alérgeno con valores fake realistas
+    """
+    from src.core.enums.alergeno_enums import NivelPresencia
+    
+    return {
+        "id_producto": fake_producto_data["id"],
+        "id_alergeno": fake_alergeno_data["id"],
+        "nivel_presencia": fake.random_element(elements=list(NivelPresencia)),
+        "notas": fake.sentence() if fake.boolean() else None,
+        "activo": True,
+    }
+
+
+# ============================================================================
+# FAKE DATA FACTORIES - Para crear múltiples instancias
+# ============================================================================
+
+@pytest.fixture
+def create_fake_rol():
+    """
+    Factory para crear múltiples roles fake.
+    
+    Returns:
+        callable: Función que genera datos de rol
+    
+    Uso:
+        def test_ejemplo(create_fake_rol):
+            rol1 = create_fake_rol()
+            rol2 = create_fake_rol(nombre="Admin")
+    """
+    def _create_fake_rol(**kwargs):
+        data = {
+            "id": uuid4(),
+            "nombre": fake.job()[:50],
+            "descripcion": fake.text(max_nb_chars=200),
+            "activo": True,
+        }
+        data.update(kwargs)
+        return data
+    
+    return _create_fake_rol
+
+
+@pytest.fixture
+def create_fake_usuario():
+    """
+    Factory para crear múltiples usuarios fake.
+    
+    Returns:
+        callable: Función que genera datos de usuario
+    
+    Uso:
+        def test_ejemplo(create_fake_usuario):
+            user1 = create_fake_usuario()
+            user2 = create_fake_usuario(email="custom@test.com")
+    """
+    def _create_fake_usuario(**kwargs):
+        data = {
+            "id": uuid4(),
+            "id_rol": uuid4(),
+            "email": fake.email(),
+            "password_hash": fake.sha256(),
+            "nombre": fake.name(),
+            "telefono": fake.phone_number()[:20],
+            "activo": True,
+            "ultimo_acceso": fake.date_time_this_year(),
+        }
+        data.update(kwargs)
+        return data
+    
+    return _create_fake_usuario
+
+
+@pytest.fixture
+def create_fake_producto():
+    """
+    Factory para crear múltiples productos fake.
+    
+    Returns:
+        callable: Función que genera datos de producto
+    
+    Uso:
+        def test_ejemplo(create_fake_producto):
+            producto1 = create_fake_producto()
+            producto2 = create_fake_producto(precio_base=Decimal("15.99"))
+    """
+    def _create_fake_producto(**kwargs):
+        data = {
+            "id": uuid4(),
+            "id_categoria": uuid4(),
+            "nombre": f"{fake.word().capitalize()} {fake.word()}",
+            "descripcion": fake.text(max_nb_chars=200),
+            "precio_base": Decimal(fake.pyfloat(left_digits=2, right_digits=2, positive=True, min_value=5, max_value=100)),
+            "imagen_path": f"/images/{fake.file_name(extension='jpg')}",
+            "imagen_alt_text": fake.sentence(nb_words=5),
+            "disponible": True,
+            "destacado": fake.boolean(),
+        }
+        data.update(kwargs)
+        return data
+    
+    return _create_fake_producto
+
+
+@pytest.fixture
+def create_fake_producto_alergeno():
+    """
+    Factory para crear múltiples relaciones producto-alergeno fake.
+    
+    Returns:
+        callable: Función que genera datos de producto_alergeno
+    
+    Uso:
+        def test_ejemplo(create_fake_producto_alergeno):
+            rel1 = create_fake_producto_alergeno()
+            rel2 = create_fake_producto_alergeno(nivel_presencia=NivelPresencia.CONTIENE)
+    """
+    from src.core.enums.alergeno_enums import NivelPresencia
+    
+    def _create_fake_producto_alergeno(**kwargs):
+        data = {
+            "id_producto": uuid4(),
+            "id_alergeno": uuid4(),
+            "nivel_presencia": fake.random_element(elements=[
+                NivelPresencia.CONTIENE,
+                NivelPresencia.PUEDE_CONTENER,
+                NivelPresencia.TRAZAS
+            ]),
+        }
+        data.update(kwargs)
+        return data
+    
+    return _create_fake_producto_alergeno
