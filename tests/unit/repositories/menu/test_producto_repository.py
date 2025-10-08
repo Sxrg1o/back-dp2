@@ -186,3 +186,114 @@ async def test_delete_producto():
         await repository.delete(producto_id)
 
     mock_session.rollback.assert_called_once()
+
+
+@pytest.mark.asyncio
+async def test_get_all_productos():
+    """
+    Verifica que el método get_all recupera correctamente una lista paginada de productos.
+
+    PRECONDICIONES:
+        - Se debe tener una instancia mock de AsyncSession.
+
+    PROCESO:
+        - Configurar el mock para simular la respuesta de la base de datos.
+        - Llamar al método get_all con parámetros de paginación.
+        - Verificar que se ejecuten las consultas correctas y se retornen los resultados esperados.
+
+    POSTCONDICIONES:
+        - El método debe retornar una tupla (lista de productos, total).
+        - Debe aplicar correctamente la paginación.
+        - Debe aplicar el filtro de categoría si se proporciona.
+    """
+    # Arrange - Caso sin filtro
+    mock_session = AsyncMock(spec=AsyncSession)
+    
+    # Mock para el conteo
+    mock_count_result = MagicMock()
+    mock_count_result.scalar.return_value = 2
+    
+    # Mock para la consulta de productos
+    mock_productos_result = MagicMock()
+    productos = [
+        ProductoModel(
+            id=uuid4(),
+            id_categoria=uuid4(),
+            nombre="Pizza",
+            precio_base=Decimal("15.00")
+        ),
+        ProductoModel(
+            id=uuid4(),
+            id_categoria=uuid4(),
+            nombre="Hamburguesa",
+            precio_base=Decimal("12.50")
+        ),
+    ]
+    mock_productos_result.scalars.return_value.all.return_value = productos
+    
+    # Configurar execute para retornar diferentes resultados
+    mock_session.execute.side_effect = [mock_count_result, mock_productos_result]
+    
+    repository = ProductoRepository(mock_session)
+
+    # Act
+    result_productos, total = await repository.get_all(skip=0, limit=10, id_categoria=None)
+
+    # Assert
+    assert total == 2
+    assert len(result_productos) == 2
+    assert result_productos[0].nombre == "Pizza"
+    assert result_productos[1].nombre == "Hamburguesa"
+    assert mock_session.execute.call_count == 2
+
+
+@pytest.mark.asyncio
+async def test_get_all_productos_with_categoria_filter():
+    """
+    Verifica que el método get_all filtra correctamente por categoría.
+
+    PRECONDICIONES:
+        - Se debe tener una instancia mock de AsyncSession.
+        - Se debe tener un UUID de categoría válido.
+
+    PROCESO:
+        - Configurar el mock para simular productos filtrados por categoría.
+        - Llamar al método get_all con un id_categoria.
+        - Verificar que la consulta incluya el filtro correcto.
+
+    POSTCONDICIONES:
+        - El método debe retornar solo productos de la categoría especificada.
+        - La consulta debe incluir el WHERE con id_categoria.
+    """
+    # Arrange
+    mock_session = AsyncMock(spec=AsyncSession)
+    id_categoria = uuid4()
+    
+    # Mock para el conteo
+    mock_count_result = MagicMock()
+    mock_count_result.scalar.return_value = 1
+    
+    # Mock para la consulta de productos
+    mock_productos_result = MagicMock()
+    productos = [
+        ProductoModel(
+            id=uuid4(),
+            id_categoria=id_categoria,
+            nombre="Pizza Margherita",
+            precio_base=Decimal("15.00")
+        ),
+    ]
+    mock_productos_result.scalars.return_value.all.return_value = productos
+    
+    mock_session.execute.side_effect = [mock_count_result, mock_productos_result]
+    
+    repository = ProductoRepository(mock_session)
+
+    # Act
+    result_productos, total = await repository.get_all(skip=0, limit=10, id_categoria=id_categoria)
+
+    # Assert
+    assert total == 1
+    assert len(result_productos) == 1
+    assert result_productos[0].id_categoria == id_categoria
+    assert mock_session.execute.call_count == 2

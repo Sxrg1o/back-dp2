@@ -315,7 +315,7 @@ def test_list_productos_success(
     assert response.status_code == 200
     assert response.json()["total"] == 2
     assert len(response.json()["items"]) == 2
-    mock_producto_service.get_productos.assert_awaited_once_with(0, 10)
+    mock_producto_service.get_productos.assert_awaited_once_with(0, 10, None)
 
 
 def test_list_productos_validation_error(
@@ -354,6 +354,48 @@ def test_list_productos_validation_error(
     assert any("limit" in str(err).lower() for err in error_detail)
     # No debe llamar al servicio porque la validación falla antes
     mock_producto_service.get_productos.assert_not_called()
+
+
+def test_list_productos_with_categoria_filter(
+    test_client, mock_db_session_dependency, mock_producto_service, sample_producto_data
+):
+    """
+    Prueba la obtención exitosa de una lista de productos filtrados por categoría.
+
+    PRECONDICIONES:
+        - El cliente de prueba (test_client) debe estar configurado
+        - El servicio de productos debe estar mockeado (mock_producto_service)
+        - Los datos de muestra deben estar disponibles (sample_producto_data)
+
+    PROCESO:
+        - Configura el mock para simular una lista filtrada de productos.
+        - Realiza una solicitud GET al endpoint con filtro de categoría.
+        - Verifica la respuesta HTTP y los datos retornados.
+        
+    POSTCONDICIONES:
+        - La respuesta debe tener código HTTP 200 (OK)
+        - La respuesta debe incluir una lista de productos filtrados y el total
+        - El método get_productos del servicio debe haber sido llamado con el id_categoria
+    """
+    # Arrange
+    id_categoria = uuid.uuid4()
+    producto_summary = {
+        "id": sample_producto_data["id"],
+        "nombre": sample_producto_data["nombre"],
+        "precio_base": sample_producto_data["precio_base"],
+        "disponible": True,
+    }
+    producto_list = {"items": [producto_summary], "total": 1}
+    mock_producto_service.get_productos.return_value = ProductoList(**producto_list)
+
+    # Act
+    response = test_client.get(f"/api/v1/productos?skip=0&limit=10&id_categoria={id_categoria}")
+
+    # Assert
+    assert response.status_code == 200
+    assert response.json()["total"] == 1
+    assert len(response.json()["items"]) == 1
+    mock_producto_service.get_productos.assert_awaited_once_with(0, 10, id_categoria)
 
 
 def test_update_producto_success(

@@ -143,7 +143,12 @@ class ProductoService:
         result = await self.repository.delete(producto_id)
         return result
 
-    async def get_productos(self, skip: int = 0, limit: int = 100) -> ProductoList:
+    async def get_productos(    
+        self, 
+        skip: int = 0, 
+        limit: int = 100,
+        id_categoria: UUID | None = None
+    ) -> ProductoList:
         """
         Obtiene una lista paginada de productos.
 
@@ -168,7 +173,7 @@ class ProductoService:
             raise ProductoValidationError("El parámetro 'limit' debe ser mayor a cero")
 
         # Obtener productos desde el repositorio
-        productos, total = await self.repository.get_all(skip, limit)
+        productos, total = await self.repository.get_all(skip, limit, id_categoria)
 
         # Convertir modelos a esquemas de resumen
         producto_summaries = [ProductoSummary.model_validate(producto) for producto in productos]
