@@ -1,5 +1,5 @@
 """
-Pydantic schemas for ProductoOpcion (Product Option) entities.
+Pydantic schemas for ProductoTipoOpcion (Product Type Option) entities.
 """
 
 from typing import Optional, ClassVar, List
@@ -9,8 +9,8 @@ from decimal import Decimal
 from pydantic import BaseModel, Field, ConfigDict
 
 
-class ProductoOpcionBase(BaseModel):
-    """Base schema for ProductoOpcion."""
+class ProductoTipoOpcionBase(BaseModel):
+    """Base schema for ProductoTipoOpcion."""
 
     nombre: str = Field(
         description="Option name (e.g., 'Sin ají', 'Ají suave', 'Con choclo')", 
@@ -33,15 +33,15 @@ class ProductoOpcionBase(BaseModel):
     )
 
 
-class ProductoOpcionCreate(ProductoOpcionBase):
-    """Schema for creating a new producto opcion."""
+class ProductoTipoOpcionCreate(ProductoTipoOpcionBase):
+    """Schema for creating a new producto tipo opcion."""
 
     id_producto: UUID = Field(description="Product ID")
     id_tipo_opcion: UUID = Field(description="Option type ID")
 
 
-class ProductoOpcionUpdate(BaseModel):
-    """Schema for updating producto opcion."""
+class ProductoTipoOpcionUpdate(BaseModel):
+    """Schema for updating producto tipo opcion."""
 
     nombre: Optional[str] = Field(
         default=None,
@@ -73,8 +73,8 @@ class ProductoOpcionUpdate(BaseModel):
     )
 
 
-class ProductoOpcionResponse(ProductoOpcionBase):
-    """Schema for producto opcion responses."""
+class ProductoTipoOpcionResponse(ProductoTipoOpcionBase):
+    """Schema for producto tipo opcion responses."""
 
     model_config: ClassVar[ConfigDict] = ConfigDict(from_attributes=True)
 
@@ -89,8 +89,8 @@ class ProductoOpcionResponse(ProductoOpcionBase):
     )
 
 
-class ProductoOpcionSummary(BaseModel):
-    """Schema for summarized producto opcion information in lists."""
+class ProductoTipoOpcionSummary(BaseModel):
+    """Schema for summarized producto tipo opcion information in lists."""
 
     model_config: ClassVar[ConfigDict] = ConfigDict(from_attributes=True)
 
@@ -103,8 +103,8 @@ class ProductoOpcionSummary(BaseModel):
     orden: int = Field(default=0, description="Display order for the option")
 
 
-class ProductoOpcionList(BaseModel):
-    """Schema for paginated list of product options."""
+class ProductoTipoOpcionList(BaseModel):
+    """Schema for paginated list of product type options."""
 
-    items: List[ProductoOpcionSummary]
+    items: List[ProductoTipoOpcionSummary]
     total: int = Field(description="Total number of product options")

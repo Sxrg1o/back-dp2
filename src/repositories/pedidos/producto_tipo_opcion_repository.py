@@ -1,5 +1,5 @@
 """
-Repositorio para la gestión de opciones de productos en el sistema.
+Repositorio para la gestión de opciones de productos por tipo en el sistema.
 """
 
 from typing import Optional, List, Tuple
@@ -9,14 +9,14 @@ from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, delete, update, func
 
-from src.models.pedidos.producto_opcion_model import ProductoOpcionModel
+from src.models.pedidos.producto_tipo_opcion_model import ProductoTipoOpcionModel
 
 
-class ProductoOpcionRepository:
-    """Repositorio para gestionar operaciones CRUD del modelo de opciones de productos.
+class ProductoTipoOpcionRepository:
+    """Repositorio para gestionar operaciones CRUD del modelo de opciones de productos por tipo.
 
     Proporciona acceso a la capa de persistencia para las operaciones
-    relacionadas con las opciones de productos en el sistema, siguiendo el patrón Repository.
+    relacionadas con las opciones de productos por tipo en el sistema, siguiendo el patrón Repository.
 
     Attributes
     ----------
@@ -35,19 +35,19 @@ class ProductoOpcionRepository:
         """
         self.session = session
 
-    async def create(self, producto_opcion: ProductoOpcionModel) -> ProductoOpcionModel:
+    async def create(self, producto_tipo_opcion: ProductoTipoOpcionModel) -> ProductoTipoOpcionModel:
         """
         Crea una nueva opción de producto en la base de datos.
 
         Parameters
         ----------
-        producto_opcion : ProductoOpcionModel
-            Instancia del modelo de opción de producto a crear.
+        producto_tipo_opcion : ProductoTipoOpcionModel
+            Instancia del modelo de opción de producto por tipo a crear.
 
         Returns
         -------
-        ProductoOpcionModel
-            El modelo de opción de producto creado con su ID asignado.
+        ProductoTipoOpcionModel
+            El modelo de opción de producto por tipo creado con su ID asignado.
 
         Raises
         ------
@@ -55,46 +55,46 @@ class ProductoOpcionRepository:
             Si ocurre un error durante la operación en la base de datos.
         """
         try:
-            self.session.add(producto_opcion)
+            self.session.add(producto_tipo_opcion)
             await self.session.flush()
             await self.session.commit()
-            await self.session.refresh(producto_opcion)
-            return producto_opcion
+            await self.session.refresh(producto_tipo_opcion)
+            return producto_tipo_opcion
         except SQLAlchemyError:
             await self.session.rollback()
             raise
 
-    async def get_by_id(self, producto_opcion_id: UUID) -> Optional[ProductoOpcionModel]:
+    async def get_by_id(self, producto_tipo_opcion_id: UUID) -> Optional[ProductoTipoOpcionModel]:
         """
         Obtiene una opción de producto por su identificador único.
 
         Parameters
         ----------
-        producto_opcion_id : UUID
-            Identificador único de la opción de producto a buscar.
+        producto_tipo_opcion_id : UUID
+            Identificador único de la opción de producto por tipo a buscar.
 
         Returns
         -------
-        Optional[ProductoOpcionModel]
-            La opción de producto encontrada o None si no existe.
+        Optional[ProductoTipoOpcionModel]
+            La opción de producto por tipo encontrada o None si no existe.
         """
-        query = select(ProductoOpcionModel).where(ProductoOpcionModel.id == producto_opcion_id)
+        query = select(ProductoTipoOpcionModel).where(ProductoTipoOpcionModel.id == producto_tipo_opcion_id)
         result = await self.session.execute(query)
         return result.scalars().first()
 
-    async def delete(self, producto_opcion_id: UUID) -> bool:
+    async def delete(self, producto_tipo_opcion_id: UUID) -> bool:
         """
         Elimina una opción de producto de la base de datos por su ID.
 
         Parameters
         ----------
-        producto_opcion_id : UUID
-            Identificador único de la opción de producto a eliminar.
+        producto_tipo_opcion_id : UUID
+            Identificador único de la opción de producto por tipo a eliminar.
 
         Returns
         -------
         bool
-            True si la opción de producto fue eliminada, False si no existía.
+            True si la opción de producto por tipo fue eliminada, False si no existía.
 
         Raises
         ------
@@ -102,7 +102,7 @@ class ProductoOpcionRepository:
             Si ocurre un error durante la operación en la base de datos.
         """
         try:
-            stmt = delete(ProductoOpcionModel).where(ProductoOpcionModel.id == producto_opcion_id)
+            stmt = delete(ProductoTipoOpcionModel).where(ProductoTipoOpcionModel.id == producto_tipo_opcion_id)
             result = await self.session.execute(stmt)
             await self.session.commit()
             return result.rowcount > 0
@@ -110,21 +110,21 @@ class ProductoOpcionRepository:
             await self.session.rollback()
             raise
 
-    async def update(self, producto_opcion_id: UUID, **kwargs) -> Optional[ProductoOpcionModel]:
+    async def update(self, producto_tipo_opcion_id: UUID, **kwargs) -> Optional[ProductoTipoOpcionModel]:
         """
         Actualiza una opción de producto existente con los valores proporcionados.
 
         Parameters
         ----------
-        producto_opcion_id : UUID
-            Identificador único de la opción de producto a actualizar.
+        producto_tipo_opcion_id : UUID
+            Identificador único de la opción de producto por tipo a actualizar.
         **kwargs
             Campos y valores a actualizar.
 
         Returns
         -------
-        Optional[ProductoOpcionModel]
-            La opción de producto actualizada o None si no existe.
+        Optional[ProductoTipoOpcionModel]
+            La opción de producto por tipo actualizada o None si no existe.
 
         Raises
         ------
@@ -134,42 +134,42 @@ class ProductoOpcionRepository:
         try:
             # Filtrar solo los campos que pertenecen al modelo
             valid_fields = {
-                k: v for k, v in kwargs.items() if hasattr(ProductoOpcionModel, k) and k != "id"
+                k: v for k, v in kwargs.items() if hasattr(ProductoTipoOpcionModel, k) and k != "id"
             }
 
             if not valid_fields:
                 # No hay campos válidos para actualizar
-                return await self.get_by_id(producto_opcion_id)
+                return await self.get_by_id(producto_tipo_opcion_id)
 
             # Construir y ejecutar la sentencia de actualización
             stmt = (
-                update(ProductoOpcionModel)
-                .where(ProductoOpcionModel.id == producto_opcion_id)
+                update(ProductoTipoOpcionModel)
+                .where(ProductoTipoOpcionModel.id == producto_tipo_opcion_id)
                 .values(**valid_fields)
-                .returning(ProductoOpcionModel)
+                .returning(ProductoTipoOpcionModel)
             )
 
             result = await self.session.execute(stmt)
             await self.session.commit()
 
             # Obtener el resultado actualizado
-            updated_producto_opcion = result.scalars().first()
+            updated_producto_tipo_opcion = result.scalars().first()
 
-            # Si no se encontró la opción de producto, retornar None
-            if not updated_producto_opcion:
+            # Si no se encontró la opción de producto por tipo, retornar None
+            if not updated_producto_tipo_opcion:
                 return None
 
             # Refrescar el objeto desde la base de datos
-            await self.session.refresh(updated_producto_opcion)
+            await self.session.refresh(updated_producto_tipo_opcion)
 
-            return updated_producto_opcion
+            return updated_producto_tipo_opcion
         except SQLAlchemyError:
             await self.session.rollback()
             raise
 
     async def get_all(
         self, skip: int = 0, limit: int = 100
-    ) -> Tuple[List[ProductoOpcionModel], int]:
+    ) -> Tuple[List[ProductoTipoOpcionModel], int]:
         """
         Obtiene una lista paginada de opciones de productos y el total de registros.
 
@@ -182,14 +182,14 @@ class ProductoOpcionRepository:
 
         Returns
         -------
-        Tuple[List[ProductoOpcionModel], int]
-            Tupla con la lista de opciones de productos y el número total de registros.
+        Tuple[List[ProductoTipoOpcionModel], int]
+            Tupla con la lista de opciones de productos por tipo y el número total de registros.
         """
-        # Consulta para obtener las opciones de productos paginadas
-        query = select(ProductoOpcionModel).offset(skip).limit(limit)
+        # Consulta para obtener las opciones de productos por tipo paginadas
+        query = select(ProductoTipoOpcionModel).offset(skip).limit(limit)
 
         # Consulta para obtener el total de registros
-        count_query = select(func.count(ProductoOpcionModel.id))
+        count_query = select(func.count(ProductoTipoOpcionModel.id))
 
         try:
             # Ejecutar ambas consultas
@@ -197,10 +197,10 @@ class ProductoOpcionRepository:
             count_result = await self.session.execute(count_query)
 
             # Obtener los resultados
-            producto_opciones = result.scalars().all()
+            producto_tipo_opciones = result.scalars().all()
             total = count_result.scalar() or 0
 
-            return list(producto_opciones), total
+            return list(producto_tipo_opciones), total
         except SQLAlchemyError:
             # En caso de error, no es necesario hacer rollback aquí
             # porque no estamos modificando datos

@@ -19,10 +19,10 @@ if TYPE_CHECKING:
     from src.models.pedidos.tipo_opciones_model import TipoOpcionModel
 
 # Definimos un TypeVar para el tipado genérico
-T = TypeVar("T", bound="ProductoOpcionModel")
+T = TypeVar("T", bound="ProductoTipoOpcionModel")
 
 
-class ProductoOpcionModel(BaseModel, AuditMixin):
+class ProductoTipoOpcionModel(BaseModel, AuditMixin):
     """Modelo para representar las opciones específicas de cada producto.
 
     Define las opciones concretas disponibles para cada producto en el menú,
@@ -53,7 +53,7 @@ class ProductoOpcionModel(BaseModel, AuditMixin):
         Usuario que realizó la última modificación (heredado de AuditMixin).
     """
 
-    __tablename__ = "producto_opcion"
+    __tablename__ = "producto_tipo_opcion"
 
     # Foreign Keys - Relaciones con producto y tipo de opción
     id_producto: Mapped[UUID] = mapped_column(
@@ -105,7 +105,7 @@ class ProductoOpcionModel(BaseModel, AuditMixin):
     
     tipo_opcion: Mapped["TipoOpcionModel"] = relationship(
         "TipoOpcionModel",
-        back_populates="producto_opciones",
+        back_populates="producto_tipo_opciones",
         lazy="selectin"
     )
 
@@ -164,8 +164,8 @@ class ProductoOpcionModel(BaseModel, AuditMixin):
                 setattr(self, key, value)
 
     def __repr__(self) -> str:
-        """Representación en string del modelo ProductoOpcion."""
+        """Representación en string del modelo ProductoTipoOpcion."""
         return (
-            f"<ProductoOpcionModel(id={self.id}, nombre='{self.nombre}', "
+            f"<ProductoTipoOpcionModel(id={self.id}, nombre='{self.nombre}', "
             f"precio_adicional={self.precio_adicional}, activo={self.activo})>"
         )

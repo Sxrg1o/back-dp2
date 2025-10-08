@@ -12,7 +12,7 @@ from src.models.base_model import BaseModel
 from src.models.mixins.audit_mixin import AuditMixin
 
 if TYPE_CHECKING:
-    from src.models.pedidos.producto_opcion_model import ProductoOpcionModel
+    from src.models.pedidos.producto_tipo_opcion_model import ProductoTipoOpcionModel
 
 # Definimos un TypeVar para tipado genérico
 T = TypeVar("T", bound="TipoOpcionModel")
@@ -51,8 +51,8 @@ class TipoOpcionModel(BaseModel, AuditMixin):
     orden: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
 
     # Relación con ProductoOpcion
-    producto_opciones: Mapped[List["ProductoOpcionModel"]] = relationship(
-        "ProductoOpcionModel",
+    producto_tipo_opciones: Mapped[List["ProductoTipoOpcionModel"]] = relationship(
+        "ProductoTipoOpcionModel",
         back_populates="tipo_opcion",
         lazy="selectin",
         cascade="all, delete-orphan"

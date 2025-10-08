@@ -25,7 +25,7 @@ from src.models.menu.alergeno_model import AlergenoModel
 from src.models.menu.producto_model import ProductoModel
 from src.models.menu.producto_alergeno_model import ProductoAlergenoModel
 from src.models.pedidos.tipo_opciones_model import TipoOpcionModel
-from src.models.pedidos.producto_opcion_model import ProductoOpcionModel
+from src.models.pedidos.producto_tipo_opcion_model import ProductoTipoOpcionModel
 from src.core.enums.alergeno_enums import NivelPresencia
 
 
@@ -55,7 +55,7 @@ class CevicheriaSeeder:
         self.alergenos = {}
         self.productos = {}
         self.tipos_opciones = {}
-        self.productos_opciones = {}
+        self.productos_tipo_opciones = {}
     
     async def seed_all(self):
         """Ejecuta todos los seeders en orden."""
@@ -67,7 +67,7 @@ class CevicheriaSeeder:
         await self.seed_productos()
         await self.seed_productos_alergenos()
         await self.seed_tipos_opciones()
-        await self.seed_productos_opciones()
+        await self.seed_productos_tipo_opciones()
         
         print("\n✅ ¡Seed completado exitosamente!")
         print(f"   - {len(self.roles)} roles")
@@ -75,7 +75,7 @@ class CevicheriaSeeder:
         print(f"   - {len(self.alergenos)} alérgenos")
         print(f"   - {len(self.productos)} productos")
         print(f"   - {len(self.tipos_opciones)} tipos de opciones")
-        print(f"   - {len(self.productos_opciones)} opciones de productos")
+        print(f"   - {len(self.productos_tipo_opciones)} opciones de productos")
     
     async def seed_roles(self):
         """Crea roles del sistema."""
@@ -612,7 +612,7 @@ class CevicheriaSeeder:
         await self.session.commit()
         print(f"   → {len(tipos_opciones_data)} tipos de opciones creados\n")
     
-    async def seed_productos_opciones(self):
+    async def seed_productos_tipo_opciones(self):
         """Crea opciones específicas para cada producto."""
         print("🎛️  Creando opciones de productos...")
         
@@ -641,7 +641,7 @@ class CevicheriaSeeder:
         for nombre_producto in productos_con_aji:
             if nombre_producto in self.productos:
                 for nombre, precio, orden in opciones_nivel_aji:
-                    opcion = ProductoOpcionModel(
+                    opcion = ProductoTipoOpcionModel(
                         id_producto=self.productos[nombre_producto].id,
                         id_tipo_opcion=self.tipos_opciones["nivel_aji"].id,
                         nombre=nombre,
@@ -669,7 +669,7 @@ class CevicheriaSeeder:
         for nombre_producto in productos_con_acompanamiento:
             if nombre_producto in self.productos:
                 for nombre, precio, orden in opciones_acompanamiento:
-                    opcion = ProductoOpcionModel(
+                    opcion = ProductoTipoOpcionModel(
                         id_producto=self.productos[nombre_producto].id,
                         id_tipo_opcion=self.tipos_opciones["acompanamiento"].id,
                         nombre=nombre,
@@ -692,7 +692,7 @@ class CevicheriaSeeder:
         for nombre_producto in productos_bebidas:
             if nombre_producto in self.productos:
                 for nombre, precio, orden in opciones_temperatura:
-                    opcion = ProductoOpcionModel(
+                    opcion = ProductoTipoOpcionModel(
                         id_producto=self.productos[nombre_producto].id,
                         id_tipo_opcion=self.tipos_opciones["temperatura"].id,
                         nombre=nombre,
@@ -718,7 +718,7 @@ class CevicheriaSeeder:
         for nombre_producto in productos_con_tamano:
             if nombre_producto in self.productos:
                 for nombre, precio, orden in opciones_tamano:
-                    opcion = ProductoOpcionModel(
+                    opcion = ProductoTipoOpcionModel(
                         id_producto=self.productos[nombre_producto].id,
                         id_tipo_opcion=self.tipos_opciones["tamano"].id,
                         nombre=nombre,
@@ -727,7 +727,7 @@ class CevicheriaSeeder:
                         orden=orden
                     )
                     self.session.add(opcion)
-                    self.productos_opciones[count] = opcion
+                    self.productos_tipo_opciones[count] = opcion
                     count += 1
         
         await self.session.commit()

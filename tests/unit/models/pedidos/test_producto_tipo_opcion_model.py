@@ -1,11 +1,11 @@
 """
-Pruebas unitarias para el modelo ProductoOpcionModel.
+Pruebas unitarias para el modelo ProductoTipoOpcionModel.
 
 Este módulo contiene las pruebas unitarias para verificar el correcto funcionamiento
-del modelo ProductoOpcionModel, incluyendo la creación, validación y métodos de utilidad.
+del modelo ProductoTipoOpcionModel, incluyendo la creación, validación y métodos de utilidad.
 
 PRECONDICIONES:
-    - El módulo ProductoOpcionModel debe estar correctamente implementado.
+    - El módulo ProductoTipoOpcionModel debe estar correctamente implementado.
     - SQLAlchemy y sus dependencias deben estar instaladas.
     - pytest debe estar disponible para ejecutar las pruebas.
 
@@ -21,18 +21,18 @@ POSTCONDICIONES:
 
 from decimal import Decimal
 from uuid import UUID, uuid4
-from src.models.pedidos.producto_opcion_model import ProductoOpcionModel
+from src.models.pedidos.producto_tipo_opcion_model import ProductoTipoOpcionModel
 
 
-def test_producto_opcion_creation():
+def test_producto_tipo_opcion_creation():
     """
-    Verifica que un objeto ProductoOpcionModel se crea correctamente.
+    Verifica que un objeto ProductoTipoOpcionModel se crea correctamente.
 
     PRECONDICIONES:
         - Dado un id, id_producto, id_tipo_opcion, nombre y otros campos.
 
     PROCESO:
-        - Crear un registro de ProductoOpcionModel con valores predefinidos.
+        - Crear un registro de ProductoTipoOpcionModel con valores predefinidos.
 
     POSTCONDICIONES:
         - La instancia debe tener los valores exactos proporcionados.
@@ -43,7 +43,7 @@ def test_producto_opcion_creation():
     opcion_nombre = "Ají suave"
     precio_adicional = Decimal("2.50")
 
-    opcion = ProductoOpcionModel(
+    opcion = ProductoTipoOpcionModel(
         id=opcion_id,
         id_producto=producto_id,
         id_tipo_opcion=tipo_opcion_id,
@@ -67,11 +67,11 @@ def test_producto_opcion_to_dict():
     Verifica que el método to_dict() funciona correctamente.
 
     PRECONDICIONES:
-        - La clase ProductoOpcionModel debe tener implementado el método to_dict().
+        - La clase ProductoTipoOpcionModel debe tener implementado el método to_dict().
         - Los atributos deben existir en el modelo.
 
     PROCESO:
-        - Crear una instancia de ProductoOpcionModel con valores específicos.
+        - Crear una instancia de ProductoTipoOpcionModel con valores específicos.
         - Llamar al método to_dict() para obtener un diccionario.
 
     POSTCONDICIONES:
@@ -83,7 +83,7 @@ def test_producto_opcion_to_dict():
     tipo_opcion_id: UUID = uuid4()
     opcion_nombre = "Sin ají"
     
-    opcion = ProductoOpcionModel(
+    opcion = ProductoTipoOpcionModel(
         id=opcion_id,
         id_producto=producto_id,
         id_tipo_opcion=tipo_opcion_id,
@@ -113,10 +113,10 @@ def test_producto_opcion_defaults():
     Verifica los valores predeterminados de los atributos.
 
     PRECONDICIONES:
-        - La clase ProductoOpcionModel debe tener valores predeterminados definidos.
+        - La clase ProductoTipoOpcionModel debe tener valores predeterminados definidos.
 
     PROCESO:
-        - Crear una instancia de ProductoOpcionModel con solo los campos obligatorios.
+        - Crear una instancia de ProductoTipoOpcionModel con solo los campos obligatorios.
 
     POSTCONDICIONES:
         - Los atributos con valores predeterminados deben tener los valores esperados.
@@ -124,7 +124,7 @@ def test_producto_opcion_defaults():
     producto_id: UUID = uuid4()
     tipo_opcion_id: UUID = uuid4()
     
-    opcion = ProductoOpcionModel(
+    opcion = ProductoTipoOpcionModel(
         id_producto=producto_id,
         id_tipo_opcion=tipo_opcion_id,
         nombre="Helada",
@@ -153,7 +153,7 @@ def test_producto_opcion_precio_decimal():
     producto_id: UUID = uuid4()
     tipo_opcion_id: UUID = uuid4()
     
-    opcion = ProductoOpcionModel(
+    opcion = ProductoTipoOpcionModel(
         id_producto=producto_id,
         id_tipo_opcion=tipo_opcion_id,
         nombre="Con choclo",
@@ -169,10 +169,10 @@ def test_producto_opcion_repr():
     Verifica que el método __repr__ funciona correctamente.
 
     PRECONDICIONES:
-        - La clase ProductoOpcionModel debe tener implementado __repr__.
+        - La clase ProductoTipoOpcionModel debe tener implementado __repr__.
 
     PROCESO:
-        - Crear una instancia de ProductoOpcionModel.
+        - Crear una instancia de ProductoTipoOpcionModel.
         - Llamar a __repr__ (o str()).
 
     POSTCONDICIONES:
@@ -182,7 +182,7 @@ def test_producto_opcion_repr():
     tipo_opcion_id: UUID = uuid4()
     opcion_id: UUID = uuid4()
     
-    opcion = ProductoOpcionModel(
+    opcion = ProductoTipoOpcionModel(
         id=opcion_id,
         id_producto=producto_id,
         id_tipo_opcion=tipo_opcion_id,
@@ -193,7 +193,7 @@ def test_producto_opcion_repr():
 
     repr_str = repr(opcion)
     
-    assert "ProductoOpcionModel" in repr_str
+    assert "ProductoTipoOpcionModel" in repr_str
     assert str(opcion_id) in repr_str
     assert "Ají picante" in repr_str
     assert "1.50" in repr_str

@@ -2,6 +2,6 @@
 Repositorios para el módulo de pedidos.
 """
 
-from src.repositories.pedidos.producto_opcion_repository import ProductoOpcionRepository
+from src.repositories.pedidos.producto_tipo_opcion_repository import ProductoTipoOpcionRepository
 
-__all__ = ["ProductoOpcionRepository"]
+__all__ = ["ProductoTipoOpcionRepository"]

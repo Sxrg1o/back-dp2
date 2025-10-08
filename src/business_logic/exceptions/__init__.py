@@ -12,10 +12,10 @@ from src.business_logic.exceptions.rol_exceptions import (
     RolNotFoundError,
     RolConflictError,
 )
-from src.business_logic.exceptions.producto_opcion_exceptions import (
-    ProductoOpcionValidationError,
-    ProductoOpcionNotFoundError,
-    ProductoOpcionConflictError,
+from src.business_logic.exceptions.producto_tipo_opcion_exceptions import (
+    ProductoTipoOpcionValidationError,
+    ProductoTipoOpcionNotFoundError,
+    ProductoTipoOpcionConflictError,
 )
 
 __all__ = [
@@ -25,7 +25,7 @@ __all__ = [
     "RolValidationError",
     "RolNotFoundError",
     "RolConflictError",
-    "ProductoOpcionValidationError",
-    "ProductoOpcionNotFoundError",
-    "ProductoOpcionConflictError",
+    "ProductoTipoOpcionValidationError",
+    "ProductoTipoOpcionNotFoundError",
+    "ProductoTipoOpcionConflictError",
 ]

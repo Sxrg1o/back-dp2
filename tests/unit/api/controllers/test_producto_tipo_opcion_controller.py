@@ -9,14 +9,14 @@ from decimal import Decimal
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
 
-from src.api.controllers.producto_opcion_controller import router, get_database_session
-from src.business_logic.pedidos.producto_opcion_service import ProductoOpcionService
-from src.business_logic.exceptions.producto_opcion_exceptions import (
-    ProductoOpcionNotFoundError,
-    ProductoOpcionConflictError,
-    ProductoOpcionValidationError,
+from src.api.controllers.producto_tipo_opcion_controller import router, get_database_session
+from src.business_logic.pedidos.producto_tipo_opcion_service import ProductoTipoOpcionService
+from src.business_logic.exceptions.producto_tipo_opcion_exceptions import (
+    ProductoTipoOpcionNotFoundError,
+    ProductoTipoOpcionConflictError,
+    ProductoTipoOpcionValidationError,
 )
-from src.api.schemas.producto_opcion_schema import ProductoOpcionResponse, ProductoOpcionList
+from src.api.schemas.producto_tipo_opcion_schema import ProductoTipoOpcionResponse, ProductoTipoOpcionList
 
 app = FastAPI()
 app.include_router(router)
@@ -54,18 +54,18 @@ def mock_producto_opcion_service():
     Fixture que proporciona un mock del servicio de opciones de productos.
     
     PRECONDICIONES:
-        - La clase ProductoOpcionService debe estar importada correctamente
+        - La clase ProductoTipoOpcionService debe estar importada correctamente
     
     PROCESO:
         - Crea un patch del servicio de opciones de productos
         - Configura el servicio mock con métodos asíncronos
     
     POSTCONDICIONES:
-        - Devuelve una instancia mock de ProductoOpcionService lista para usar en pruebas
+        - Devuelve una instancia mock de ProductoTipoOpcionService lista para usar en pruebas
         - El mock puede configurarse para simular diferentes comportamientos
     """
-    with patch("src.api.controllers.producto_opcion_controller.ProductoOpcionService") as mock:
-        service_instance = AsyncMock(spec=ProductoOpcionService)
+    with patch("src.api.controllers.producto_tipo_opcion_controller.ProductoTipoOpcionService") as mock:
+        service_instance = AsyncMock(spec=ProductoTipoOpcionService)
         mock.return_value = service_instance
         yield service_instance
 
@@ -102,7 +102,7 @@ def sample_producto_opcion_data():
     
     POSTCONDICIONES:
         - Devuelve un diccionario con todos los campos necesarios para una opción de producto
-        - Los datos pueden ser usados para construir objetos ProductoOpcionModel o ProductoOpcionResponse
+        - Los datos pueden ser usados para construir objetos ProductoTipoOpcionModel o ProductoTipoOpcionResponse
     """
     return {
         "id": str(uuid.uuid4()),
@@ -117,7 +117,7 @@ def sample_producto_opcion_data():
     }
 
 
-def test_create_producto_opcion_success(
+def test_create_producto_tipo_opcion_success(
     test_client, mock_db_session_dependency, mock_producto_opcion_service, sample_producto_opcion_data
 ):
     """
@@ -136,7 +136,7 @@ def test_create_producto_opcion_success(
     POSTCONDICIONES:
         - La respuesta debe tener código HTTP 201 (Created)
         - Los datos devueltos deben coincidir con los proporcionados
-        - El método create_producto_opcion del servicio debe haber sido llamado una vez
+        - El método create_producto_tipo_opcion del servicio debe haber sido llamado una vez
     """
     # Arrange
     producto_opcion_data = {
@@ -147,19 +147,19 @@ def test_create_producto_opcion_success(
         "activo": True,
         "orden": 1
     }
-    mock_producto_opcion_service.create_producto_opcion.return_value = ProductoOpcionResponse(**sample_producto_opcion_data)
+    mock_producto_opcion_service.create_producto_tipo_opcion.return_value = ProductoTipoOpcionResponse(**sample_producto_opcion_data)
 
     # Act
-    response = test_client.post("/api/v1/producto-opciones", json=producto_opcion_data)
+    response = test_client.post("/api/v1/producto-tipo-opciones", json=producto_opcion_data)
 
     # Assert
     assert response.status_code == 201
     assert response.json()["nombre"] == sample_producto_opcion_data["nombre"]
     assert response.json()["precio_adicional"] == sample_producto_opcion_data["precio_adicional"]
-    mock_producto_opcion_service.create_producto_opcion.assert_awaited_once()
+    mock_producto_opcion_service.create_producto_tipo_opcion.assert_awaited_once()
 
 
-def test_create_producto_opcion_conflict(test_client, mock_db_session_dependency, mock_producto_opcion_service):
+def test_create_producto_tipo_opcion_conflict(test_client, mock_db_session_dependency, mock_producto_opcion_service):
     """
     Prueba el manejo de errores al crear una opción de producto con nombre duplicado.
 
@@ -175,7 +175,7 @@ def test_create_producto_opcion_conflict(test_client, mock_db_session_dependency
     POSTCONDICIONES:
         - La respuesta debe tener código HTTP 409 (Conflict)
         - El mensaje de error debe indicar la duplicidad de la opción de producto
-        - El método create_producto_opcion del servicio debe haber sido llamado una vez
+        - El método create_producto_tipo_opcion del servicio debe haber sido llamado una vez
     """
     # Arrange
     producto_opcion_data = {
@@ -186,17 +186,17 @@ def test_create_producto_opcion_conflict(test_client, mock_db_session_dependency
         "activo": True,
         "orden": 1
     }
-    mock_producto_opcion_service.create_producto_opcion.side_effect = ProductoOpcionConflictError(
+    mock_producto_opcion_service.create_producto_tipo_opcion.side_effect = ProductoTipoOpcionConflictError(
         "Ya existe una opción de producto con el nombre 'Ají suave'"
     )
 
     # Act
-    response = test_client.post("/api/v1/producto-opciones", json=producto_opcion_data)
+    response = test_client.post("/api/v1/producto-tipo-opciones", json=producto_opcion_data)
 
     # Assert
     assert response.status_code == 409
     assert "Ya existe una opción de producto" in response.json()["detail"]
-    mock_producto_opcion_service.create_producto_opcion.assert_awaited_once()
+    mock_producto_opcion_service.create_producto_tipo_opcion.assert_awaited_once()
 
 
 def test_get_producto_opcion_success(
@@ -223,19 +223,19 @@ def test_get_producto_opcion_success(
     POSTCONDICIONES:
         - La respuesta debe tener código HTTP 200 (OK)
         - Los datos devueltos deben coincidir con los esperados
-        - El método get_producto_opcion_by_id del servicio debe haber sido llamado una vez
+        - El método get_producto_tipo_opcion_by_id del servicio debe haber sido llamado una vez
     """
     # Arrange
-    mock_producto_opcion_service.get_producto_opcion_by_id.return_value = ProductoOpcionResponse(**sample_producto_opcion_data)
+    mock_producto_opcion_service.get_producto_tipo_opcion_by_id.return_value = ProductoTipoOpcionResponse(**sample_producto_opcion_data)
 
     # Act
-    response = test_client.get(f"/api/v1/producto-opciones/{sample_producto_opcion_id}")
+    response = test_client.get(f"/api/v1/producto-tipo-opciones/{sample_producto_opcion_id}")
 
     # Assert
     assert response.status_code == 200
     assert response.json()["id"] == sample_producto_opcion_data["id"]
     assert response.json()["nombre"] == sample_producto_opcion_data["nombre"]
-    mock_producto_opcion_service.get_producto_opcion_by_id.assert_awaited_once()
+    mock_producto_opcion_service.get_producto_tipo_opcion_by_id.assert_awaited_once()
 
 
 def test_get_producto_opcion_not_found(
@@ -257,20 +257,20 @@ def test_get_producto_opcion_not_found(
     POSTCONDICIONES:
         - La respuesta debe tener código HTTP 404 (Not Found)
         - El mensaje de error debe indicar que no se encontró la opción de producto
-        - El método get_producto_opcion_by_id del servicio debe haber sido llamado una vez
+        - El método get_producto_tipo_opcion_by_id del servicio debe haber sido llamado una vez
     """
     # Arrange
-    mock_producto_opcion_service.get_producto_opcion_by_id.side_effect = ProductoOpcionNotFoundError(
+    mock_producto_opcion_service.get_producto_tipo_opcion_by_id.side_effect = ProductoTipoOpcionNotFoundError(
         f"No se encontró la opción de producto con ID {sample_producto_opcion_id}"
     )
 
     # Act
-    response = test_client.get(f"/api/v1/producto-opciones/{sample_producto_opcion_id}")
+    response = test_client.get(f"/api/v1/producto-tipo-opciones/{sample_producto_opcion_id}")
 
     # Assert
     assert response.status_code == 404
     assert f"No se encontró la opción de producto con ID {sample_producto_opcion_id}" in response.json()["detail"]
-    mock_producto_opcion_service.get_producto_opcion_by_id.assert_awaited_once()
+    mock_producto_opcion_service.get_producto_tipo_opcion_by_id.assert_awaited_once()
 
 
 def test_list_producto_opciones_success(
@@ -292,7 +292,7 @@ def test_list_producto_opciones_success(
     POSTCONDICIONES:
         - La respuesta debe tener código HTTP 200 (OK)
         - La respuesta debe incluir una lista de opciones de productos y el total
-        - El método get_producto_opciones del servicio debe haber sido llamado con los parámetros correctos
+        - El método get_producto_tipo_opciones del servicio debe haber sido llamado con los parámetros correctos
     """
     # Arrange
     producto_opcion_summary = {
@@ -305,16 +305,16 @@ def test_list_producto_opciones_success(
         "orden": sample_producto_opcion_data["orden"],
     }
     producto_opcion_list = {"items": [producto_opcion_summary, producto_opcion_summary], "total": 2}
-    mock_producto_opcion_service.get_producto_opciones.return_value = ProductoOpcionList(**producto_opcion_list)
+    mock_producto_opcion_service.get_producto_tipo_opciones.return_value = ProductoTipoOpcionList(**producto_opcion_list)
 
     # Act
-    response = test_client.get("/api/v1/producto-opciones?skip=0&limit=10")
+    response = test_client.get("/api/v1/producto-tipo-opciones?skip=0&limit=10")
 
     # Assert
     assert response.status_code == 200
     assert response.json()["total"] == 2
     assert len(response.json()["items"]) == 2
-    mock_producto_opcion_service.get_producto_opciones.assert_awaited_once_with(0, 10)
+    mock_producto_opcion_service.get_producto_tipo_opciones.assert_awaited_once_with(0, 10)
 
 
 def test_list_producto_opciones_validation_error(
@@ -338,12 +338,12 @@ def test_list_producto_opciones_validation_error(
         - El servicio no debe ser llamado debido a la validación de FastAPI
     """
     # Arrange
-    mock_producto_opcion_service.get_producto_opciones.side_effect = ProductoOpcionValidationError(
+    mock_producto_opcion_service.get_producto_tipo_opciones.side_effect = ProductoTipoOpcionValidationError(
         "El parámetro 'limit' debe ser mayor a cero"
     )
 
     # Act
-    response = test_client.get("/api/v1/producto-opciones?skip=0&limit=0")
+    response = test_client.get("/api/v1/producto-tipo-opciones?skip=0&limit=0")
 
     # Assert
     # FastAPI valida automáticamente los parámetros y devuelve 422 para errores de validación
@@ -352,10 +352,10 @@ def test_list_producto_opciones_validation_error(
     error_detail = response.json()["detail"]
     assert any("limit" in str(err).lower() for err in error_detail)
     # No debe llamar al servicio porque la validación falla antes
-    mock_producto_opcion_service.get_producto_opciones.assert_not_called()
+    mock_producto_opcion_service.get_producto_tipo_opciones.assert_not_called()
 
 
-def test_update_producto_opcion_success(
+def test_update_producto_tipo_opcion_success(
     test_client,
     mock_db_session_dependency,
     mock_producto_opcion_service,
@@ -379,23 +379,23 @@ def test_update_producto_opcion_success(
     POSTCONDICIONES:
         - La respuesta debe tener código HTTP 200 (OK)
         - Los datos devueltos deben reflejar los cambios realizados
-        - El método update_producto_opcion del servicio debe haber sido llamado una vez
+        - El método update_producto_tipo_opcion del servicio debe haber sido llamado una vez
     """
     # Arrange
     update_data = {"nombre": "Ají picante"}
     updated_data = {**sample_producto_opcion_data, "nombre": "Ají picante"}
-    mock_producto_opcion_service.update_producto_opcion.return_value = ProductoOpcionResponse(**updated_data)
+    mock_producto_opcion_service.update_producto_tipo_opcion.return_value = ProductoTipoOpcionResponse(**updated_data)
 
     # Act
-    response = test_client.put(f"/api/v1/producto-opciones/{sample_producto_opcion_id}", json=update_data)
+    response = test_client.put(f"/api/v1/producto-tipo-opciones/{sample_producto_opcion_id}", json=update_data)
 
     # Assert
     assert response.status_code == 200
     assert response.json()["nombre"] == "Ají picante"
-    mock_producto_opcion_service.update_producto_opcion.assert_awaited_once()
+    mock_producto_opcion_service.update_producto_tipo_opcion.assert_awaited_once()
 
 
-def test_update_producto_opcion_not_found(
+def test_update_producto_tipo_opcion_not_found(
     test_client, mock_db_session_dependency, mock_producto_opcion_service, sample_producto_opcion_id
 ):
     """
@@ -414,24 +414,24 @@ def test_update_producto_opcion_not_found(
     POSTCONDICIONES:
         - La respuesta debe tener código HTTP 404 (Not Found)
         - El mensaje de error debe indicar que no se encontró la opción de producto
-        - El método update_producto_opcion del servicio debe haber sido llamado una vez
+        - El método update_producto_tipo_opcion del servicio debe haber sido llamado una vez
     """
     # Arrange
     update_data = {"nombre": "Ají picante"}
-    mock_producto_opcion_service.update_producto_opcion.side_effect = ProductoOpcionNotFoundError(
+    mock_producto_opcion_service.update_producto_tipo_opcion.side_effect = ProductoTipoOpcionNotFoundError(
         f"No se encontró la opción de producto con ID {sample_producto_opcion_id}"
     )
 
     # Act
-    response = test_client.put(f"/api/v1/producto-opciones/{sample_producto_opcion_id}", json=update_data)
+    response = test_client.put(f"/api/v1/producto-tipo-opciones/{sample_producto_opcion_id}", json=update_data)
 
     # Assert
     assert response.status_code == 404
     assert f"No se encontró la opción de producto con ID {sample_producto_opcion_id}" in response.json()["detail"]
-    mock_producto_opcion_service.update_producto_opcion.assert_awaited_once()
+    mock_producto_opcion_service.update_producto_tipo_opcion.assert_awaited_once()
 
 
-def test_update_producto_opcion_conflict(
+def test_update_producto_tipo_opcion_conflict(
     test_client, mock_db_session_dependency, mock_producto_opcion_service, sample_producto_opcion_id
 ):
     """
@@ -450,24 +450,24 @@ def test_update_producto_opcion_conflict(
     POSTCONDICIONES:
         - La respuesta debe tener código HTTP 409 (Conflict)
         - El mensaje de error debe indicar la duplicidad del nombre
-        - El método update_producto_opcion del servicio debe haber sido llamado una vez
+        - El método update_producto_tipo_opcion del servicio debe haber sido llamado una vez
     """
     # Arrange
     update_data = {"nombre": "Otra Opción"}
-    mock_producto_opcion_service.update_producto_opcion.side_effect = ProductoOpcionConflictError(
+    mock_producto_opcion_service.update_producto_tipo_opcion.side_effect = ProductoTipoOpcionConflictError(
         "Ya existe una opción de producto con el nombre 'Otra Opción'"
     )
 
     # Act
-    response = test_client.put(f"/api/v1/producto-opciones/{sample_producto_opcion_id}", json=update_data)
+    response = test_client.put(f"/api/v1/producto-tipo-opciones/{sample_producto_opcion_id}", json=update_data)
 
     # Assert
     assert response.status_code == 409
     assert "Ya existe una opción de producto" in response.json()["detail"]
-    mock_producto_opcion_service.update_producto_opcion.assert_awaited_once()
+    mock_producto_opcion_service.update_producto_tipo_opcion.assert_awaited_once()
 
 
-def test_delete_producto_opcion_success(
+def test_delete_producto_tipo_opcion_success(
     test_client, mock_db_session_dependency, mock_producto_opcion_service, sample_producto_opcion_id
 ):
     """
@@ -486,21 +486,21 @@ def test_delete_producto_opcion_success(
     POSTCONDICIONES:
         - La respuesta debe tener código HTTP 204 (No Content)
         - La respuesta no debe tener contenido
-        - El método delete_producto_opcion del servicio debe haber sido llamado con el ID correcto
+        - El método delete_producto_tipo_opcion del servicio debe haber sido llamado con el ID correcto
     """
     # Arrange
-    mock_producto_opcion_service.delete_producto_opcion.return_value = True
+    mock_producto_opcion_service.delete_producto_tipo_opcion.return_value = True
 
     # Act
-    response = test_client.delete(f"/api/v1/producto-opciones/{sample_producto_opcion_id}")
+    response = test_client.delete(f"/api/v1/producto-tipo-opciones/{sample_producto_opcion_id}")
 
     # Assert
     assert response.status_code == 204
     assert response.content == b""  # No content
-    mock_producto_opcion_service.delete_producto_opcion.assert_awaited_once_with(uuid.UUID(sample_producto_opcion_id))
+    mock_producto_opcion_service.delete_producto_tipo_opcion.assert_awaited_once_with(uuid.UUID(sample_producto_opcion_id))
 
 
-def test_delete_producto_opcion_not_found(
+def test_delete_producto_tipo_opcion_not_found(
     test_client, mock_db_session_dependency, mock_producto_opcion_service, sample_producto_opcion_id
 ):
     """
@@ -519,17 +519,17 @@ def test_delete_producto_opcion_not_found(
     POSTCONDICIONES:
         - La respuesta debe tener código HTTP 404 (Not Found)
         - El mensaje de error debe indicar que no se encontró la opción de producto
-        - El método delete_producto_opcion del servicio debe haber sido llamado una vez
+        - El método delete_producto_tipo_opcion del servicio debe haber sido llamado una vez
     """
     # Arrange
-    mock_producto_opcion_service.delete_producto_opcion.side_effect = ProductoOpcionNotFoundError(
+    mock_producto_opcion_service.delete_producto_tipo_opcion.side_effect = ProductoTipoOpcionNotFoundError(
         f"No se encontró la opción de producto con ID {sample_producto_opcion_id}"
     )
 
     # Act
-    response = test_client.delete(f"/api/v1/producto-opciones/{sample_producto_opcion_id}")
+    response = test_client.delete(f"/api/v1/producto-tipo-opciones/{sample_producto_opcion_id}")
 
     # Assert
     assert response.status_code == 404
     assert f"No se encontró la opción de producto con ID {sample_producto_opcion_id}" in response.json()["detail"]
-    mock_producto_opcion_service.delete_producto_opcion.assert_awaited_once()
+    mock_producto_opcion_service.delete_producto_tipo_opcion.assert_awaited_once()

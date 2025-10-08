@@ -1,5 +1,5 @@
 """
-Endpoints para gestión de opciones de productos.
+Endpoints para gestión de opciones de productos por tipo.
 """
 
 from uuid import UUID
@@ -7,32 +7,32 @@ from fastapi import APIRouter, Depends, HTTPException, status, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.core.database import get_database_session
-from src.business_logic.pedidos.producto_opcion_service import ProductoOpcionService
-from src.api.schemas.producto_opcion_schema import (
-    ProductoOpcionCreate,
-    ProductoOpcionResponse,
-    ProductoOpcionUpdate,
-    ProductoOpcionList,
+from src.business_logic.pedidos.producto_tipo_opcion_service import ProductoTipoOpcionService
+from src.api.schemas.producto_tipo_opcion_schema import (
+    ProductoTipoOpcionCreate,
+    ProductoTipoOpcionResponse,
+    ProductoTipoOpcionUpdate,
+    ProductoTipoOpcionList,
 )
-from src.business_logic.exceptions.producto_opcion_exceptions import (
-    ProductoOpcionValidationError,
-    ProductoOpcionNotFoundError,
-    ProductoOpcionConflictError,
+from src.business_logic.exceptions.producto_tipo_opcion_exceptions import (
+    ProductoTipoOpcionValidationError,
+    ProductoTipoOpcionNotFoundError,
+    ProductoTipoOpcionConflictError,
 )
 
-router = APIRouter(prefix="/producto-opciones", tags=["Producto Opciones"])
+router = APIRouter(prefix="/producto-tipo-opciones", tags=["Producto Tipo Opciones"])
 
 
 @router.post(
     "",
-    response_model=ProductoOpcionResponse,
+    response_model=ProductoTipoOpcionResponse,
     status_code=status.HTTP_201_CREATED,
-    summary="Crear una nueva opción de producto",
-    description="Crea una nueva opción de producto en el sistema con los datos proporcionados.",
+    summary="Crear una nueva opción de producto por tipo",
+    description="Crea una nueva opción de producto por tipo en el sistema con los datos proporcionados.",
 )
-async def create_producto_opcion(
-    producto_opcion_data: ProductoOpcionCreate, session: AsyncSession = Depends(get_database_session)
-) -> ProductoOpcionResponse:
+async def create_producto_tipo_opcion(
+    producto_tipo_opcion_data: ProductoTipoOpcionCreate, session: AsyncSession = Depends(get_database_session)
+) -> ProductoTipoOpcionResponse:
     """
     Crea una nueva opción de producto en el sistema.
     
@@ -49,9 +49,9 @@ async def create_producto_opcion(
             - 500: Si ocurre un error interno del servidor.
     """
     try:
-        producto_opcion_service = ProductoOpcionService(session)
-        return await producto_opcion_service.create_producto_opcion(producto_opcion_data)
-    except ProductoOpcionConflictError as e:
+        producto_tipo_opcion_service = ProductoTipoOpcionService(session)
+        return await producto_tipo_opcion_service.create_producto_tipo_opcion(producto_tipo_opcion_data)
+    except ProductoTipoOpcionConflictError as e:
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=str(e))
     except Exception as e:
         raise HTTPException(
@@ -61,15 +61,15 @@ async def create_producto_opcion(
 
 
 @router.get(
-    "/{producto_opcion_id}",
-    response_model=ProductoOpcionResponse,
+    "/{producto_tipo_opcion_id}",
+    response_model=ProductoTipoOpcionResponse,
     status_code=status.HTTP_200_OK,
-    summary="Obtener una opción de producto por ID",
-    description="Obtiene los detalles de una opción de producto específica por su ID.",
+    summary="Obtener una opción de producto por tipo por ID",
+    description="Obtiene los detalles de una opción de producto por tipo específica por su ID.",
 )
-async def get_producto_opcion(
-    producto_opcion_id: UUID, session: AsyncSession = Depends(get_database_session)
-) -> ProductoOpcionResponse:
+async def get_producto_tipo_opcion(
+    producto_tipo_opcion_id: UUID, session: AsyncSession = Depends(get_database_session)
+) -> ProductoTipoOpcionResponse:
     """
     Obtiene una opción de producto específica por su ID.
 
@@ -86,9 +86,9 @@ async def get_producto_opcion(
             - 500: Si ocurre un error interno del servidor.
     """
     try:
-        producto_opcion_service = ProductoOpcionService(session)
-        return await producto_opcion_service.get_producto_opcion_by_id(producto_opcion_id)
-    except ProductoOpcionNotFoundError as e:
+        producto_tipo_opcion_service = ProductoTipoOpcionService(session)
+        return await producto_tipo_opcion_service.get_producto_tipo_opcion_by_id(producto_tipo_opcion_id)
+    except ProductoTipoOpcionNotFoundError as e:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
     except Exception as e:
         raise HTTPException(
@@ -99,18 +99,18 @@ async def get_producto_opcion(
 
 @router.get(
     "",
-    response_model=ProductoOpcionList,
+    response_model=ProductoTipoOpcionList,
     status_code=status.HTTP_200_OK,
-    summary="Listar opciones de productos",
-    description="Obtiene una lista paginada de opciones de productos.",
+    summary="Listar opciones de productos por tipo",
+    description="Obtiene una lista paginada de opciones de productos por tipo.",
 )
-async def list_producto_opciones(
+async def list_producto_tipo_opciones(
     skip: int = Query(0, ge=0, description="Número de registros a omitir (paginación)"),
     limit: int = Query(
         100, gt=0, le=500, description="Número máximo de registros a retornar"
     ),
     session: AsyncSession = Depends(get_database_session),
-) -> ProductoOpcionList:
+) -> ProductoTipoOpcionList:
     """
     Obtiene una lista paginada de opciones de productos.
     
@@ -128,9 +128,9 @@ async def list_producto_opciones(
             - 500: Si ocurre un error interno del servidor.
     """
     try:
-        producto_opcion_service = ProductoOpcionService(session)
-        return await producto_opcion_service.get_producto_opciones(skip, limit)
-    except ProductoOpcionValidationError as e:
+        producto_tipo_opcion_service = ProductoTipoOpcionService(session)
+        return await producto_tipo_opcion_service.get_producto_tipo_opciones(skip, limit)
+    except ProductoTipoOpcionValidationError as e:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
     except Exception as e:
         raise HTTPException(
@@ -140,17 +140,17 @@ async def list_producto_opciones(
 
 
 @router.put(
-    "/{producto_opcion_id}",
-    response_model=ProductoOpcionResponse,
+    "/{producto_tipo_opcion_id}",
+    response_model=ProductoTipoOpcionResponse,
     status_code=status.HTTP_200_OK,
-    summary="Actualizar una opción de producto",
-    description="Actualiza los datos de una opción de producto existente.",
+    summary="Actualizar una opción de producto por tipo",
+    description="Actualiza los datos de una opción de producto por tipo existente.",
 )
-async def update_producto_opcion(
-    producto_opcion_id: UUID,
-    producto_opcion_data: ProductoOpcionUpdate,
+async def update_producto_tipo_opcion(
+    producto_tipo_opcion_id: UUID,
+    producto_tipo_opcion_data: ProductoTipoOpcionUpdate,
     session: AsyncSession = Depends(get_database_session),
-) -> ProductoOpcionResponse:
+) -> ProductoTipoOpcionResponse:
     """
     Actualiza una opción de producto existente.
 
@@ -169,11 +169,11 @@ async def update_producto_opcion(
             - 500: Si ocurre un error interno del servidor.
     """
     try:
-        producto_opcion_service = ProductoOpcionService(session)
-        return await producto_opcion_service.update_producto_opcion(producto_opcion_id, producto_opcion_data)
-    except ProductoOpcionNotFoundError as e:
+        producto_tipo_opcion_service = ProductoTipoOpcionService(session)
+        return await producto_tipo_opcion_service.update_producto_tipo_opcion(producto_tipo_opcion_id, producto_tipo_opcion_data)
+    except ProductoTipoOpcionNotFoundError as e:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
-    except ProductoOpcionConflictError as e:
+    except ProductoTipoOpcionConflictError as e:
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=str(e))
     except Exception as e:
         raise HTTPException(
@@ -183,13 +183,13 @@ async def update_producto_opcion(
 
 
 @router.delete(
-    "/{producto_opcion_id}",
+    "/{producto_tipo_opcion_id}",
     status_code=status.HTTP_204_NO_CONTENT,
-    summary="Eliminar una opción de producto",
-    description="Elimina una opción de producto existente del sistema.",
+    summary="Eliminar una opción de producto por tipo",
+    description="Elimina una opción de producto por tipo existente del sistema.",
 )
-async def delete_producto_opcion(
-    producto_opcion_id: UUID, session: AsyncSession = Depends(get_database_session)
+async def delete_producto_tipo_opcion(
+    producto_tipo_opcion_id: UUID, session: AsyncSession = Depends(get_database_session)
 ) -> None:
     """
     Elimina una opción de producto existente.
@@ -204,11 +204,11 @@ async def delete_producto_opcion(
             - 500: Si ocurre un error interno del servidor.
     """
     try:
-        producto_opcion_service = ProductoOpcionService(session)
-        result = await producto_opcion_service.delete_producto_opcion(producto_opcion_id)
-        # No es necesario verificar el resultado aquí ya que delete_producto_opcion
-        # lanza ProductoOpcionNotFoundError si no encuentra la opción
-    except ProductoOpcionNotFoundError as e:
+        producto_tipo_opcion_service = ProductoTipoOpcionService(session)
+        result = await producto_tipo_opcion_service.delete_producto_tipo_opcion(producto_tipo_opcion_id)
+        # No es necesario verificar el resultado aquí ya que delete_producto_tipo_opcion
+        # lanza ProductoTipoOpcionNotFoundError si no encuentra la opción
+    except ProductoTipoOpcionNotFoundError as e:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
     except Exception as e:
         raise HTTPException(

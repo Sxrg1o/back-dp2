@@ -6,7 +6,7 @@ del repositorio encargado de las operaciones CRUD relacionadas con las opciones 
 Se utilizan mocks para simular la capa de base de datos.
 
 PRECONDICIONES:
-    - Los módulos ProductoOpcionRepository y ProductoOpcionModel deben estar correctamente implementados.
+    - Los módulos ProductoTipoOpcionRepository y ProductoTipoOpcionModel deben estar correctamente implementados.
     - SQLAlchemy y sus dependencias deben estar instaladas.
     - pytest y pytest-asyncio deben estar disponibles para ejecutar pruebas asíncronas.
 
@@ -27,8 +27,8 @@ from unittest.mock import AsyncMock, MagicMock, patch
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.exc import SQLAlchemyError
 
-from src.repositories.pedidos.producto_opcion_repository import ProductoOpcionRepository
-from src.models.pedidos.producto_opcion_model import ProductoOpcionModel
+from src.repositories.pedidos.producto_tipo_opcion_repository import ProductoTipoOpcionRepository
+from src.models.pedidos.producto_tipo_opcion_model import ProductoTipoOpcionModel
 
 
 @pytest.mark.asyncio
@@ -46,14 +46,14 @@ async def test_get_by_id():
         - Verificar que se ejecute la consulta correcta y se retorne el resultado esperado.
 
     POSTCONDICIONES:
-        - El método debe retornar un objeto ProductoOpcionModel cuando existe la opción.
+        - El método debe retornar un objeto ProductoTipoOpcionModel cuando existe la opción.
         - El método debe retornar None cuando no existe la opción.
         - La consulta SQL debe formarse correctamente.
     """
     # Arrange
     mock_session = AsyncMock(spec=AsyncSession)
     mock_result = MagicMock()
-    mock_result.scalars.return_value.first.return_value = ProductoOpcionModel(
+    mock_result.scalars.return_value.first.return_value = ProductoTipoOpcionModel(
         id=uuid4(),
         id_producto=uuid4(),
         id_tipo_opcion=uuid4(),
@@ -65,14 +65,14 @@ async def test_get_by_id():
     mock_session.execute.return_value = mock_result
 
     opcion_id = uuid4()
-    repository = ProductoOpcionRepository(mock_session)
+    repository = ProductoTipoOpcionRepository(mock_session)
 
     # Act
     result = await repository.get_by_id(opcion_id)
 
     # Assert
     assert result is not None
-    assert isinstance(result, ProductoOpcionModel)
+    assert isinstance(result, ProductoTipoOpcionModel)
     mock_session.execute.assert_called_once()
 
     # Prueba de caso negativo
@@ -88,11 +88,11 @@ async def test_create_producto_opcion():
 
     PRECONDICIONES:
         - Se debe tener una instancia mock de AsyncSession.
-        - Se debe tener un objeto ProductoOpcionModel válido para crear.
+        - Se debe tener un objeto ProductoTipoOpcionModel válido para crear.
 
     PROCESO:
         - Configurar los mocks para simular el comportamiento de la base de datos.
-        - Llamar al método create con una instancia de ProductoOpcionModel.
+        - Llamar al método create con una instancia de ProductoTipoOpcionModel.
         - Verificar que se realicen todas las operaciones necesarias para persistir el objeto.
 
     POSTCONDICIONES:
@@ -103,7 +103,7 @@ async def test_create_producto_opcion():
     """
     # Arrange
     mock_session = AsyncMock(spec=AsyncSession)
-    producto_opcion = ProductoOpcionModel(
+    producto_opcion = ProductoTipoOpcionModel(
         id_producto=uuid4(),
         id_tipo_opcion=uuid4(),
         nombre="Sin ají",
@@ -111,7 +111,7 @@ async def test_create_producto_opcion():
         activo=True,
         orden=0
     )
-    repository = ProductoOpcionRepository(mock_session)
+    repository = ProductoTipoOpcionRepository(mock_session)
 
     # Act
     result = await repository.create(producto_opcion)
@@ -161,7 +161,7 @@ async def test_delete_producto_opcion():
     mock_session.execute.return_value = mock_result
 
     opcion_id = uuid4()
-    repository = ProductoOpcionRepository(mock_session)
+    repository = ProductoTipoOpcionRepository(mock_session)
 
     # Act
     result = await repository.delete(opcion_id)
