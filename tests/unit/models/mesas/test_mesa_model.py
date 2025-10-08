@@ -1,6 +1,6 @@
 from uuid import UUID, uuid4
 from src.models.auth.rol_model import RolModel
-from src.models.mesas.mesa_model import Mesa
+from src.models.mesas.mesa_model import EstadoMesaEnum, Mesa
 
 def test_mesa_model_creation():
     """
@@ -13,20 +13,22 @@ def test_mesa_model_creation():
         - Crear un registro de Mesa con valores predefinidos.
 
     POSTCONDICIONES:
-        - La sinstancia debe tener los valores exactos proporcionados durante la creación.
+        - La instancia debe tener los valores exactos proporcionados durante la creación.
     """
     mesa_id: UUID = uuid4()
     mesa_numero = 101
     mesa_capacidad = 4
     mesa_zona = "zone 1"
     mesa_qr_code = "QR123456"
+    mesa_estado = EstadoMesaEnum.LIBRE
 
     mesa = Mesa(
         id=mesa_id,
         numero=mesa_numero,
         capacidad=mesa_capacidad,
         zona=mesa_zona,
-        qr_code=mesa_qr_code
+        qr_code=mesa_qr_code,
+        estado=mesa_estado
     )
 
     assert mesa.id == mesa_id
@@ -34,6 +36,7 @@ def test_mesa_model_creation():
     assert mesa.capacidad == mesa_capacidad
     assert mesa.zona == mesa_zona
     assert mesa.qr_code == mesa_qr_code
+    assert mesa.estado == mesa_estado
 
    
 def test_rol_to_dict():
@@ -41,11 +44,11 @@ def test_rol_to_dict():
     Verifica que el método to_dict() funciona correctamente.
 
     PRECONDICIONES:
-        - La clase RolModel debe tener implementado el método to_dict().
-        - Los atributos id, nombre, descripcion y activo deben existir en el modelo.
+        - La clase Mesa debe tener implementado el método to_dict().
+        - Los atributos id, numero, capacidad, zona, qr_code y estado deben existir en el modelo.
 
     PROCESO:
-        - Crear una instancia de RolModel con valores específicos.
+        - Crear una instancia de Mesa con valores específicos.
         - Llamar al método to_dict() para obtener un diccionario.
 
     POSTCONDICIONES:
@@ -57,9 +60,10 @@ def test_rol_to_dict():
     mesa_capacidad = 6
     mesa_zona = "zone 2"
     mesa_qr_code = "QR123434156"
+    mesa_estado = EstadoMesaEnum.OCUPADA
 
-    mesa = Mesa(id=mesa_id, numero=mesa_numero, capacidad=mesa_capacidad, 
-                zona=mesa_zona, qr_code=mesa_qr_code)
+    mesa = Mesa(id=mesa_id, numero=mesa_numero, capacidad=mesa_capacidad,
+                zona=mesa_zona, qr_code=mesa_qr_code, estado=mesa_estado)
 
     dict_result = mesa.to_dict()
 
@@ -68,13 +72,16 @@ def test_rol_to_dict():
     assert "capacidad" in dict_result
     assert "zona" in dict_result
     assert "qr_code" in dict_result
+    assert "estado" in dict_result
 
     assert dict_result["id"] == mesa_id
     assert dict_result["numero"] == mesa_numero
     assert dict_result["capacidad"] == mesa_capacidad
     assert dict_result["zona"] == mesa_zona
     assert dict_result["qr_code"] == mesa_qr_code
+    assert dict_result["estado"] == mesa_estado
     assert dict_result["activo"] is None
+    
 
 
 def test_mesa_activo_default():
@@ -83,6 +90,7 @@ def test_mesa_activo_default():
 
     PRECONDICIONES:
         - La clase Mesa debe tener un atributo activo con valor predeterminado.
+        - La clase Mesa debe tener un atributo estado con valor predeterminado.
         - La clase Mesa debe aceptar la creación de instancias sin valor para activo.
 
     PROCESO:
@@ -94,4 +102,6 @@ def test_mesa_activo_default():
     mesa = Mesa(numero=101)
 
     # El default debería ser True según el modelo
-    assert mesa.activo is None
+    assert mesa.capacidad is None
+    assert mesa.zona is None
+    assert mesa.qr_code is None
