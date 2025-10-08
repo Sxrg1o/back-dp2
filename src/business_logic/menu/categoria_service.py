@@ -14,6 +14,9 @@ from src.api.schemas.categoria_schema import (
     CategoriaResponse,
     CategoriaSummary,
     CategoriaList,
+    ProductoCardMinimal,
+    CategoriaConProductosCard,
+    CategoriaConProductosCardList,
 )
 from src.business_logic.exceptions.categoria_exceptions import (
     CategoriaValidationError,
@@ -222,3 +225,54 @@ class CategoriaService:
                 )
             # Si no es por nombre, reenviar la excepción original
             raise
+
+    async def get_categorias_con_productos_cards(
+        self,
+        skip: int = 0,
+        limit: int = 100
+    ) -> CategoriaConProductosCardList:
+        """
+        Obtiene una lista de categorías con sus productos en formato minimal (solo id, nombre, imagen).
+
+        Parameters
+        ----------
+        skip : int, optional
+            Número de registros a omitir (offset), por defecto 0.
+        limit : int, optional
+            Número máximo de registros a retornar, por defecto 100.
+
+        Returns
+        -------
+        CategoriaConProductosCardList
+            Lista de categorías con sus productos en formato minimal.
+        """
+        # Obtener categorías con productos eager-loaded
+        categorias, total = await self.repository.get_all_with_productos(
+            skip=skip,
+            limit=limit,
+            activo=True  # Solo categorías activas
+        )
+
+        # Construir la lista de categorías con productos
+        items = []
+        for categoria in categorias:
+            # Construir lista de productos minimal
+            productos_minimal = [
+                ProductoCardMinimal(
+                    id=producto.id,
+                    nombre=producto.nombre,
+                    imagen_path=producto.imagen_path
+                )
+                for producto in categoria.productos
+            ]
+
+            # Construir categoría con productos
+            categoria_card = CategoriaConProductosCard(
+                id=categoria.id,
+                nombre=categoria.nombre,
+                imagen_path=categoria.imagen_path,
+                productos=productos_minimal
+            )
+            items.append(categoria_card)
+
+        return CategoriaConProductosCardList(items=items, total=total)

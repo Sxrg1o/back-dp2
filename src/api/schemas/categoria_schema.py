@@ -74,6 +74,8 @@ class CategoriaSummary(BaseModel):
     
     id: UUID = Field(description="Category ID")
     nombre: str = Field(description="Category name")
+    descripcion: Optional[str] = Field(default=None, description="Category description")
+    imagen_path: Optional[str] = Field(default=None, description="Category image path")
     activo: bool = Field(description="Indicates if the category is active")
 
 
@@ -82,3 +84,33 @@ class CategoriaList(BaseModel):
     
     items: List[CategoriaSummary]
     total: int = Field(description="Total number of categorias")
+
+
+# ===== SCHEMAS PARA CARDS (SOLO ID, NOMBRE, IMAGEN) =====
+
+class ProductoCardMinimal(BaseModel):
+    """Schema minimal para producto (solo ID, nombre, imagen)."""
+    
+    model_config: ClassVar[ConfigDict] = ConfigDict(from_attributes=True)
+    
+    id: UUID = Field(description="Product ID")
+    nombre: str = Field(description="Product name")
+    imagen_path: Optional[str] = Field(default=None, description="Product image path")
+
+
+class CategoriaConProductosCard(BaseModel):
+    """Schema para categoría con sus productos (solo ID, nombre, imagen)."""
+    
+    model_config: ClassVar[ConfigDict] = ConfigDict(from_attributes=True)
+    
+    id: UUID = Field(description="Category ID")
+    nombre: str = Field(description="Category name")
+    imagen_path: Optional[str] = Field(default=None, description="Category image path")
+    productos: List[ProductoCardMinimal] = Field(default_factory=list, description="Products in this category")
+
+
+class CategoriaConProductosCardList(BaseModel):
+    """Schema para lista de categorías con sus productos."""
+    
+    items: List[CategoriaConProductosCard]
+    total: int = Field(description="Total number of categories")

@@ -8,6 +8,7 @@ from uuid import UUID
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, delete, update, func
+from sqlalchemy.orm import selectinload
 
 from src.models.menu.categoria_model import CategoriaModel
 
@@ -210,6 +211,54 @@ class CategoriaRepository:
         """
         # Consulta base para obtener las categorías paginadas
         query = select(CategoriaModel)
+        count_query = select(func.count(CategoriaModel.id))
+
+        # Aplicar filtro de activo si se especifica
+        if activo is not None:
+            query = query.where(CategoriaModel.activo == activo)
+            count_query = count_query.where(CategoriaModel.activo == activo)
+
+        # Aplicar paginación
+        query = query.offset(skip).limit(limit)
+
+        try:
+            # Ejecutar ambas consultas
+            result = await self.session.execute(query)
+            count_result = await self.session.execute(count_query)
+
+            # Obtener los resultados
+            categorias = result.scalars().all()
+            total = count_result.scalar() or 0
+
+            return list(categorias), total
+        except SQLAlchemyError:
+            raise
+
+    async def get_all_with_productos(
+        self,
+        skip: int = 0,
+        limit: int = 100,
+        activo: Optional[bool] = None
+    ) -> Tuple[List[CategoriaModel], int]:
+        """
+        Obtiene una lista paginada de categorías con sus productos eager-loaded.
+
+        Parameters
+        ----------
+        skip : int, optional
+            Número de registros a omitir (offset), por defecto 0.
+        limit : int, optional
+            Número máximo de registros a retornar, por defecto 100.
+        activo : Optional[bool], optional
+            Si se especifica, filtra por estado activo/inactivo.
+
+        Returns
+        -------
+        Tuple[List[CategoriaModel], int]
+            Tupla con la lista de categorías (con productos) y el número total de registros.
+        """
+        # Consulta base con eager loading de productos
+        query = select(CategoriaModel).options(selectinload(CategoriaModel.productos))
         count_query = select(func.count(CategoriaModel.id))
 
         # Aplicar filtro de activo si se especifica
