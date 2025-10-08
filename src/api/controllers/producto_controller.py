@@ -102,13 +102,14 @@ async def get_producto(
     response_model=ProductoList,
     status_code=status.HTTP_200_OK,
     summary="Listar productos",
-    description="Obtiene una lista paginada de productos.",
+    description="Obtiene una lista paginada de productos, opcionalmente filtrados por categoría.",
 )
 async def list_productos(
     skip: int = Query(0, ge=0, description="Número de registros a omitir (paginación)"),
     limit: int = Query(
         100, gt=0, le=500, description="Número máximo de registros a retornar"
     ),
+    id_categoria: UUID = Query(None, description="Filtrar productos por ID de categoría"),
     session: AsyncSession = Depends(get_database_session),
 ) -> ProductoList:
     """
@@ -117,8 +118,9 @@ async def list_productos(
     Args:
         skip: Número de registros a omitir (offset), por defecto 0.
         limit: Número máximo de registros a retornar, por defecto 100.
+        id_categoria: ID de categoría para filtrar productos (opcional).
         session: Sesión de base de datos.
-
+        
     Returns:
         Lista paginada de productos y el número total de registros.
 
@@ -129,7 +131,7 @@ async def list_productos(
     """
     try:
         producto_service = ProductoService(session)
-        return await producto_service.get_productos(skip, limit)
+        return await producto_service.get_productos(skip, limit, id_categoria) 
     except ProductoValidationError as e:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
     except Exception as e:

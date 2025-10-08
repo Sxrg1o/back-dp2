@@ -168,10 +168,13 @@ class ProductoRepository:
             raise
 
     async def get_all(
-        self, skip: int = 0, limit: int = 100
-    ) -> Tuple[List[ProductoModel], int]:
+            self, 
+            skip: int = 0, 
+            limit: int = 100,
+            id_categoria: UUID | None = None 
+        ) -> Tuple[List[ProductoModel], int]:
         """
-        Obtiene una lista paginada de productos y el total de registros.
+        Obtiene todos los productos con paginación y filtro opcional por categoría.
 
         Parameters
         ----------
@@ -179,29 +182,36 @@ class ProductoRepository:
             Número de registros a omitir (offset), por defecto 0.
         limit : int, optional
             Número máximo de registros a retornar, por defecto 100.
+        id_categoria : UUID | None, optional
+            ID de categoría para filtrar (opcional)
 
         Returns
         -------
         Tuple[List[ProductoModel], int]
             Tupla con la lista de productos y el número total de registros.
         """
-        # Consulta para obtener los productos paginados
-        query = select(ProductoModel).offset(skip).limit(limit)
-
-        # Consulta para obtener el total de registros
-        count_query = select(func.count(ProductoModel.id))
-
         try:
-            # Ejecutar ambas consultas
+            # Query base
+            query = select(ProductoModel)
+            
+            # ✅ Aplicar filtro de categoría si se proporciona
+            if id_categoria is not None:
+                query = query.where(ProductoModel.id_categoria == id_categoria)
+            
+            # Obtener total
+            count_query = select(func.count()).select_from(query.subquery())
+            total_result = await self.session.execute(count_query)
+            total = total_result.scalar() or 0
+            
+            # Aplicar paginación
+            query = query.offset(skip).limit(limit)
+            
+            # Ejecutar query
             result = await self.session.execute(query)
-            count_result = await self.session.execute(count_query)
-
-            # Obtener los resultados
             productos = result.scalars().all()
-            total = count_result.scalar() or 0
-
+            
             return list(productos), total
-        except SQLAlchemyError:
-            # En caso de error, no es necesario hacer rollback aquí
-            # porque no estamos modificando datos
-            raise
+            
+        except SQLAlchemyError as e:
+            await self.session.rollback()
+            raise e
