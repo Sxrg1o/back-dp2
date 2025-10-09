@@ -100,28 +100,55 @@ async def sync_platos(
         # Procesar por categoría para mantener la relación
         categorias_vistas = set()
 
-        # Primera pasada: procesar categorías y preparar datos
+        # Procesamos primero las categorías
+        categorias_nuevas = set()
+
+        # Primera pasada: identificar categorías nuevas y productos vistos
         for producto_domotica in productos_domotica:
             nombre_categoria = producto_domotica.categoria
             categorias_vistas.add(nombre_categoria)
             nombre_producto = producto_domotica.nombre
             productos_procesados.add(nombre_producto)
 
-            # Si la categoría no existe, agregarla a la lista de creación
-            if nombre_categoria not in categorias_dict:
+            # Identificar categorías nuevas
+            if (
+                nombre_categoria not in categorias_dict
+                and nombre_categoria not in categorias_nuevas
+            ):
+                categorias_nuevas.add(nombre_categoria)
                 nueva_categoria = CategoriaCreate(
                     nombre=nombre_categoria,
                     descripcion=f"Categoría importada desde Domotica: {nombre_categoria}",
                 )
                 categorias_a_crear.append(nueva_categoria)
 
-        # Crear categorías en lote
+        # Crear categorías nuevas en lote (solo las que no existen)
         if categorias_a_crear:
-            categorias_creadas = await categoria_service.batch_create_categorias(
-                categorias_a_crear
-            )
-            resultados["categorias_creadas"] += len(categorias_creadas)
-            logger.info(f"Categorías creadas en lote: {len(categorias_creadas)}")
+            try:
+                categorias_creadas = await categoria_service.batch_create_categorias(
+                    categorias_a_crear
+                )
+                resultados["categorias_creadas"] += len(categorias_creadas)
+                logger.info(f"Categorías creadas en lote: {len(categorias_creadas)}")
+            except Exception as e:
+                logger.error(f"Error al crear categorías en lote: {str(e)}")
+                # Enfoque alternativo: crear categorías una por una para evitar problemas con duplicados
+                for nueva_categoria in categorias_a_crear:
+                    try:
+                        if nueva_categoria.nombre not in categorias_dict:
+                            categoria_creada = await categoria_service.create_categoria(
+                                nueva_categoria
+                            )
+                            resultados["categorias_creadas"] += 1
+                            # No añadimos al diccionario, esperamos a la recarga completa
+                            logger.info(
+                                f"Categoría creada individualmente: {nueva_categoria.nombre}"
+                            )
+                    except Exception as e_inner:
+                        logger.warning(
+                            f"No se pudo crear la categoría {nueva_categoria.nombre}: {str(e_inner)}"
+                        )
+                        # La categoría probablemente ya existe, la obtendremos más adelante
 
             # Obtener categorías actualizadas para asegurar la consistencia de tipos
             categorias_response = await categoria_service.get_categorias(
@@ -180,36 +207,112 @@ async def sync_platos(
 
         # Ejecutar operaciones en lote
         if productos_a_crear:
-            productos_creados = await producto_service.batch_create_productos(
-                productos_a_crear
-            )
-            resultados["productos_creados"] += len(productos_creados)
-            logger.info(f"Productos creados en lote: {len(productos_creados)}")
+            try:
+                productos_creados = await producto_service.batch_create_productos(
+                    productos_a_crear
+                )
+                resultados["productos_creados"] += len(productos_creados)
+                logger.info(f"Productos creados en lote: {len(productos_creados)}")
+            except Exception as e:
+                logger.error(f"Error al crear productos en lote: {str(e)}")
+                # Enfoque alternativo: crear productos uno por uno para evitar problemas con duplicados
+                for nuevo_producto in productos_a_crear:
+                    try:
+                        producto_creado = await producto_service.create_producto(
+                            nuevo_producto
+                        )
+                        resultados["productos_creados"] += 1
+                        logger.info(
+                            f"Producto creado individualmente: {nuevo_producto.nombre}"
+                        )
+                    except Exception as e_inner:
+                        logger.warning(
+                            f"No se pudo crear el producto {nuevo_producto.nombre}: {str(e_inner)}"
+                        )
+                        # Puede que el producto ya exista pero no esté en nuestro diccionario inicial
+                        # Intentamos obtener por nombre y actualizar si existe
+                        try:
+                            # Obtenemos todos los productos nuevamente para buscar
+                            productos_response = await producto_service.get_productos(
+                                skip=0, limit=10000
+                            )
+                            productos_encontrados = [
+                                p
+                                for p in productos_response.items
+                                if p.nombre == nuevo_producto.nombre
+                            ]
+
+                            if productos_encontrados:
+                                producto_existente = productos_encontrados[0]
+                                await producto_service.update_producto(
+                                    producto_existente.id,
+                                    ProductoUpdate(
+                                        id_categoria=nuevo_producto.id_categoria,
+                                        precio_base=nuevo_producto.precio_base,
+                                    ),
+                                )
+                                resultados["productos_actualizados"] += 1
+                                logger.info(
+                                    f"Producto actualizado tras fallo de creación: {nuevo_producto.nombre}"
+                                )
+                        except Exception as e_recover:
+                            logger.error(
+                                f"Error en la recuperación del producto {nuevo_producto.nombre}: {str(e_recover)}"
+                            )
 
         if productos_a_actualizar:
-            productos_actualizados = await producto_service.batch_update_productos(
-                productos_a_actualizar
-            )
-            resultados["productos_actualizados"] += len(productos_actualizados)
-            logger.info(
-                f"Productos actualizados en lote: {len(productos_actualizados)}"
-            )
+            try:
+                productos_actualizados = await producto_service.batch_update_productos(
+                    productos_a_actualizar
+                )
+                resultados["productos_actualizados"] += len(productos_actualizados)
+                logger.info(
+                    f"Productos actualizados en lote: {len(productos_actualizados)}"
+                )
+            except Exception as e:
+                logger.error(f"Error al actualizar productos en lote: {str(e)}")
+                # Enfoque alternativo: actualizar productos uno por uno
+                for producto_id, producto_data in productos_a_actualizar:
+                    try:
+                        await producto_service.update_producto(
+                            producto_id, producto_data
+                        )
+                        resultados["productos_actualizados"] += 1
+                    except Exception as e_inner:
+                        logger.warning(
+                            f"Error al actualizar producto ID {producto_id}: {str(e_inner)}"
+                        )
 
         # Desactivar productos que no estuvieron en la actualización
         productos_a_desactivar = [
             (producto.id, ProductoUpdate(disponible=False))
             for producto in productos_response.items
             if producto.nombre not in productos_procesados
+            and producto.disponible  # Solo desactivamos los que están activos
         ]
 
         if productos_a_desactivar:
-            productos_desactivados = await producto_service.batch_update_productos(
-                productos_a_desactivar
-            )
-            resultados["productos_desactivados"] += len(productos_desactivados)
-            logger.info(
-                f"Productos desactivados en lote: {len(productos_desactivados)}"
-            )
+            try:
+                productos_desactivados = await producto_service.batch_update_productos(
+                    productos_a_desactivar
+                )
+                resultados["productos_desactivados"] += len(productos_desactivados)
+                logger.info(
+                    f"Productos desactivados en lote: {len(productos_desactivados)}"
+                )
+            except Exception as e:
+                logger.error(f"Error al desactivar productos en lote: {str(e)}")
+                # Enfoque alternativo: desactivar productos uno por uno
+                for producto_id, _ in productos_a_desactivar:
+                    try:
+                        await producto_service.update_producto(
+                            producto_id, ProductoUpdate(disponible=False)
+                        )
+                        resultados["productos_desactivados"] += 1
+                    except Exception as e_inner:
+                        logger.warning(
+                            f"Error al desactivar producto ID {producto_id}: {str(e_inner)}"
+                        )
 
         # Actualizar estado de categorías según presencia en la sincronización
         categorias_a_desactivar = [
@@ -230,9 +333,21 @@ async def sync_platos(
 
     except Exception as e:
         logger.exception(f"Error durante la sincronización de platos: {str(e)}")
+
+        # Mensaje de error más informativo según el tipo de error
+        error_message = str(e)
+        if "ya exist" in error_message.lower():
+            error_detail = "Uno o más elementos ya existen en la base de datos. Por favor revise los nombres de categorías y productos."
+        elif "foreign key" in error_message.lower():
+            error_detail = "Error de referencia: no se puede crear/actualizar un registro porque depende de otro que no existe."
+        elif "timeout" in error_message.lower():
+            error_detail = "Tiempo de espera agotado en la operación de base de datos."
+        else:
+            error_detail = f"Error durante la sincronización: {str(e)}"
+
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Error durante la sincronización: {str(e)}",
+            detail=error_detail,
         )
 
 
