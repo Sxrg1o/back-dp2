@@ -19,6 +19,47 @@ from src.core.dependencies import ErrorHandlerMiddleware
 logger = logging.getLogger(__name__)
 
 
+async def auto_seed_database():
+    """
+    Ejecuta el seed de la base de datos automáticamente si está vacía.
+    
+    Verifica si existen categorías en la base de datos. Si no hay ninguna,
+    ejecuta el script de seed para poblar la BD con datos iniciales.
+    """
+    try:
+        from sqlalchemy import select, func
+        from src.core.database import DatabaseManager
+        from src.models.menu.categoria_model import CategoriaModel
+        
+        logger.info("🔍 Verificando estado de la base de datos...")
+        
+        # Obtener sesión de base de datos
+        db_manager = DatabaseManager()
+        async with db_manager.session() as session:
+            # Contar categorías existentes
+            query = select(func.count(CategoriaModel.id))
+            result = await session.execute(query)
+            count = result.scalar()
+            
+            if count == 0:
+                logger.info("🌱 Base de datos vacía detectada. Ejecutando seed automático...")
+                
+                # Importar y ejecutar el seeder
+                from scripts.seed_cevicheria_data import CevicheriaSeeder
+                
+                # Crear instancia del seeder y ejecutar
+                seeder = CevicheriaSeeder()
+                await seeder.run()
+                
+                logger.info("✅ Seed completado exitosamente!")
+            else:
+                logger.info(f"✅ Base de datos ya contiene datos ({count} categorías). Skip seed.")
+            
+    except Exception as e:
+        logger.error(f"❌ Error al ejecutar auto-seed: {e}")
+        logger.warning("⚠️ La aplicación continuará sin datos de seed")
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """
@@ -47,6 +88,9 @@ async def lifespan(app: FastAPI):
 
     # Crear tablas en la base de datos si no existen
     await create_tables()
+
+    # Ejecutar seed automáticamente si la BD está vacía
+    await auto_seed_database()
 
     logger.info("Restaurant Backend API iniciada correctamente")
 
