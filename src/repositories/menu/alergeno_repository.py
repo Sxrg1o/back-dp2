@@ -146,21 +146,17 @@ class AlergenoRepository:
                 update(AlergenoModel)
                 .where(AlergenoModel.id == alergeno_id)
                 .values(**valid_fields)
-                .returning(AlergenoModel)
             )
 
             result = await self.session.execute(stmt)
             await self.session.commit()
 
-            # Obtener el resultado actualizado
-            updated_alergeno = result.scalars().first()
-
+            # Consultar el alérgeno actualizado
+            updated_alergeno = await self.get_by_id(alergeno_id)
+            
             # Si no se encontró el alérgeno, retornar None
             if not updated_alergeno:
                 return None
-
-            # Refrescar el objeto desde la base de datos
-            await self.session.refresh(updated_alergeno)
 
             return updated_alergeno
         except SQLAlchemyError:

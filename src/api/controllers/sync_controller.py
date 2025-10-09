@@ -5,7 +5,7 @@ Este módulo proporciona rutas para recibir datos de sincronización del sistema
 a través del scrapper, y procesarlos para actualizar la base de datos local.
 """
 
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Tuple
 from fastapi import APIRouter, Depends, HTTPException, status, Body
 from sqlalchemy.ext.asyncio import AsyncSession
 import logging
@@ -28,7 +28,7 @@ router = APIRouter(prefix="/sync", tags=["Sincronización"])
     "/platos",
     status_code=status.HTTP_200_OK,
     summary="Sincronizar platos desde Domotica",
-    description="Recibe datos de platos extraídos mediante scraping del sistema Domotica y los sincroniza con la base de datos local.",
+    description="Recibe datos de platos extraídos mediante scraping del sistema Domotica y los sincroniza con la base de datos local utilizando operaciones por lotes para mejor rendimiento.",
 )
 async def sync_platos(
     productos_domotica: List[ProductoDomotica] = Body(...),
@@ -39,9 +39,11 @@ async def sync_platos(
 
     Realiza las siguientes operaciones:
     1. Obtiene todas las categorías y productos existentes
-    2. Crea las categorías que no existen
-    3. Actualiza o crea los productos según corresponda
-    4. Marca como inactivos los productos que ya no existen en Domotica
+    2. Crea las categorías nuevas en lote
+    3. Actualiza las categorías existentes en lote
+    4. Crea los productos nuevos en lote
+    5. Actualiza los productos existentes en lote
+    6. Marca como inactivos los productos que ya no existen en Domotica
 
     Parameters
     ----------
@@ -76,10 +78,10 @@ async def sync_platos(
 
         # 1. Obtener todas las categorías existentes (activas) por nombre
         categorias_response = await categoria_service.get_categorias(skip=0, limit=1000)
-        # Crear un diccionario con pares nombre:id_categoria para la creación de productos
-        categorias_dict = {}
-        for categoria in categorias_response.items:
-            categorias_dict[categoria.nombre] = categoria
+        # Crear un diccionario con pares nombre:categoria para la creación de productos
+        categorias_dict = {
+            categoria.nombre: categoria for categoria in categorias_response.items
+        }
 
         # 2. Obtener todos los productos existentes (activos) por nombre
         productos_response = await producto_service.get_productos(skip=0, limit=10000)
@@ -90,31 +92,49 @@ async def sync_platos(
         # Conjunto para rastrear qué productos se procesaron
         productos_procesados = set()
 
+        # Preparar colecciones para operaciones en lote
+        categorias_a_crear = []
+        productos_a_crear = []
+        productos_a_actualizar = []
+
         # Procesar por categoría para mantener la relación
         categorias_vistas = set()
 
+        # Primera pasada: procesar categorías y preparar datos
         for producto_domotica in productos_domotica:
-            # Procesar la categoría si es nueva
             nombre_categoria = producto_domotica.categoria
             categorias_vistas.add(nombre_categoria)
+            nombre_producto = producto_domotica.nombre
+            productos_procesados.add(nombre_producto)
 
+            # Si la categoría no existe, agregarla a la lista de creación
             if nombre_categoria not in categorias_dict:
-                # Crear la categoría
                 nueva_categoria = CategoriaCreate(
                     nombre=nombre_categoria,
                     descripcion=f"Categoría importada desde Domotica: {nombre_categoria}",
                 )
-                categoria_creada = await categoria_service.create_categoria(
-                    nueva_categoria
-                )
-                # Usar el ID de la categoría creada para futuros productos
-                categorias_dict[nombre_categoria] = categoria_creada
-                resultados["categorias_creadas"] += 1
-                logger.info(f"Categoría creada: {nombre_categoria}")
+                categorias_a_crear.append(nueva_categoria)
 
-            # Procesar el producto
+        # Crear categorías en lote
+        if categorias_a_crear:
+            categorias_creadas = await categoria_service.batch_create_categorias(
+                categorias_a_crear
+            )
+            resultados["categorias_creadas"] += len(categorias_creadas)
+            logger.info(f"Categorías creadas en lote: {len(categorias_creadas)}")
+
+            # Obtener categorías actualizadas para asegurar la consistencia de tipos
+            categorias_response = await categoria_service.get_categorias(
+                skip=0, limit=1000
+            )
+            categorias_dict = {
+                categoria.nombre: categoria for categoria in categorias_response.items
+            }
+
+        # Segunda pasada: procesar productos
+        for producto_domotica in productos_domotica:
+            nombre_categoria = producto_domotica.categoria
             nombre_producto = producto_domotica.nombre
-            productos_procesados.add(nombre_producto)
 
             # Convertir precio de string a decimal
             try:
@@ -135,45 +155,61 @@ async def sync_platos(
                 disponible = True
 
             if nombre_producto in productos_dict:
-                # Actualizar producto existente
+                # Producto existente: preparar para actualización en lote
                 producto_existente = productos_dict[nombre_producto]
-
-                producto_update = ProductoUpdate(
-                    id_categoria=categorias_dict[nombre_categoria].id,
-                    precio_base=precio,
+                productos_a_actualizar.append(
+                    (
+                        producto_existente.id,
+                        ProductoUpdate(
+                            id_categoria=categorias_dict[nombre_categoria].id,
+                            precio_base=precio,
+                            disponible=disponible,
+                        ),
+                    )
                 )
-
-                await producto_service.update_producto(
-                    producto_existente.id, producto_update
-                )
-                resultados["productos_actualizados"] += 1
-                logger.info(f"Producto actualizado: {nombre_producto}")
             else:
-                # Crear nuevo producto
+                # Producto nuevo: preparar para creación en lote
                 nuevo_producto = ProductoCreate(
                     nombre=nombre_producto,
                     id_categoria=categorias_dict[nombre_categoria].id,
                     precio_base=precio,
                     descripcion=f"Producto importado desde Domotica: {nombre_producto}",
-                    # La disponibilidad se maneja por otro campo o endpoint
+                    # La disponibilidad se maneja por otro campo en el modelo de datos
                 )
+                productos_a_crear.append(nuevo_producto)
 
-                await producto_service.create_producto(nuevo_producto)
-                resultados["productos_creados"] += 1
-                logger.info(f"Producto creado: {nombre_producto}")
+        # Ejecutar operaciones en lote
+        if productos_a_crear:
+            productos_creados = await producto_service.batch_create_productos(
+                productos_a_crear
+            )
+            resultados["productos_creados"] += len(productos_creados)
+            logger.info(f"Productos creados en lote: {len(productos_creados)}")
+
+        if productos_a_actualizar:
+            productos_actualizados = await producto_service.batch_update_productos(
+                productos_a_actualizar
+            )
+            resultados["productos_actualizados"] += len(productos_actualizados)
+            logger.info(
+                f"Productos actualizados en lote: {len(productos_actualizados)}"
+            )
 
         # Desactivar productos que no estuvieron en la actualización
         productos_a_desactivar = [
-            producto.id
+            (producto.id, ProductoUpdate(disponible=False))
             for producto in productos_response.items
             if producto.nombre not in productos_procesados
         ]
 
-        for producto_id in productos_a_desactivar:
-            await producto_service.update_producto(
-                producto_id, ProductoUpdate(disponible=False)
+        if productos_a_desactivar:
+            productos_desactivados = await producto_service.batch_update_productos(
+                productos_a_desactivar
             )
-            resultados["productos_desactivados"] += 1
+            resultados["productos_desactivados"] += len(productos_desactivados)
+            logger.info(
+                f"Productos desactivados en lote: {len(productos_desactivados)}"
+            )
 
         # Actualizar estado de categorías según presencia en la sincronización
         categorias_a_desactivar = [
@@ -182,15 +218,13 @@ async def sync_platos(
             if categoria.nombre not in categorias_vistas
         ]
 
-        for categoria_id in categorias_a_desactivar:
-            # Nota: Según el comentario, activo se maneja por endpoint separado en el schema
-            # así que esta parte debería usar otro método o una lógica diferente
-            # Por ahora lo dejamos para futuras implementaciones
-            pass
+        # Nota: Actualmente la desactivación de categorías no está implementada
+        # ya que según el comentario original, esto se maneja por un endpoint separado
+        # Para futuras implementaciones, podría usarse batch_update_categorias
 
         return {
             "status": "success",
-            "message": "Sincronización completada correctamente",
+            "message": "Sincronización completada correctamente con operaciones por lotes",
             "resultados": resultados,
         }
 

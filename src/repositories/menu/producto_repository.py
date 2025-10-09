@@ -2,7 +2,7 @@
 Repositorio para la gestión de productos en el sistema.
 """
 
-from typing import Optional, List, Tuple
+from typing import Optional, List, Tuple, Dict, Any
 from uuid import UUID
 
 from sqlalchemy.exc import SQLAlchemyError
@@ -147,21 +147,17 @@ class ProductoRepository:
                 update(ProductoModel)
                 .where(ProductoModel.id == producto_id)
                 .values(**valid_fields)
-                .returning(ProductoModel)
             )
 
             result = await self.session.execute(stmt)
             await self.session.commit()
-
-            # Obtener el resultado actualizado
-            updated_producto = result.scalars().first()
-
+            
+            # Consultar el producto actualizado
+            updated_producto = await self.get_by_id(producto_id)
+            
             # Si no se encontró el producto, retornar None
             if not updated_producto:
                 return None
-
-            # Refrescar el objeto desde la base de datos
-            await self.session.refresh(updated_producto)
 
             return updated_producto
         except SQLAlchemyError:
@@ -216,3 +212,100 @@ class ProductoRepository:
         except SQLAlchemyError as e:
             await self.session.rollback()
             raise e
+
+    async def batch_insert(self, productos: List[ProductoModel]) -> List[ProductoModel]:
+        """
+        Inserta múltiples productos en la base de datos en una sola operación.
+        
+        Parameters
+        ----------
+        productos : List[ProductoModel]
+            Lista de instancias de productos a insertar.
+            
+        Returns
+        -------
+        List[ProductoModel]
+            Lista de los productos insertados con sus IDs asignados.
+            
+        Raises
+        ------
+        SQLAlchemyError
+            Si ocurre un error durante la operación en la base de datos.
+        """
+        if not productos:
+            return []
+            
+        try:
+            # Agregar todos los productos a la sesión
+            self.session.add_all(productos)
+            
+            # Flush para generar los IDs y otras columnas generadas automáticamente
+            await self.session.flush()
+            
+            # Commit para confirmar la transacción
+            await self.session.commit()
+            
+            # Refrescar todos los productos para asegurar que tengan sus datos actualizados
+            for producto in productos:
+                await self.session.refresh(producto)
+                
+            return productos
+        except SQLAlchemyError:
+            await self.session.rollback()
+            raise
+            
+    async def batch_update(self, updates: List[Tuple[UUID, Dict[str, Any]]]) -> List[ProductoModel]:
+        """
+        Actualiza múltiples productos en la base de datos en una operación eficiente.
+        
+        Parameters
+        ----------
+        updates : List[Tuple[UUID, Dict[str, Any]]]
+            Lista de tuplas donde cada tupla contiene el ID del producto y un diccionario
+            con los campos a actualizar y sus nuevos valores.
+            
+        Returns
+        -------
+        List[ProductoModel]
+            Lista de los productos actualizados.
+            
+        Raises
+        ------
+        SQLAlchemyError
+            Si ocurre un error durante la operación en la base de datos.
+        """
+        if not updates:
+            return []
+            
+        try:
+            updated_productos = []
+            
+            # Procesar cada actualización como una operación independiente
+            for producto_id, update_data in updates:
+                # Filtrar solo los campos válidos
+                valid_fields = {
+                    k: v for k, v in update_data.items() 
+                    if hasattr(ProductoModel, k) and k != "id"
+                }
+                
+                if valid_fields:
+                    # Construir y ejecutar la sentencia de actualización
+                    stmt = (
+                        update(ProductoModel)
+                        .where(ProductoModel.id == producto_id)
+                        .values(**valid_fields)
+                    )
+                    await self.session.execute(stmt)
+                    
+                    # Recuperar el producto actualizado
+                    producto = await self.get_by_id(producto_id)
+                    if producto:
+                        updated_productos.append(producto)
+            
+            # Commit para confirmar todas las actualizaciones
+            await self.session.commit()
+            
+            return updated_productos
+        except SQLAlchemyError:
+            await self.session.rollback()
+            raise
