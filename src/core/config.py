@@ -140,11 +140,5 @@ def get_settings() -> Settings:
     """
     global _settings_instance
     if _settings_instance is None:
-        _settings_instance = Settings(
-            secret_key=os.getenv("SECRET_KEY", "your-default-secret-key"),
-            database_test_url=os.getenv(
-                "DATABASE_TEST_URL", "sqlite+aiosqlite:///test.db"
-            ),
-            database_url=os.getenv("DATABASE_URL", "sqlite+aiosqlite:///app.db"),
-        )  # Pydantic cargará valores desde variables de entorno
+        _settings_instance = Settings()
     return _settings_instance
