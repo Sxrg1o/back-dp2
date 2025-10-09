@@ -90,3 +90,4 @@ if __name__ == "__main__":
     print("   INICIALIZACIÓN DE BASE DE DATOS - DOCKER")
     print("="*60)
     asyncio.run(init_database())
+

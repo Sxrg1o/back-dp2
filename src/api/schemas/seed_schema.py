@@ -21,3 +21,4 @@ class SeedResponse(BaseModel):
     status: str = Field(..., description="Estado de la operación")
     result: SeedResult = Field(..., description="Resultado detallado del seed")
     timestamp: str = Field(..., description="Timestamp de la ejecución")
+

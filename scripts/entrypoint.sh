@@ -14,3 +14,4 @@ python scripts/init_database.py
 # Iniciar la aplicación
 echo "🌐 Iniciando aplicación FastAPI..."
 exec "$@"
+

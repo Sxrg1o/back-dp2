@@ -189,3 +189,4 @@ Si la base de datos está corrupta:
 2. Elimina el archivo de base de datos: `rm -rf ./instance/`
 3. Reinicia el contenedor
 4. El auto-seed se ejecutará automáticamente
+

@@ -182,3 +182,4 @@ async def get_seed_status(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Error al verificar estado del seed: {str(e)}"
         )
+
