@@ -23,6 +23,12 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copiar código de la aplicación
 COPY . .
 
+# Crear directorio para la base de datos
+RUN mkdir -p /app/instance
+
+# Hacer ejecutable el script de entrada
+RUN chmod +x scripts/entrypoint.sh
+
 # Crear usuario sin privilegios
 RUN useradd --create-home --shell /bin/bash app && \
     chown -R app:app /app
@@ -35,5 +41,6 @@ EXPOSE 8000
 HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=3 \
     CMD curl -f http://localhost:8000/health || exit 1
 
-# Ejecutar la aplicación
+# Ejecutar la aplicación usando el script de entrada
+ENTRYPOINT ["scripts/entrypoint.sh"]
 CMD ["uvicorn", "src.main:app", "--host", "0.0.0.0", "--port", "8000"]

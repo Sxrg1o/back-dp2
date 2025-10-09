@@ -1,0 +1,1296 @@
+{
+	"info": {
+		"_postman_id": "cevicheria-api-collection",
+		"name": "Cevicheria El Mar Peruano - API",
+		"description": "Colección completa de endpoints para el sistema de gestión de cevichería",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "cevicheria-api"
+	},
+	"item": [
+		{
+			"name": "Health & Info",
+			"item": [
+				{
+					"name": "Health Check",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/health",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"health"
+							]
+						},
+						"description": "Verifica el estado de salud de la API"
+					},
+					"response": []
+				},
+				{
+					"name": "Root Info",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								""
+							]
+						},
+						"description": "Información básica de la API"
+					},
+					"response": []
+				}
+			],
+			"description": "Endpoints de información y salud del sistema"
+		},
+		{
+			"name": "Seed",
+			"item": [
+				{
+					"name": "Ejecutar Seed",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"force\": false\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/v1/seed/execute?force=false",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"seed",
+								"execute"
+							],
+							"query": [
+								{
+									"key": "force",
+									"value": "false",
+									"description": "Forzar ejecución aunque ya existan datos"
+								}
+							]
+						},
+						"description": "Ejecuta el script de seed para poblar la base de datos con datos iniciales"
+					},
+					"response": []
+				},
+				{
+					"name": "Estado del Seed",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/v1/seed/status",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"seed",
+								"status"
+							]
+						},
+						"description": "Verifica si la base de datos ya contiene datos de seed"
+					},
+					"response": []
+				}
+			],
+			"description": "Endpoints para gestión del seed de datos"
+		},
+		{
+			"name": "Roles",
+			"item": [
+				{
+					"name": "Crear Rol",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"nombre\": \"Mesero\",\n  \"descripcion\": \"Toma pedidos, gestiona mesas y atiende clientes\",\n  \"activo\": true\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/v1/roles",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"roles"
+							]
+						},
+						"description": "Crea un nuevo rol en el sistema"
+					},
+					"response": []
+				},
+				{
+					"name": "Listar Roles",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/v1/roles?skip=0&limit=100",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"roles"
+							],
+							"query": [
+								{
+									"key": "skip",
+									"value": "0",
+									"description": "Número de registros a omitir"
+								},
+								{
+									"key": "limit",
+									"value": "100",
+									"description": "Número máximo de registros a retornar"
+								}
+							]
+						},
+						"description": "Obtiene una lista paginada de roles"
+					},
+					"response": []
+				},
+				{
+					"name": "Obtener Rol por ID",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/v1/roles/{{rol_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"roles",
+								"{{rol_id}}"
+							]
+						},
+						"description": "Obtiene los detalles de un rol específico por su ID"
+					},
+					"response": []
+				},
+				{
+					"name": "Actualizar Rol",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"nombre\": \"Mesero Actualizado\",\n  \"descripcion\": \"Descripción actualizada del rol\",\n  \"activo\": true\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/v1/roles/{{rol_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"roles",
+								"{{rol_id}}"
+							]
+						},
+						"description": "Actualiza los datos de un rol existente"
+					},
+					"response": []
+				},
+				{
+					"name": "Eliminar Rol",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/v1/roles/{{rol_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"roles",
+								"{{rol_id}}"
+							]
+						},
+						"description": "Elimina un rol existente del sistema"
+					},
+					"response": []
+				}
+			],
+			"description": "Endpoints para gestión de roles del sistema"
+		},
+		{
+			"name": "Categorías",
+			"item": [
+				{
+					"name": "Crear Categoría",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"nombre\": \"Ceviches\",\n  \"descripcion\": \"Ceviches frescos del día con pescados y mariscos selectos\",\n  \"imagen_path\": \"https://drive.google.com/file/d/1ZaYA_c1ZGfl6tsPe80-fwSzpHR_LYzSZ/view?usp=sharing\",\n  \"activo\": true\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/v1/categorias",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"categorias"
+							]
+						},
+						"description": "Crea una nueva categoría en el sistema"
+					},
+					"response": []
+				},
+				{
+					"name": "Listar Categorías",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/v1/categorias?skip=0&limit=100",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"categorias"
+							],
+							"query": [
+								{
+									"key": "skip",
+									"value": "0",
+									"description": "Número de registros a omitir"
+								},
+								{
+									"key": "limit",
+									"value": "100",
+									"description": "Número máximo de registros a retornar"
+								}
+							]
+						},
+						"description": "Obtiene una lista paginada de categorías"
+					},
+					"response": []
+				},
+				{
+					"name": "Obtener Categoría por ID",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/v1/categorias/{{categoria_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"categorias",
+								"{{categoria_id}}"
+							]
+						},
+						"description": "Obtiene los detalles de una categoría específica por su ID"
+					},
+					"response": []
+				},
+				{
+					"name": "Actualizar Categoría",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"nombre\": \"Ceviches Actualizados\",\n  \"descripcion\": \"Descripción actualizada de la categoría\",\n  \"imagen_path\": \"https://nueva-imagen.com/ceviches.jpg\",\n  \"activo\": true\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/v1/categorias/{{categoria_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"categorias",
+								"{{categoria_id}}"
+							]
+						},
+						"description": "Actualiza los datos de una categoría existente"
+					},
+					"response": []
+				},
+				{
+					"name": "Eliminar Categoría",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/v1/categorias/{{categoria_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"categorias",
+								"{{categoria_id}}"
+							]
+						},
+						"description": "Elimina una categoría existente del sistema"
+					},
+					"response": []
+				},
+				{
+					"name": "Categorías con Productos (Cards)",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/v1/categorias/productos/cards?skip=0&limit=100",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"categorias",
+								"productos",
+								"cards"
+							],
+							"query": [
+								{
+									"key": "skip",
+									"value": "0",
+									"description": "Número de registros a omitir"
+								},
+								{
+									"key": "limit",
+									"value": "100",
+									"description": "Número máximo de registros a retornar"
+								}
+							]
+						},
+						"description": "Obtiene todas las categorías con sus productos en formato minimal (solo ID, nombre, imagen)"
+					},
+					"response": []
+				}
+			],
+			"description": "Endpoints para gestión de categorías de productos"
+		},
+		{
+			"name": "Alérgenos",
+			"item": [
+				{
+					"name": "Crear Alérgeno",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"nombre\": \"Mariscos\",\n  \"descripcion\": \"Langostinos, camarones, pulpo, calamar, conchas negras\",\n  \"icono\": \"🦐\",\n  \"nivel_riesgo\": \"alto\",\n  \"activo\": true\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/v1/alergenos",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"alergenos"
+							]
+						},
+						"description": "Crea un nuevo alérgeno en el sistema"
+					},
+					"response": []
+				},
+				{
+					"name": "Listar Alérgenos",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/v1/alergenos?skip=0&limit=100",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"alergenos"
+							],
+							"query": [
+								{
+									"key": "skip",
+									"value": "0",
+									"description": "Número de registros a omitir"
+								},
+								{
+									"key": "limit",
+									"value": "100",
+									"description": "Número máximo de registros a retornar"
+								}
+							]
+						},
+						"description": "Obtiene una lista paginada de alérgenos"
+					},
+					"response": []
+				},
+				{
+					"name": "Obtener Alérgeno por ID",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/v1/alergenos/{{alergeno_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"alergenos",
+								"{{alergeno_id}}"
+							]
+						},
+						"description": "Obtiene los detalles de un alérgeno específico por su ID"
+					},
+					"response": []
+				},
+				{
+					"name": "Actualizar Alérgeno",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"nombre\": \"Mariscos Actualizados\",\n  \"descripcion\": \"Descripción actualizada del alérgeno\",\n  \"icono\": \"🦞\",\n  \"nivel_riesgo\": \"critico\",\n  \"activo\": true\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/v1/alergenos/{{alergeno_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"alergenos",
+								"{{alergeno_id}}"
+							]
+						},
+						"description": "Actualiza los datos de un alérgeno existente"
+					},
+					"response": []
+				},
+				{
+					"name": "Eliminar Alérgeno",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/v1/alergenos/{{alergeno_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"alergenos",
+								"{{alergeno_id}}"
+							]
+						},
+						"description": "Elimina un alérgeno existente del sistema"
+					},
+					"response": []
+				}
+			],
+			"description": "Endpoints para gestión de alérgenos alimentarios"
+		},
+		{
+			"name": "Productos",
+			"item": [
+				{
+					"name": "Crear Producto",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"nombre\": \"Ceviche Clásico\",\n  \"descripcion\": \"Pescado fresco del día marinado en limón, cebolla morada, ají limo y cilantro\",\n  \"precio_base\": 25.00,\n  \"imagen_path\": \"https://drive.google.com/file/d/14MotvG3-NJLZO5bUJjGqyMkOMMSzOZ7L/view?usp=sharing\",\n  \"imagen_alt_text\": \"Ceviche clásico peruano\",\n  \"id_categoria\": \"{{categoria_id}}\",\n  \"disponible\": true,\n  \"destacado\": true\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/v1/productos",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"productos"
+							]
+						},
+						"description": "Crea un nuevo producto en el sistema"
+					},
+					"response": []
+				},
+				{
+					"name": "Listar Productos",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/v1/productos?skip=0&limit=100",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"productos"
+							],
+							"query": [
+								{
+									"key": "skip",
+									"value": "0",
+									"description": "Número de registros a omitir"
+								},
+								{
+									"key": "limit",
+									"value": "100",
+									"description": "Número máximo de registros a retornar"
+								}
+							]
+						},
+						"description": "Obtiene una lista paginada de productos"
+					},
+					"response": []
+				},
+				{
+					"name": "Listar Productos por Categoría",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/v1/productos?skip=0&limit=100&id_categoria={{categoria_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"productos"
+							],
+							"query": [
+								{
+									"key": "skip",
+									"value": "0",
+									"description": "Número de registros a omitir"
+								},
+								{
+									"key": "limit",
+									"value": "100",
+									"description": "Número máximo de registros a retornar"
+								},
+								{
+									"key": "id_categoria",
+									"value": "{{categoria_id}}",
+									"description": "Filtrar productos por ID de categoría"
+								}
+							]
+						},
+						"description": "Obtiene una lista paginada de productos filtrados por categoría"
+					},
+					"response": []
+				},
+				{
+					"name": "Listar Todos los Productos (Cards)",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/v1/productos/cards?skip=0&limit=100",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"productos",
+								"cards"
+							],
+							"query": [
+								{
+									"key": "skip",
+									"value": "0",
+									"description": "Número de registros a omitir"
+								},
+								{
+									"key": "limit",
+									"value": "100",
+									"description": "Número máximo de registros a retornar"
+								}
+							]
+						},
+						"description": "Obtiene una lista paginada de todos los productos en formato card con información de categoría"
+					},
+					"response": []
+				},
+				{
+					"name": "Listar Productos por Categoría (Cards)",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/v1/productos/categoria/{{categoria_id}}/cards?skip=0&limit=100",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"productos",
+								"categoria",
+								"{{categoria_id}}",
+								"cards"
+							],
+							"query": [
+								{
+									"key": "skip",
+									"value": "0",
+									"description": "Número de registros a omitir"
+								},
+								{
+									"key": "limit",
+									"value": "100",
+									"description": "Número máximo de registros a retornar"
+								}
+							]
+						},
+						"description": "Obtiene una lista paginada de productos de una categoría específica en formato card"
+					},
+					"response": []
+				},
+				{
+					"name": "Obtener Producto por ID",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/v1/productos/{{producto_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"productos",
+								"{{producto_id}}"
+							]
+						},
+						"description": "Obtiene los detalles de un producto específico por su ID"
+					},
+					"response": []
+				},
+				{
+					"name": "Actualizar Producto",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"nombre\": \"Ceviche Clásico Actualizado\",\n  \"descripcion\": \"Descripción actualizada del ceviche\",\n  \"precio_base\": 28.00,\n  \"imagen_path\": \"https://nueva-imagen.com/ceviche.jpg\",\n  \"imagen_alt_text\": \"Ceviche clásico actualizado\",\n  \"id_categoria\": \"{{categoria_id}}\",\n  \"disponible\": true,\n  \"destacado\": false\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/v1/productos/{{producto_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"productos",
+								"{{producto_id}}"
+							]
+						},
+						"description": "Actualiza los datos de un producto existente"
+					},
+					"response": []
+				},
+				{
+					"name": "Eliminar Producto",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/v1/productos/{{producto_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"productos",
+								"{{producto_id}}"
+							]
+						},
+						"description": "Elimina un producto existente del sistema"
+					},
+					"response": []
+				}
+			],
+			"description": "Endpoints para gestión de productos del menú"
+		},
+		{
+			"name": "Tipos de Opciones",
+			"item": [
+				{
+					"name": "Crear Tipo de Opción",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"codigo\": \"nivel_aji\",\n  \"nombre\": \"Nivel de Ají\",\n  \"descripcion\": \"Intensidad del picante en el plato\",\n  \"activo\": true,\n  \"orden\": 1\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/v1/tipos-opciones",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"tipos-opciones"
+							]
+						},
+						"description": "Crea un nuevo tipo de opción en el sistema"
+					},
+					"response": []
+				},
+				{
+					"name": "Listar Tipos de Opciones",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/v1/tipos-opciones?skip=0&limit=100",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"tipos-opciones"
+							],
+							"query": [
+								{
+									"key": "skip",
+									"value": "0",
+									"description": "Número de registros a omitir"
+								},
+								{
+									"key": "limit",
+									"value": "100",
+									"description": "Número máximo de registros a retornar"
+								}
+							]
+						},
+						"description": "Obtiene una lista paginada de tipos de opciones"
+					},
+					"response": []
+				},
+				{
+					"name": "Obtener Tipo de Opción por ID",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/v1/tipos-opciones/{{tipo_opcion_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"tipos-opciones",
+								"{{tipo_opcion_id}}"
+							]
+						},
+						"description": "Obtiene los detalles de un tipo de opción específico por su ID"
+					},
+					"response": []
+				},
+				{
+					"name": "Actualizar Tipo de Opción",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"codigo\": \"nivel_aji_actualizado\",\n  \"nombre\": \"Nivel de Ají Actualizado\",\n  \"descripcion\": \"Descripción actualizada del nivel de ají\",\n  \"activo\": true,\n  \"orden\": 2\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/v1/tipos-opciones/{{tipo_opcion_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"tipos-opciones",
+								"{{tipo_opcion_id}}"
+							]
+						},
+						"description": "Actualiza los datos de un tipo de opción existente"
+					},
+					"response": []
+				},
+				{
+					"name": "Eliminar Tipo de Opción",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/v1/tipos-opciones/{{tipo_opcion_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"tipos-opciones",
+								"{{tipo_opcion_id}}"
+							]
+						},
+						"description": "Elimina un tipo de opción existente del sistema"
+					},
+					"response": []
+				}
+			],
+			"description": "Endpoints para gestión de tipos de opciones de productos"
+		},
+		{
+			"name": "Opciones de Productos",
+			"item": [
+				{
+					"name": "Crear Opción de Producto",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"id_producto\": \"{{producto_id}}\",\n  \"id_tipo_opcion\": \"{{tipo_opcion_id}}\",\n  \"nombre\": \"Sin ají\",\n  \"precio_adicional\": 0.00,\n  \"activo\": true,\n  \"orden\": 1\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/v1/producto-opciones",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"producto-opciones"
+							]
+						},
+						"description": "Crea una nueva opción de producto en el sistema"
+					},
+					"response": []
+				},
+				{
+					"name": "Listar Opciones de Productos",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/v1/producto-opciones?skip=0&limit=100",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"producto-opciones"
+							],
+							"query": [
+								{
+									"key": "skip",
+									"value": "0",
+									"description": "Número de registros a omitir"
+								},
+								{
+									"key": "limit",
+									"value": "100",
+									"description": "Número máximo de registros a retornar"
+								}
+							]
+						},
+						"description": "Obtiene una lista paginada de opciones de productos"
+					},
+					"response": []
+				},
+				{
+					"name": "Obtener Opción de Producto por ID",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/v1/producto-opciones/{{producto_opcion_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"producto-opciones",
+								"{{producto_opcion_id}}"
+							]
+						},
+						"description": "Obtiene los detalles de una opción de producto específica por su ID"
+					},
+					"response": []
+				},
+				{
+					"name": "Actualizar Opción de Producto",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"nombre\": \"Sin ají actualizado\",\n  \"precio_adicional\": 1.00,\n  \"activo\": true,\n  \"orden\": 2,\n  \"id_producto\": \"{{producto_id}}\",\n  \"id_tipo_opcion\": \"{{tipo_opcion_id}}\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/v1/producto-opciones/{{producto_opcion_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"producto-opciones",
+								"{{producto_opcion_id}}"
+							]
+						},
+						"description": "Actualiza los datos de una opción de producto existente"
+					},
+					"response": []
+				},
+				{
+					"name": "Eliminar Opción de Producto",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/v1/producto-opciones/{{producto_opcion_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"producto-opciones",
+								"{{producto_opcion_id}}"
+							]
+						},
+						"description": "Elimina una opción de producto existente del sistema"
+					},
+					"response": []
+				}
+			],
+			"description": "Endpoints para gestión de opciones específicas de productos"
+		},
+		{
+			"name": "Relaciones Producto-Alérgeno",
+			"item": [
+				{
+					"name": "Crear Relación Producto-Alérgeno",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"id_producto\": \"{{producto_id}}\",\n  \"id_alergeno\": \"{{alergeno_id}}\",\n  \"nivel_presencia\": \"contiene\",\n  \"notas\": \"Preparado con pescado fresco del día\",\n  \"activo\": true\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/v1/productos-alergenos",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"productos-alergenos"
+							]
+						},
+						"description": "Crea una nueva relación entre un producto y un alérgeno"
+					},
+					"response": []
+				},
+				{
+					"name": "Listar Relaciones Producto-Alérgeno",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/v1/productos-alergenos?skip=0&limit=100",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"productos-alergenos"
+							],
+							"query": [
+								{
+									"key": "skip",
+									"value": "0",
+									"description": "Número de registros a omitir"
+								},
+								{
+									"key": "limit",
+									"value": "100",
+									"description": "Número máximo de registros a retornar"
+								}
+							]
+						},
+						"description": "Obtiene una lista paginada de relaciones producto-alérgeno"
+					},
+					"response": []
+				},
+				{
+					"name": "Obtener Relación Producto-Alérgeno por IDs",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/v1/productos-alergenos/{{producto_id}}/{{alergeno_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"productos-alergenos",
+								"{{producto_id}}",
+								"{{alergeno_id}}"
+							]
+						},
+						"description": "Obtiene los detalles de una relación producto-alérgeno específica por sus IDs"
+					},
+					"response": []
+				},
+				{
+					"name": "Actualizar Relación Producto-Alérgeno",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"nivel_presencia\": \"trazas\",\n  \"notas\": \"Puede contener trazas de pescado\",\n  \"activo\": true\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/v1/productos-alergenos/{{producto_id}}/{{alergeno_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"productos-alergenos",
+								"{{producto_id}}",
+								"{{alergeno_id}}"
+							]
+						},
+						"description": "Actualiza los datos de una relación producto-alérgeno existente"
+					},
+					"response": []
+				},
+				{
+					"name": "Eliminar Relación Producto-Alérgeno",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/v1/productos-alergenos/{{producto_id}}/{{alergeno_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"productos-alergenos",
+								"{{producto_id}}",
+								"{{alergeno_id}}"
+							]
+						},
+						"description": "Elimina una relación producto-alérgeno existente del sistema"
+					},
+					"response": []
+				}
+			],
+			"description": "Endpoints para gestión de relaciones entre productos y alérgenos"
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://localhost:8000",
+			"type": "string",
+			"description": "URL base de la API"
+		},
+		{
+			"key": "categoria_id",
+			"value": "",
+			"type": "string",
+			"description": "ID de una categoría para usar en las pruebas"
+		},
+		{
+			"key": "producto_id",
+			"value": "",
+			"type": "string",
+			"description": "ID de un producto para usar en las pruebas"
+		},
+		{
+			"key": "alergeno_id",
+			"value": "",
+			"type": "string",
+			"description": "ID de un alérgeno para usar en las pruebas"
+		},
+		{
+			"key": "rol_id",
+			"value": "",
+			"type": "string",
+			"description": "ID de un rol para usar en las pruebas"
+		},
+		{
+			"key": "tipo_opcion_id",
+			"value": "",
+			"type": "string",
+			"description": "ID de un tipo de opción para usar en las pruebas"
+		},
+		{
+			"key": "producto_opcion_id",
+			"value": "",
+			"type": "string",
+			"description": "ID de una opción de producto para usar en las pruebas"
+		}
+	]
+}

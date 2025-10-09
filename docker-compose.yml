@@ -18,7 +18,7 @@ services:
       # Monta el código fuente para hot-reload
       - .:/app
       # Persiste la base de datos SQLite
-      # - ./app.db:/app/app.db  # COMENTADO PARA PRUEBA (simula Render sin BD)
+      - ./instance:/app/instance
     working_dir: /app
     command: uvicorn src.main:app --host 0.0.0.0 --port 8000 --reload
     restart: unless-stopped
