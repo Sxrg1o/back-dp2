@@ -204,6 +204,12 @@ async def create_tables():
     """
     # Import all models to ensure they are registered with the Base
     from src.models.auth.rol_model import RolModel  # noqa: F401
+    from src.models.menu.categoria_model import CategoriaModel  # noqa: F401
+    from src.models.menu.alergeno_model import AlergenoModel  # noqa: F401
+    from src.models.menu.producto_model import ProductoModel  # noqa: F401
+    from src.models.menu.producto_alergeno_model import ProductoAlergenoModel  # noqa: F401
+    from src.models.pedidos.tipo_opciones_model import TipoOpcionModel  # noqa: F401
+    from src.models.pedidos.producto_opcion_model import ProductoOpcionModel  # noqa: F401
 
     async with db.engine.begin() as conn:
         await conn.run_sync(BaseModel.metadata.create_all)

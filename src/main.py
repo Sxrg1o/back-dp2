@@ -47,9 +47,12 @@ async def auto_seed_database():
                 # Importar y ejecutar el seeder
                 from scripts.seed_cevicheria_data import CevicheriaSeeder
                 
-                # Crear instancia del seeder y ejecutar
-                seeder = CevicheriaSeeder()
-                await seeder.run()
+                # Crear instancia del seeder CON la sesión
+                seeder = CevicheriaSeeder(session)
+                await seeder.seed_all()
+                
+                # Commit de los cambios
+                await session.commit()
                 
                 logger.info("✅ Seed completado exitosamente!")
             else:
@@ -88,6 +91,10 @@ async def lifespan(app: FastAPI):
 
     # Crear tablas en la base de datos si no existen
     await create_tables()
+    
+    # Pequeña espera para asegurar que las tablas estén completamente creadas
+    import asyncio
+    await asyncio.sleep(0.5)
 
     # Ejecutar seed automáticamente si la BD está vacía
     await auto_seed_database()
