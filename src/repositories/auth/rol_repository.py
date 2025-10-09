@@ -146,21 +146,17 @@ class RolRepository:
                 update(RolModel)
                 .where(RolModel.id == rol_id)
                 .values(**valid_fields)
-                .returning(RolModel)
             )
 
             result = await self.session.execute(stmt)
             await self.session.commit()
 
-            # Obtener el resultado actualizado
-            updated_rol = result.scalars().first()
-
+            # Consultar el rol actualizado
+            updated_rol = await self.get_by_id(rol_id)
+            
             # Si no se encontró el rol, retornar None
             if not updated_rol:
                 return None
-
-            # Refrescar el objeto desde la base de datos
-            await self.session.refresh(updated_rol)
 
             return updated_rol
         except SQLAlchemyError:

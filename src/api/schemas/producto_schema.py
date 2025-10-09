@@ -2,11 +2,14 @@
 Pydantic schemas for Producto (Product) entities.
 """
 
-from typing import Optional, ClassVar, List
+from typing import Optional, ClassVar, List, TYPE_CHECKING
 from uuid import UUID
 from datetime import datetime
 from decimal import Decimal
 from pydantic import BaseModel, Field, ConfigDict
+
+if TYPE_CHECKING:
+    from src.api.schemas.producto_opcion_schema import ProductoOpcionResponse
 
 
 class ProductoBase(BaseModel):
@@ -95,6 +98,17 @@ class ProductoList(BaseModel):
     total: int = Field(description="Total number of products")
 
 
+class ProductoConOpcionesResponse(ProductoResponse):
+    """Schema for producto with all its opciones (complete data)."""
+    
+    model_config: ClassVar[ConfigDict] = ConfigDict(from_attributes=True)
+    
+    opciones: List["ProductoOpcionResponse"] = Field(
+        default_factory=list,
+        description="List of all options available for this product"
+    )
+
+
 class CategoriaInfo(BaseModel):
     """Schema for categoria information in product cards."""
     
@@ -122,4 +136,11 @@ class ProductoCardList(BaseModel):
     
     items: List[ProductoCard]
     total: int = Field(description="Total number of products")
+
+
+# Import real después de definir las clases para evitar circular import
+from src.api.schemas.producto_opcion_schema import ProductoOpcionResponse  # noqa: E402
+
+# Actualizar forward references
+ProductoConOpcionesResponse.model_rebuild()
 

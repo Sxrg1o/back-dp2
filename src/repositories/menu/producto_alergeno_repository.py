@@ -166,21 +166,17 @@ class ProductoAlergenoRepository:
                     ProductoAlergenoModel.id_alergeno == id_alergeno
                 )
                 .values(**valid_fields)
-                .returning(ProductoAlergenoModel)
             )
 
             result = await self.session.execute(stmt)
             await self.session.commit()
 
-            # Obtener el resultado actualizado
-            updated_producto_alergeno = result.scalars().first()
-
+            # Consultar la relación actualizada
+            updated_producto_alergeno = await self.get_by_id(id_producto, id_alergeno)
+            
             # Si no se encontró la relación, retornar None
             if not updated_producto_alergeno:
                 return None
-
-            # Refrescar el objeto desde la base de datos
-            await self.session.refresh(updated_producto_alergeno)
 
             return updated_producto_alergeno
         except SQLAlchemyError:

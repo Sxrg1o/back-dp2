@@ -146,21 +146,17 @@ class TipoOpcionRepository:
                 update(TipoOpcionModel)
                 .where(TipoOpcionModel.id == tipo_opcion_id)
                 .values(**valid_fields)
-                .returning(TipoOpcionModel)
             )
 
             result = await self.session.execute(stmt)
             await self.session.commit()
 
-            # Obtener el resultado actualizado
-            updated_tipo_opcion = result.scalars().first()
-
+            # Consultar el tipo de opción actualizado
+            updated_tipo_opcion = await self.get_by_id(tipo_opcion_id)
+            
             # Si no se encontró el tipo de opción, retornar None
             if not updated_tipo_opcion:
                 return None
-
-            # Refrescar el objeto desde la base de datos
-            await self.session.refresh(updated_tipo_opcion)
 
             return updated_tipo_opcion
         except SQLAlchemyError:
