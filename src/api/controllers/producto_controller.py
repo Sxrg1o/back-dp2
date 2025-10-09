@@ -14,6 +14,7 @@ from src.api.schemas.producto_schema import (
     ProductoUpdate,
     ProductoList,
     ProductoCardList,
+    ProductoConOpcionesResponse,
 )
 from src.business_logic.exceptions.producto_exceptions import (
     ProductoValidationError,
@@ -183,6 +184,43 @@ async def get_producto(
     try:
         producto_service = ProductoService(session)
         return await producto_service.get_producto_by_id(producto_id)
+    except ProductoNotFoundError as e:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error interno del servidor: {str(e)}",
+        )
+
+
+@router.get(
+    "/{producto_id}/opciones",
+    response_model=ProductoConOpcionesResponse,
+    status_code=status.HTTP_200_OK,
+    summary="Obtener un producto con todas sus opciones",
+    description="Obtiene los detalles completos de un producto con todas sus opciones disponibles.",
+)
+async def get_producto_con_opciones(
+    producto_id: UUID, session: AsyncSession = Depends(get_database_session)
+):
+    """
+    Obtiene un producto específico por su ID con todas sus opciones.
+    
+    Args:
+        producto_id: ID del producto a buscar.
+        session: Sesión de base de datos.
+        
+    Returns:
+        El producto encontrado con todos sus datos y todas sus opciones.
+        
+    Raises:
+        HTTPException:
+            - 404: Si no se encuentra el producto.
+            - 500: Si ocurre un error interno del servidor.
+    """
+    try:
+        producto_service = ProductoService(session)
+        return await producto_service.get_producto_con_opciones(producto_id)
     except ProductoNotFoundError as e:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
     except Exception as e:

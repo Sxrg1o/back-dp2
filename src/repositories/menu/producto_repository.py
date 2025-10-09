@@ -83,6 +83,28 @@ class ProductoRepository:
         result = await self.session.execute(query)
         return result.scalars().first()
 
+    async def get_by_id_with_opciones(self, producto_id: UUID) -> Optional[ProductoModel]:
+        """
+        Obtiene un producto por su ID con todas sus opciones (eager loading).
+        
+        Parameters
+        ----------
+        producto_id : UUID
+            Identificador único del producto a buscar.
+            
+        Returns
+        -------
+        Optional[ProductoModel]
+            El producto encontrado con sus opciones cargadas, o None si no existe.
+        """
+        query = (
+            select(ProductoModel)
+            .where(ProductoModel.id == producto_id)
+            .options(selectinload(ProductoModel.opciones))
+        )
+        result = await self.session.execute(query)
+        return result.scalars().first()
+
     async def delete(self, producto_id: UUID) -> bool:
         """
         Elimina un producto de la base de datos por su ID.

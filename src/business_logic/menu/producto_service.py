@@ -120,6 +120,37 @@ class ProductoService:
         # Convertir y retornar como esquema de respuesta
         return ProductoResponse.model_validate(producto)
 
+    async def get_producto_con_opciones(self, producto_id: UUID) -> "ProductoConOpcionesResponse":
+        """
+        Obtiene un producto por su ID con todas sus opciones.
+        
+        Parameters
+        ----------
+        producto_id : UUID
+            Identificador único del producto a buscar.
+            
+        Returns
+        -------
+        ProductoConOpcionesResponse
+            Esquema de respuesta con el producto y todas sus opciones.
+            
+        Raises
+        ------
+        ProductoNotFoundError
+            Si no se encuentra un producto con el ID proporcionado.
+        """
+        from src.api.schemas.producto_schema import ProductoConOpcionesResponse
+        
+        # Buscar el producto con opciones (eager loading)
+        producto = await self.repository.get_by_id_with_opciones(producto_id)
+        
+        # Verificar si existe
+        if not producto:
+            raise ProductoNotFoundError(f"No se encontró el producto con ID {producto_id}")
+        
+        # Convertir y retornar como esquema de respuesta
+        return ProductoConOpcionesResponse.model_validate(producto)
+
     async def delete_producto(self, producto_id: UUID) -> bool:
         """
         Elimina un producto por su ID.
