@@ -278,9 +278,16 @@ class ProductoRepository:
             return []
             
         try:
-            updated_productos = []
+            # Recolectar todos los IDs de productos que se actualizarán
+            product_ids = [product_id for product_id, _ in updates]
             
-            # Procesar cada actualización como una operación independiente
+            # Realizar actualizaciones utilizando un enfoque más eficiente
+            # que minimiza el número de consultas SQL
+            from sqlalchemy import bindparam
+            
+            # Agrupar actualizaciones por conjuntos de campos a actualizar
+            updates_by_fields = {}
+            
             for producto_id, update_data in updates:
                 # Filtrar solo los campos válidos
                 valid_fields = {
@@ -288,24 +295,49 @@ class ProductoRepository:
                     if hasattr(ProductoModel, k) and k != "id"
                 }
                 
-                if valid_fields:
-                    # Construir y ejecutar la sentencia de actualización
-                    stmt = (
-                        update(ProductoModel)
-                        .where(ProductoModel.id == producto_id)
-                        .values(**valid_fields)
-                    )
-                    await self.session.execute(stmt)
+                if not valid_fields:
+                    continue
                     
-                    # Recuperar el producto actualizado
-                    producto = await self.get_by_id(producto_id)
-                    if producto:
-                        updated_productos.append(producto)
-            
-            # Commit para confirmar todas las actualizaciones
+                # Crear una clave basada en los nombres de los campos
+                fields_key = frozenset(valid_fields.keys())
+                
+                if fields_key not in updates_by_fields:
+                    updates_by_fields[fields_key] = []
+                    
+                # Añadir esta actualización al grupo correspondiente
+                update_with_id = valid_fields.copy()
+                update_with_id['id'] = producto_id
+                updates_by_fields[fields_key].append(update_with_id)
+                
+            # Para cada grupo de actualizaciones con el mismo conjunto de campos
+            for fields, field_updates in updates_by_fields.items():
+                if not field_updates:
+                    continue
+                    
+                # Construir una actualización parametrizada
+                update_stmt = update(ProductoModel).where(
+                    ProductoModel.id == bindparam('id')
+                )
+                
+                # Añadir los campos a actualizar
+                update_values = {}
+                for field in fields:
+                    update_values[field] = bindparam(field)
+                    
+                update_stmt = update_stmt.values(**update_values)
+                
+                # Ejecutar la actualización para este grupo
+                await self.session.execute(update_stmt, field_updates)
+                
+            # Confirmar todas las actualizaciones
             await self.session.commit()
             
-            return updated_productos
+            # Recuperar todos los productos actualizados en una sola consulta
+            query = select(ProductoModel).where(ProductoModel.id.in_(product_ids))
+            result = await self.session.execute(query)
+            updated_productos = result.scalars().all()
+            
+            return list(updated_productos)
         except SQLAlchemyError:
             await self.session.rollback()
             raise

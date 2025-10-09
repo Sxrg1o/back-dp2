@@ -79,15 +79,13 @@ async def sync_platos(
 
         categorias_response = await categoria_service.get_categorias(skip=0, limit=1000)
         categorias_dict = {
-            categoria.nombre: categoria for categoria in categorias_response.items
+            categoria.nombre.upper(): categoria for categoria in categorias_response.items
         }
         productos_response = await producto_service.get_productos(skip=0, limit=10000)
         productos_dict = {
             producto.nombre: producto for producto in productos_response.items
         }
 
-        # Conjuntos y listas para tracking y operaciones por lote
-        productos_procesados: Set[str] = set()
         categorias_a_crear: List[CategoriaCreate] = []
         productos_a_crear: List[ProductoCreate] = []
         productos_a_actualizar: List[Tuple[UUID, ProductoUpdate]] = []
@@ -95,12 +93,11 @@ async def sync_platos(
         categorias_nuevas: Set[str] = set()
         
         for producto_domotica in productos_domotica:
-            # Manejar categoría
-            if producto_domotica.categoria not in categorias_dict and producto_domotica.categoria not in categorias_nuevas:
-                # Nueva categoría
+            nombre_categoria = producto_domotica.categoria.upper()
+            if nombre_categoria not in categorias_dict and nombre_categoria not in categorias_nuevas:
                 nueva_categoria = CategoriaCreate(nombre=producto_domotica.categoria)
                 categorias_a_crear.append(nueva_categoria)
-                categorias_nuevas.add(producto_domotica.categoria)
+                categorias_nuevas.add(nombre_categoria)
         
         await categoria_service.batch_create_categorias(categorias_a_crear)
         resultados["categorias_creadas"] += len(categorias_a_crear)
