@@ -12,13 +12,14 @@ from sqlalchemy import String, Boolean, Enum, ForeignKey, Index, inspect
 from datetime import datetime
 from uuid import UUID
 from src.models.base_model import BaseModel
+from src.models.mixins.audit_mixin import AuditMixin
 from src.core.enums.alergeno_enums import NivelPresencia
 
 # Definimos un TypeVar para el tipado genérico
 T = TypeVar("T", bound="ProductoAlergenoModel")
 
 
-class ProductoAlergenoModel(BaseModel):
+class ProductoAlergenoModel(BaseModel, AuditMixin):
     """Modelo para representar la relación entre productos y alérgenos.
 
     Tabla de asociación muchos-a-muchos que detalla qué alérgenos están presentes
@@ -79,19 +80,7 @@ class ProductoAlergenoModel(BaseModel):
         server_default="1"
     )
 
-    # Campos de auditoría (sin AuditMixin ya que BaseModel ya tiene id)
-    # Nota: fecha_creacon en MySQL es un typo, debería ser fecha_creacion
-    fecha_creacion: Mapped[datetime] = mapped_column(
-        nullable=False,
-        default=datetime.utcnow,
-        server_default="CURRENT_TIMESTAMP"
-    )
-    fecha_modificacion: Mapped[datetime] = mapped_column(
-        nullable=False,
-        default=datetime.utcnow,
-        server_default="CURRENT_TIMESTAMP",
-        onupdate=datetime.utcnow
-    )
+    # Los campos de auditoría se heredan de AuditMixin
 
     # Índices adicionales para mejorar búsquedas
     __table_args__ = (
