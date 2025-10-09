@@ -1,287 +1,444 @@
 """
-Product service for business logic related to menu products.
+Servicio para la gestión de productos en el sistema.
 """
 
-from typing import List, Optional, Dict, Any
-from decimal import Decimal
+from uuid import UUID
+from typing import List, Tuple, Dict, Any
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.exc import IntegrityError
 
 from src.repositories.menu.producto_repository import ProductoRepository
-from src.repositories.menu.categoria_repository import CategoriaRepository
 from src.models.menu.producto_model import ProductoModel
-from src.business_logic.exceptions.menu_exceptions import (
-    ProductoNotFoundError,
-    CategoriaNotFoundError,
-    ProductoNotAvailableError
+from src.api.schemas.producto_schema import (
+    ProductoCreate,
+    ProductoUpdate,
+    ProductoResponse,
+    ProductoSummary,
+    ProductoList,
+    ProductoCard,
+    ProductoCardList,
 )
-from src.business_logic.validators.producto_validators import ProductoValidator
-from src.core.utils.pagination_utils import PaginationParams, PaginatedResponse
+from src.business_logic.exceptions.producto_exceptions import (
+    ProductoValidationError,
+    ProductoNotFoundError,
+    ProductoConflictError,
+)
 
 
 class ProductoService:
-    """Product service for business operations."""
+    """Servicio para la gestión de productos en el sistema.
 
-    def __init__(self):
-        self.producto_repo = ProductoRepository()
-        self.categoria_repo = CategoriaRepository()
-        self.validator = ProductoValidator()
+    Esta clase implementa la lógica de negocio para operaciones relacionadas
+    con productos, incluyendo validaciones, transformaciones y manejo de excepciones.
 
-    async def create_product(
-        self,
-        db: AsyncSession,
-        product_data: Dict[str, Any]
-    ) -> ProductoModel:
+    Attributes
+    ----------
+    repository : ProductoRepository
+        Repositorio para acceso a datos de productos.
+    """
+
+    def __init__(self, session: AsyncSession):
         """
-        Create a new product.
+        Inicializa el servicio con una sesión de base de datos.
 
-        Args:
-            db: Database session
-            product_data: Product creation data
-
-        Returns:
-            Created product
-
-        Raises:
-            CategoriaNotFoundError: If category doesn't exist
-            ValueError: If validation fails
+        Parameters
+        ----------
+        session : AsyncSession
+            Sesión asíncrona de SQLAlchemy para realizar operaciones en la base de datos.
         """
-        # Validate input data
-        self.validator.validate_product_data(product_data)
+        self.repository = ProductoRepository(session)
 
-        # Check if category exists
-        category = await self.categoria_repo.get_by_id(db, product_data["id_categoria"])
-        if not category:
-            raise CategoriaNotFoundError(f"Category with ID {product_data['id_categoria']} not found")
-
-        # Check if category is active
-        if not category.activo:
-            raise CategoriaNotFoundError("Cannot create product in inactive category")
-
-        # Create product
-        return await self.producto_repo.create(db, **product_data)
-
-    async def get_product_by_id(
-        self,
-        db: AsyncSession,
-        product_id: int,
-        include_relations: bool = True
-    ) -> ProductoModel:
+    async def create_producto(self, producto_data: ProductoCreate) -> ProductoResponse:
         """
-        Get product by ID.
+        Crea un nuevo producto en el sistema.
 
-        Args:
-            db: Database session
-            product_id: Product ID
-            include_relations: Include related data
+        Parameters
+        ----------
+        producto_data : ProductoCreate
+            Datos para crear el nuevo producto.
 
-        Returns:
-            Product instance
+        Returns
+        -------
+        ProductoResponse
+            Esquema de respuesta con los datos del producto creado.
 
-        Raises:
-            ProductoNotFoundError: If product doesn't exist
+        Raises
+        ------
+        ProductoConflictError
+            Si ya existe un producto con el mismo nombre.
         """
-        if include_relations:
-            product = await self.producto_repo.get_with_relations(
-                db, product_id, ["categoria", "alergenos", "opciones"]
+        try:
+            # Crear modelo de producto desde los datos
+            producto = ProductoModel(
+                id_categoria=producto_data.id_categoria,
+                nombre=producto_data.nombre,
+                descripcion=producto_data.descripcion,
+                precio_base=producto_data.precio_base,
+                imagen_path=producto_data.imagen_path,
+                imagen_alt_text=producto_data.imagen_alt_text,
             )
-        else:
-            product = await self.producto_repo.get_by_id(db, product_id)
 
-        if not product:
-            raise ProductoNotFoundError(f"Product with ID {product_id} not found")
+            # Persistir en la base de datos
+            created_producto = await self.repository.create(producto)
 
-        return product
+            # Convertir y retornar como esquema de respuesta
+            return ProductoResponse.model_validate(created_producto)
+        except IntegrityError:
+            # Capturar errores de integridad (nombre duplicado)
+            raise ProductoConflictError(
+                f"Ya existe un producto con el nombre '{producto_data.nombre}'"
+            )
 
-    async def get_products_by_category(
-        self,
-        db: AsyncSession,
-        category_id: int,
-        available_only: bool = True
-    ) -> List[ProductoModel]:
+    async def get_producto_by_id(self, producto_id: UUID) -> ProductoResponse:
         """
-        Get products by category.
+        Obtiene un producto por su ID.
 
-        Args:
-            db: Database session
-            category_id: Category ID
-            available_only: Filter only available products
+        Parameters
+        ----------
+        producto_id : UUID
+            Identificador único del producto a buscar.
 
-        Returns:
-            List of products
+        Returns
+        -------
+        ProductoResponse
+            Esquema de respuesta con los datos del producto.
 
-        Raises:
-            CategoriaNotFoundError: If category doesn't exist
+        Raises
+        ------
+        ProductoNotFoundError
+            Si no se encuentra un producto con el ID proporcionado.
         """
-        # Check if category exists
-        category = await self.categoria_repo.get_by_id(db, category_id)
-        if not category:
-            raise CategoriaNotFoundError(f"Category with ID {category_id} not found")
+        # Buscar el producto por su ID
+        producto = await self.repository.get_by_id(producto_id)
 
-        return await self.producto_repo.get_by_category(
-            db, category_id, available_only
-        )
+        # Verificar si existe
+        if not producto:
+            raise ProductoNotFoundError(
+                f"No se encontró el producto con ID {producto_id}"
+            )
 
-    async def search_products(
-        self,
-        db: AsyncSession,
-        search_params: Dict[str, Any],
-        pagination: PaginationParams
-    ) -> PaginatedResponse[ProductoModel]:
+        # Convertir y retornar como esquema de respuesta
+        return ProductoResponse.model_validate(producto)
+
+    async def get_producto_con_opciones(self, producto_id: UUID) -> "ProductoConOpcionesResponse":
         """
-        Search products with filters and pagination.
-
-        Args:
-            db: Database session
-            search_params: Search parameters
-            pagination: Pagination parameters
-
-        Returns:
-            Paginated products
+        Obtiene un producto por su ID con todas sus opciones.
+        
+        Parameters
+        ----------
+        producto_id : UUID
+            Identificador único del producto a buscar.
+            
+        Returns
+        -------
+        ProductoConOpcionesResponse
+            Esquema de respuesta con el producto y todas sus opciones.
+            
+        Raises
+        ------
+        ProductoNotFoundError
+            Si no se encuentra un producto con el ID proporcionado.
         """
-        products = await self.producto_repo.search_products(
-            db,
-            search_term=search_params.get("search_term", ""),
-            category_id=search_params.get("category_id"),
-            min_price=search_params.get("min_price"),
-            max_price=search_params.get("max_price"),
-            available_only=search_params.get("available_only", True)
-        )
+        from src.api.schemas.producto_schema import ProductoConOpcionesResponse
+        
+        # Buscar el producto con opciones (eager loading)
+        producto = await self.repository.get_by_id_with_opciones(producto_id)
+        
+        # Verificar si existe
+        if not producto:
+            raise ProductoNotFoundError(f"No se encontró el producto con ID {producto_id}")
+        
+        # Convertir y retornar como esquema de respuesta
+        return ProductoConOpcionesResponse.model_validate(producto)
 
-        # Apply pagination (simplified - in production you'd do this at DB level)
-        start_idx = (pagination.page - 1) * pagination.size
-        end_idx = start_idx + pagination.size
-        paginated_products = products[start_idx:end_idx]
-
-        return PaginatedResponse(
-            items=paginated_products,
-            total=len(products),
-            page=pagination.page,
-            size=pagination.size,
-            pages=(len(products) + pagination.size - 1) // pagination.size
-        )
-
-    async def update_product(
-        self,
-        db: AsyncSession,
-        product_id: int,
-        update_data: Dict[str, Any]
-    ) -> ProductoModel:
+    async def delete_producto(self, producto_id: UUID) -> bool:
         """
-        Update product.
+        Elimina un producto por su ID.
 
-        Args:
-            db: Database session
-            product_id: Product ID
-            update_data: Data to update
+        Parameters
+        ----------
+        producto_id : UUID
+            Identificador único del producto a eliminar.
 
-        Returns:
-            Updated product
+        Returns
+        -------
+        bool
+            True si el producto fue eliminado correctamente.
 
-        Raises:
-            ProductoNotFoundError: If product doesn't exist
+        Raises
+        ------
+        ProductoNotFoundError
+            Si no se encuentra un producto con el ID proporcionado.
         """
-        # Check if product exists
-        product = await self.get_product_by_id(db, product_id, include_relations=False)
+        # Verificar primero si el producto existe
+        producto = await self.repository.get_by_id(producto_id)
+        if not producto:
+            raise ProductoNotFoundError(
+                f"No se encontró el producto con ID {producto_id}"
+            )
 
-        # Validate update data
-        self.validator.validate_product_update(update_data)
+        # Eliminar el producto
+        result = await self.repository.delete(producto_id)
+        return result
 
-        # If category is being updated, validate it exists
-        if "id_categoria" in update_data:
-            category = await self.categoria_repo.get_by_id(db, update_data["id_categoria"])
-            if not category or not category.activo:
-                raise CategoriaNotFoundError("Invalid or inactive category")
-
-        # Update product
-        updated_product = await self.producto_repo.update(db, product_id, **update_data)
-        if not updated_product:
-            raise ProductoNotFoundError(f"Product with ID {product_id} not found")
-
-        return updated_product
-
-    async def toggle_product_availability(
-        self,
-        db: AsyncSession,
-        product_id: int
-    ) -> ProductoModel:
+    async def get_productos(
+        self, skip: int = 0, limit: int = 100, id_categoria: UUID | None = None
+    ) -> ProductoList:
         """
-        Toggle product availability.
+        Obtiene una lista paginada de productos.
 
-        Args:
-            db: Database session
-            product_id: Product ID
+        Parameters
+        ----------
+        skip : int, optional
+            Número de registros a omitir (offset), por defecto 0.
+        limit : int, optional
+            Número máximo de registros a retornar, por defecto 100.
 
-        Returns:
-            Updated product
+        Returns
+        -------
+        ProductoList
+            Esquema con la lista de productos y el total.
         """
-        product = await self.get_product_by_id(db, product_id, include_relations=False)
-        new_availability = not product.disponible
+        # Validar parámetros de entrada
+        if skip < 0:
+            raise ProductoValidationError(
+                "El parámetro 'skip' debe ser mayor o igual a cero"
+            )
+        if limit < 1:
+            raise ProductoValidationError("El parámetro 'limit' debe ser mayor a cero")
 
-        return await self.producto_repo.update_availability(
-            db, product_id, new_availability
-        )
+        # Obtener productos desde el repositorio
+        productos, total = await self.repository.get_all(skip, limit, id_categoria)
 
-    async def get_featured_products(self, db: AsyncSession) -> List[ProductoModel]:
+        # Convertir modelos a esquemas de resumen
+        producto_summaries = [
+            ProductoSummary.model_validate(producto) for producto in productos
+        ]
+
+        # Retornar esquema de lista
+        return ProductoList(items=producto_summaries, total=total)
+
+    async def update_producto(
+        self, producto_id: UUID, producto_data: ProductoUpdate
+    ) -> ProductoResponse:
         """
-        Get featured products.
+        Actualiza un producto existente.
 
-        Args:
-            db: Database session
+        Parameters
+        ----------
+        producto_id : UUID
+            Identificador único del producto a actualizar.
+        producto_data : ProductoUpdate
+            Datos para actualizar el producto.
 
-        Returns:
-            List of featured products
+        Returns
+        -------
+        ProductoResponse
+            Esquema de respuesta con los datos del producto actualizado.
+
+        Raises
+        ------
+        ProductoNotFoundError
+            Si no se encuentra un producto con el ID proporcionado.
+        ProductoConflictError
+            Si ya existe otro producto con el mismo nombre.
         """
-        return await self.producto_repo.get_featured_products(db)
+        # Convertir el esquema de actualización a un diccionario,
+        # excluyendo valores None (campos no proporcionados para actualizar)
+        update_data = producto_data.model_dump(exclude_none=True)
 
-    async def calculate_product_final_price(
-        self,
-        db: AsyncSession,
-        product_id: int,
-        selected_options: List[int] = None
-    ) -> Decimal:
+        if not update_data:
+            # Si no hay datos para actualizar, simplemente retornar el producto actual
+            return await self.get_producto_by_id(producto_id)
+
+        try:
+            # Actualizar el producto
+            updated_producto = await self.repository.update(producto_id, **update_data)
+
+            # Verificar si el producto fue encontrado
+            if not updated_producto:
+                raise ProductoNotFoundError(
+                    f"No se encontró el producto con ID {producto_id}"
+                )
+
+            # Convertir y retornar como esquema de respuesta
+            return ProductoResponse.model_validate(updated_producto)
+        except IntegrityError:
+            # Capturar errores de integridad (nombre duplicado)
+            if "nombre" in update_data:
+                raise ProductoConflictError(
+                    f"Ya existe un producto con el nombre '{update_data['nombre']}'"
+                )
+            # Si no es por nombre, reenviar la excepción original
+            raise
+
+    async def batch_create_productos(
+        self, productos_data: List[ProductoCreate]
+    ) -> List[ProductoResponse]:
         """
-        Calculate final price including selected options.
+        Crea múltiples productos en una sola operación.
 
-        Args:
-            db: Database session
-            product_id: Product ID
-            selected_options: List of selected option IDs
+        Parameters
+        ----------
+        productos_data : List[ProductoCreate]
+            Lista de datos para crear nuevos productos.
 
-        Returns:
-            Final calculated price
+        Returns
+        -------
+        List[ProductoResponse]
+            Lista de esquemas de respuesta con los datos de los productos creados.
 
-        Raises:
-            ProductoNotFoundError: If product doesn't exist
-            ProductoNotAvailableError: If product is not available
+        Raises
+        ------
+        ProductoConflictError
+            Si ya existe un producto con alguno de los nombres proporcionados.
         """
-        product = await self.get_product_by_id(db, product_id)
+        if not productos_data:
+            return []
 
-        if not product.disponible:
-            raise ProductoNotAvailableError(f"Product {product.nombre} is not available")
+        try:
+            # Crear modelos de productos desde los datos
+            producto_models = [
+                ProductoModel(
+                    id_categoria=producto_data.id_categoria,
+                    nombre=producto_data.nombre,
+                    descripcion=producto_data.descripcion,
+                    precio_base=producto_data.precio_base,
+                    imagen_path=producto_data.imagen_path,
+                    imagen_alt_text=producto_data.imagen_alt_text,
+                )
+                for producto_data in productos_data
+            ]
 
-        final_price = product.precio_base
+            # Persistir en la base de datos usando batch insert
+            created_productos = await self.repository.batch_insert(producto_models)
 
-        # Add option prices
-        if selected_options:
-            for option in product.opciones:
-                if option.id in selected_options and option.activo:
-                    final_price += option.precio_adicional
+            # Convertir y retornar como esquemas de respuesta
+            return [
+                ProductoResponse.model_validate(producto)
+                for producto in created_productos
+            ]
+        except IntegrityError:
+            # Capturar errores de integridad (nombre duplicado)
+            raise ProductoConflictError(
+                "Uno o más productos ya existen con el mismo nombre"
+            )
 
-        return final_price
-
-    async def delete_product(self, db: AsyncSession, product_id: int) -> bool:
+    async def batch_update_productos(
+        self, updates: List[Tuple[UUID, ProductoUpdate]]
+    ) -> List[ProductoResponse]:
         """
-        Delete product.
+        Actualiza múltiples productos en una sola operación.
 
-        Args:
-            db: Database session
-            product_id: Product ID
+        Parameters
+        ----------
+        updates : List[Tuple[UUID, ProductoUpdate]]
+            Lista de tuplas con el ID del producto y los datos para actualizarlo.
 
-        Returns:
-            True if deleted successfully
+        Returns
+        -------
+        List[ProductoResponse]
+            Lista de esquemas de respuesta con los datos de los productos actualizados.
 
-        Raises:
-            ProductoNotFoundError: If product doesn't exist
+        Raises
+        ------
+        ProductoNotFoundError
+            Si alguno de los productos no existe.
+        ProductoConflictError
+            Si hay conflictos de integridad (nombres duplicados).
         """
-        product = await self.get_product_by_id(db, product_id, include_relations=False)
-        return await self.producto_repo.delete(db, product_id)
+        if not updates:
+            return []
+
+        try:
+            # Preparar los datos para el repositorio
+            repository_updates = []
+
+            for producto_id, producto_data in updates:
+                # Convertir el esquema de actualización a un diccionario,
+                # excluyendo valores None (campos no proporcionados)
+                update_data = producto_data.model_dump(exclude_none=True)
+
+                if update_data:  # Solo incluir si hay datos para actualizar
+                    repository_updates.append((producto_id, update_data))
+
+            # Realizar actualización en lote
+            updated_productos = await self.repository.batch_update(repository_updates)
+
+            # Verificar si todos los productos fueron actualizados
+            if len(updated_productos) != len(repository_updates):
+                missing_ids = set(u[0] for u in repository_updates) - set(
+                    p.id for p in updated_productos
+                )
+                if missing_ids:
+                    raise ProductoNotFoundError(
+                        f"No se encontraron los productos con IDs: {missing_ids}"
+                    )
+
+            # Convertir y retornar como esquemas de respuesta
+            return [
+                ProductoResponse.model_validate(producto)
+                for producto in updated_productos
+            ]
+        except IntegrityError:
+            # Capturar errores de integridad (nombre duplicado)
+            raise ProductoConflictError(
+                "Una o más actualizaciones causaron conflictos de integridad"
+            )
+
+    async def get_productos_cards_by_categoria(
+        self, categoria_id: UUID | None = None, skip: int = 0, limit: int = 100
+    ) -> ProductoCardList:
+        """
+        Obtiene una lista paginada de productos en formato card (nombre, imagen, categoría).
+
+        Parameters
+        ----------
+        categoria_id : UUID | None, optional
+            ID de la categoría para filtrar productos. Si es None, retorna todos los productos.
+        skip : int, optional
+            Número de registros a omitir (offset), por defecto 0.
+        limit : int, optional
+            Número máximo de registros a retornar, por defecto 100.
+
+        Returns
+        -------
+        ProductoCardList
+            Esquema con la lista de productos en formato card y el total.
+
+        Raises
+        ------
+        ProductoValidationError
+            Si los parámetros de paginación son inválidos.
+        """
+        # Validar parámetros de entrada
+        if skip < 0:
+            raise ProductoValidationError(
+                "El parámetro 'skip' debe ser mayor o igual a cero"
+            )
+        if limit < 1:
+            raise ProductoValidationError("El parámetro 'limit' debe ser mayor a cero")
+
+        # Obtener productos desde el repositorio (con o sin filtro de categoría)
+        productos, total = await self.repository.get_all(skip, limit, categoria_id)
+
+        # Convertir modelos a esquemas de card
+        # Necesitamos incluir la información de la categoría para cada producto
+        producto_cards = []
+        for producto in productos:
+            # Construir el objeto ProductoCard con información de categoría
+            card_data = {
+                "id": producto.id,
+                "nombre": producto.nombre,
+                "imagen_path": producto.imagen_path,
+                "precio_base": producto.precio_base,
+                "categoria": {
+                    "id": producto.categoria.id,
+                    "nombre": producto.categoria.nombre,
+                    "imagen_path": producto.categoria.imagen_path,
+                },
+            }
+            producto_cards.append(ProductoCard.model_validate(card_data))
+
+        # Retornar esquema de lista
+        return ProductoCardList(items=producto_cards, total=total)

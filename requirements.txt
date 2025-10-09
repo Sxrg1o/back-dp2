@@ -10,6 +10,7 @@ cryptography==46.0.2
 dnspython==2.8.0
 ecdsa==0.19.1
 email-validator==2.3.0
+Faker==37.11.0
 fastapi==0.118.0
 fastapi-cli==0.0.13
 fastapi-cloud-cli==0.3.0
@@ -61,6 +62,5 @@ typing_extensions==4.15.0
 ujson==5.11.0
 urllib3==2.5.0
 uvicorn==0.37.0
-uvloop==0.21.0
 watchfiles==1.1.0
 websockets==15.0.1
