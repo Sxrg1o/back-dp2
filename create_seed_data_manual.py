@@ -218,57 +218,41 @@ class ManualSeedCreator:
             {
                 "nombre": "Mariscos",
                 "descripcion": "Langostinos, camarones, pulpo, calamar, conchas negras",
-                "icono": "🦐",
-                "nivel_riesgo": "alto",
                 "activo": True
             },
             {
                 "nombre": "Pescado",
                 "descripcion": "Lenguado, corvina, mero, bonito, atún",
-                "icono": "🐟",
-                "nivel_riesgo": "alto",
                 "activo": True
             },
             {
                 "nombre": "Moluscos",
                 "descripcion": "Conchas de abanico, pulpo, calamar",
-                "icono": "🐙",
-                "nivel_riesgo": "alto",
                 "activo": True
             },
             {
                 "nombre": "Gluten",
                 "descripcion": "Presente en masas, panes y algunos aderezos",
-                "icono": "🌾",
-                "nivel_riesgo": "medio",
                 "activo": True
             },
             {
                 "nombre": "Lácteos",
                 "descripcion": "Leche, queso, crema de leche",
-                "icono": "🥛",
-                "nivel_riesgo": "medio",
                 "activo": True
             },
             {
                 "nombre": "Ají",
                 "descripcion": "Rocoto, ají amarillo, ají limo",
-                "icono": "🌶️",
-                "nivel_riesgo": "bajo",
                 "activo": True
             },
             {
                 "nombre": "Soja",
                 "descripcion": "Salsa de soja y derivados",
-                "icono": "🫘",
-                "nivel_riesgo": "medio",
                 "activo": True
             },
             {
                 "nombre": "Frutos Secos",
                 "descripcion": "Maní, nueces, almendras",
-                "icono": "🥜",
-                "nivel_riesgo": "alto",
                 "activo": True
             }
         ]
@@ -352,9 +336,9 @@ class ManualSeedCreator:
         
         print(f"📊 Tipos de opciones procesados: {created_count} nuevos, {len(existing_tipos)} existentes")
     
-    def create_productos_sample(self):
-        """Crear algunos productos de ejemplo."""
-        self.log_step("CREANDO PRODUCTOS", "Creando productos de ejemplo")
+    def create_productos_completos(self):
+        """Crear todos los productos de la cevichería."""
+        self.log_step("CREANDO PRODUCTOS COMPLETOS", "Creando todos los productos del menú")
         
         if not self.created_ids['categorias']:
             print("❌ No hay categorías disponibles para crear productos")
@@ -364,39 +348,254 @@ class ManualSeedCreator:
         existing_productos = self.check_existing_data('/api/v1/productos')
         existing_names = [prod['nombre'] for prod in existing_productos]
         
-        # Usar la primera categoría disponible
-        categoria_id = self.created_ids['categorias'][0]
+        # Obtener categorías por nombre para asignar correctamente
+        categorias_response = self.make_request('GET', '/api/v1/categorias', params={'skip': 0, 'limit': 100})
+        categorias_map = {}
+        if categorias_response and 'items' in categorias_response:
+            for cat in categorias_response['items']:
+                categorias_map[cat['nombre']] = cat['id']
         
         productos_data = [
+            # CEVICHES
             {
                 "nombre": "Ceviche Clásico",
                 "descripcion": "Pescado fresco del día marinado en limón, cebolla morada, ají limo y cilantro. Acompañado de camote, choclo y cancha",
                 "precio_base": 25.00,
                 "imagen_path": "https://drive.google.com/file/d/14MotvG3-NJLZO5bUJjGqyMkOMMSzOZ7L/view?usp=sharing",
-                "imagen_alt_text": "Ceviche clásico peruano",
-                "id_categoria": categoria_id,
+                "id_categoria": categorias_map.get("Ceviches", self.created_ids['categorias'][0]),
                 "disponible": True,
                 "destacado": True
             },
+            {
+                "nombre": "Ceviche Mixto",
+                "descripcion": "Combinación de pescado, pulpo, calamar y langostinos marinados en limón con rocoto molido",
+                "precio_base": 35.00,
+                "imagen_path": "https://drive.google.com/file/d/18wtI2hmnm2mDhV73cU-ow6XJUUgzXVnP/view?usp=sharing",
+                "id_categoria": categorias_map.get("Ceviches", self.created_ids['categorias'][0]),
+                "disponible": True,
+                "destacado": True
+            },
+            {
+                "nombre": "Ceviche de Conchas Negras",
+                "descripcion": "Conchas negras frescas con su jugo natural, marinadas en limón y ají limo",
+                "precio_base": 45.00,
+                "imagen_path": "https://drive.google.com/file/d/1qsrha511qKobIjyCV91PDmJxPcOz8tOd/view?usp=sharing",
+                "id_categoria": categorias_map.get("Ceviches", self.created_ids['categorias'][0]),
+                "disponible": True,
+                "destacado": True
+            },
+            {
+                "nombre": "Ceviche de Pulpo",
+                "descripcion": "Pulpo tierno marinado en limón con cebolla morada y ají amarillo",
+                "precio_base": 38.00,
+                "imagen_path": "https://drive.google.com/file/d/1dIm4pjLo3E2g_Zop6rvNXc8OErAmHuBd/view?usp=sharing",
+                "id_categoria": categorias_map.get("Ceviches", self.created_ids['categorias'][0]),
+                "disponible": True,
+                "destacado": False
+            },
+            # TIRADITOS
+            {
+                "nombre": "Tiradito Clásico",
+                "descripcion": "Finas láminas de pescado con salsa de ají amarillo, rocoto y limón",
+                "precio_base": 28.00,
+                "imagen_path": "https://drive.google.com/file/d/1gXlCGBSnduNLxla2WA1kDnMnci7WpJHh/view?usp=sharing",
+                "id_categoria": categorias_map.get("Tiraditos", self.created_ids['categorias'][0]),
+                "disponible": True,
+                "destacado": True
+            },
+            {
+                "nombre": "Tiradito Nikkei",
+                "descripcion": "Láminas de pescado con salsa de ají amarillo, sillao y aceite de sésamo",
+                "precio_base": 32.00,
+                "imagen_path": "https://drive.google.com/file/d/1QNR6LydeY06cg_71gw376Iep3dZddvsI/view?usp=sharing",
+                "id_categoria": categorias_map.get("Tiraditos", self.created_ids['categorias'][0]),
+                "disponible": True,
+                "destacado": True
+            },
+            {
+                "nombre": "Tiradito de Atún",
+                "descripcion": "Láminas de atún fresco con salsa de maracuyá y ají limo",
+                "precio_base": 40.00,
+                "imagen_path": "https://drive.google.com/file/d/1Nv1fxVvE4zoEzdnQ44hoAhfQnRKiI2ov/view?usp=sharing",
+                "id_categoria": categorias_map.get("Tiraditos", self.created_ids['categorias'][0]),
+                "disponible": True,
+                "destacado": False
+            },
+            # CHICHARRONES
+            {
+                "nombre": "Chicharrón de Pescado",
+                "descripcion": "Trozos de pescado empanizados y fritos, servido con yucas y sarsa criolla",
+                "precio_base": 30.00,
+                "imagen_path": "https://drive.google.com/file/d/1-7MmcqQ0cWRFJUj2uuiXhGHHzGOZseDn/view?usp=sharing",
+                "id_categoria": categorias_map.get("Chicharrones", self.created_ids['categorias'][0]),
+                "disponible": True,
+                "destacado": True
+            },
+            {
+                "nombre": "Chicharrón de Calamar",
+                "descripcion": "Anillos de calamar fritos crujientes con salsa tártara",
+                "precio_base": 32.00,
+                "imagen_path": "https://drive.google.com/file/d/1i0KzBtnznRC71VMMT5ZUPnIbPky7vJYo/view?usp=sharing",
+                "id_categoria": categorias_map.get("Chicharrones", self.created_ids['categorias'][0]),
+                "disponible": True,
+                "destacado": True
+            },
+            {
+                "nombre": "Chicharrón Mixto",
+                "descripcion": "Combinación de pescado, calamar y langostinos fritos con yucas",
+                "precio_base": 38.00,
+                "imagen_path": "https://drive.google.com/file/d/1eoiQJqdR3SHjeBqcufrNGNnzZJKwgaUf/view?usp=sharing",
+                "id_categoria": categorias_map.get("Chicharrones", self.created_ids['categorias'][0]),
+                "disponible": True,
+                "destacado": False
+            },
+            # ARROCES
+            {
+                "nombre": "Arroz con Mariscos",
+                "descripcion": "Arroz marinero con langostinos, conchas, calamar y pulpo en salsa especial",
+                "precio_base": 35.00,
+                "imagen_path": "https://drive.google.com/file/d/1f5J4b16DYg2YYQ3dR4sH5DJzF9HsT2pq/view?usp=sharing",
+                "id_categoria": categorias_map.get("Arroces", self.created_ids['categorias'][0]),
+                "disponible": True,
+                "destacado": True
+            },
+            {
+                "nombre": "Arroz Chaufa de Mariscos",
+                "descripcion": "Arroz frito al wok con mariscos, cebolla china y sillao",
+                "precio_base": 32.00,
+                "imagen_path": "https://drive.google.com/file/d/13YU5MJXp2ai1-Utyo5v9IpS5Dg2te0gw/view?usp=sharing",
+                "id_categoria": categorias_map.get("Arroces", self.created_ids['categorias'][0]),
+                "disponible": True,
+                "destacado": False
+            },
+            {
+                "nombre": "Tacu Tacu con Mariscos",
+                "descripcion": "Tacu tacu de frijoles con mariscos salteados y salsa criolla",
+                "precio_base": 38.00,
+                "imagen_path": "https://drive.google.com/file/d/1UUncdgoiAw-af4HLBKz7_S0AiJAqDaV_/view?usp=sharing",
+                "id_categoria": categorias_map.get("Arroces", self.created_ids['categorias'][0]),
+                "disponible": True,
+                "destacado": True
+            },
+            # CAUSAS
+            {
+                "nombre": "Causa Rellena de Langostinos",
+                "descripcion": "Causa de papa amarilla rellena de langostinos en mayonesa, aguacate y huevo",
+                "precio_base": 28.00,
+                "imagen_path": "https://drive.google.com/file/d/1Q6PhiC41IaNk4-rzTf5hPJOS_UcXlxSi/view?usp=sharing",
+                "id_categoria": categorias_map.get("Causas", self.created_ids['categorias'][0]),
+                "disponible": True,
+                "destacado": True
+            },
+            {
+                "nombre": "Causa de Pulpo",
+                "descripcion": "Causa rellena de pulpo al olivo con aceitunas y palta",
+                "precio_base": 30.00,
+                "imagen_path": "https://drive.google.com/file/d/1qdxy8MH-XXac8cWwRWeMm2_GHsESYp_g/view?usp=sharing",
+                "id_categoria": categorias_map.get("Causas", self.created_ids['categorias'][0]),
+                "disponible": True,
+                "destacado": False
+            },
+            {
+                "nombre": "Causa Especial",
+                "descripcion": "Triple causa: langostinos, atún y palta con salsa golf",
+                "precio_base": 35.00,
+                "imagen_path": "https://drive.google.com/file/d/1busoPwLfMp0FgxAo9g1pc0kcPZazw1ln/view?usp=sharing",
+                "id_categoria": categorias_map.get("Causas", self.created_ids['categorias'][0]),
+                "disponible": True,
+                "destacado": True
+            },
+            # BEBIDAS
             {
                 "nombre": "Chicha Morada",
                 "descripcion": "Chicha morada natural preparada con maíz morado, piña y especias",
                 "precio_base": 8.00,
                 "imagen_path": "https://drive.google.com/file/d/1_w-Wk393ouoSeZdlkSLrWGbNMA7N61xj/view?usp=sharing",
-                "imagen_alt_text": "Chicha morada peruana",
-                "id_categoria": categoria_id,
+                "id_categoria": categorias_map.get("Bebidas", self.created_ids['categorias'][0]),
                 "disponible": True,
                 "destacado": True
             },
+            {
+                "nombre": "Limonada Frozen",
+                "descripcion": "Limonada frozen con hielo y hierba buena",
+                "precio_base": 10.00,
+                "imagen_path": "https://drive.google.com/file/d/1fbXhbre-TzuqinCYw5637T375-a8f1Go/view?usp=sharing",
+                "id_categoria": categorias_map.get("Bebidas", self.created_ids['categorias'][0]),
+                "disponible": True,
+                "destacado": True
+            },
+            {
+                "nombre": "Pisco Sour",
+                "descripcion": "Clásico pisco sour con pisco quebranta, limón, jarabe y clara de huevo",
+                "precio_base": 18.00,
+                "imagen_path": "https://drive.google.com/file/d/1V5NGG5U4HCbPTEOZkC3UC8OZQlQLSrlQ/view?usp=sharing",
+                "id_categoria": categorias_map.get("Bebidas", self.created_ids['categorias'][0]),
+                "disponible": True,
+                "destacado": True
+            },
+            {
+                "nombre": "Chilcano de Pisco",
+                "descripcion": "Pisco, ginger ale, limón y hielo",
+                "precio_base": 15.00,
+                "imagen_path": "https://drive.google.com/file/d/1QlMnH9bRnnJGrZT6MU8Yj2ddOkl9knKK/view?usp=sharing",
+                "id_categoria": categorias_map.get("Bebidas", self.created_ids['categorias'][0]),
+                "disponible": True,
+                "destacado": False
+            },
+            {
+                "nombre": "Inca Kola 1.5L",
+                "descripcion": "Gaseosa Inca Kola botella de 1.5 litros",
+                "precio_base": 7.00,
+                "imagen_path": "https://drive.google.com/file/d/14KIxsU03UQhq80ijLqdEDJXB0HLgLqr7/view?usp=sharing",
+                "id_categoria": categorias_map.get("Bebidas", self.created_ids['categorias'][0]),
+                "disponible": True,
+                "destacado": False
+            },
+            {
+                "nombre": "Agua Mineral San Luis",
+                "descripcion": "Agua mineral sin gas 625ml",
+                "precio_base": 4.00,
+                "imagen_path": "https://drive.google.com/file/d/1yJ9gMthGnBnaV6kXLM7pENmiFT5K5u3Z/view?usp=sharing",
+                "id_categoria": categorias_map.get("Bebidas", self.created_ids['categorias'][0]),
+                "disponible": True,
+                "destacado": False
+            },
+            # POSTRES
             {
                 "nombre": "Suspiro Limeño",
                 "descripcion": "Manjar blanco con merengue italiano y oporto",
                 "precio_base": 12.00,
                 "imagen_path": "https://drive.google.com/file/d/156YIcyAetJUtoqk-8b07LWETKNdjp4IO/view?usp=sharing",
-                "imagen_alt_text": "Suspiro limeño tradicional",
-                "id_categoria": categoria_id,
+                "id_categoria": categorias_map.get("Postres", self.created_ids['categorias'][0]),
                 "disponible": True,
                 "destacado": True
+            },
+            {
+                "nombre": "Mazamorra Morada",
+                "descripcion": "Mazamorra de maíz morado con frutas y arroz con leche",
+                "precio_base": 10.00,
+                "imagen_path": "https://drive.google.com/file/d/1rXynhqY70wt9UNn0haszs2y0s_5Me6ZF/view?usp=sharing",
+                "id_categoria": categorias_map.get("Postres", self.created_ids['categorias'][0]),
+                "disponible": True,
+                "destacado": False
+            },
+            {
+                "nombre": "Picarones",
+                "descripcion": "Picarones de zapallo y camote con miel de chancaca",
+                "precio_base": 12.00,
+                "imagen_path": "https://drive.google.com/file/d/1SnEdVTnPECzLKSRwnEHuErbMPDAHFi5h/view?usp=sharing",
+                "id_categoria": categorias_map.get("Postres", self.created_ids['categorias'][0]),
+                "disponible": True,
+                "destacado": True
+            },
+            {
+                "nombre": "Crema Volteada",
+                "descripcion": "Flan de huevo con caramelo",
+                "precio_base": 10.00,
+                "imagen_path": "https://drive.google.com/file/d/1WxJ46tSOhXDVaVi92_4NRx5lk5NHc80e/view?usp=sharing",
+                "id_categoria": categorias_map.get("Postres", self.created_ids['categorias'][0]),
+                "disponible": True,
+                "destacado": False
             }
         ]
         
@@ -420,9 +619,9 @@ class ManualSeedCreator:
         
         print(f"📊 Productos procesados: {created_count} nuevos, {len(existing_productos)} existentes")
     
-    def create_producto_opciones_sample(self):
-        """Crear algunas opciones de productos de ejemplo."""
-        self.log_step("CREANDO OPCIONES DE PRODUCTOS", "Creando opciones de productos de ejemplo")
+    def create_producto_opciones_completas(self):
+        """Crear opciones completas para productos."""
+        self.log_step("CREANDO OPCIONES DE PRODUCTOS", "Creando opciones completas de productos")
         
         if not self.created_ids['productos'] or not self.created_ids['tipos_opciones']:
             print("❌ No hay productos o tipos de opciones disponibles")
@@ -431,46 +630,133 @@ class ManualSeedCreator:
         # Verificar opciones existentes
         existing_opciones = self.check_existing_data('/api/v1/producto-opciones')
         
-        # Usar el primer producto y tipo de opción disponibles
-        producto_id = self.created_ids['productos'][0]
-        tipo_opcion_id = self.created_ids['tipos_opciones'][0]
+        # Obtener productos y tipos de opciones por nombre
+        productos_response = self.make_request('GET', '/api/v1/productos', params={'skip': 0, 'limit': 100})
+        productos_map = {}
+        if productos_response and 'items' in productos_response:
+            for prod in productos_response['items']:
+                productos_map[prod['nombre']] = prod['id']
         
-        opciones_data = [
-            {
-                "id_producto": producto_id,
-                "id_tipo_opcion": tipo_opcion_id,
-                "nombre": "Sin ají",
-                "precio_adicional": 0.00,
-                "activo": True,
-                "orden": 1
-            },
-            {
-                "id_producto": producto_id,
-                "id_tipo_opcion": tipo_opcion_id,
-                "nombre": "Ají suave",
-                "precio_adicional": 0.00,
-                "activo": True,
-                "orden": 2
-            },
-            {
-                "id_producto": producto_id,
-                "id_tipo_opcion": tipo_opcion_id,
-                "nombre": "Ají normal",
-                "precio_adicional": 0.00,
-                "activo": True,
-                "orden": 3
-            }
+        tipos_response = self.make_request('GET', '/api/v1/tipos-opciones', params={'skip': 0, 'limit': 100})
+        tipos_map = {}
+        if tipos_response and 'items' in tipos_response:
+            for tipo in tipos_response['items']:
+                tipos_map[tipo['codigo']] = tipo['id']
+        
+        # Opciones de Nivel de Ají (aplica a ceviches, tiraditos, arroces)
+        productos_con_aji = [
+            "Ceviche Clásico", "Ceviche Mixto", "Ceviche de Conchas Negras", "Ceviche de Pulpo",
+            "Tiradito Clásico", "Tiradito Nikkei", "Tiradito de Atún",
+            "Arroz con Mariscos", "Arroz Chaufa de Mariscos", "Tacu Tacu con Mariscos"
+        ]
+        
+        opciones_nivel_aji = [
+            ("Sin ají", 0.00, 1),
+            ("Ají suave", 0.00, 2),
+            ("Ají normal", 0.00, 3),
+            ("Ají picante", 0.00, 4),
+            ("Ají extra picante", 2.00, 5),  # Cobra extra por rocoto especial
         ]
         
         created_count = 0
-        for opcion_data in opciones_data:
-            response = self.make_request('POST', '/api/v1/producto-opciones', opcion_data)
-            if response and 'id' in response:
-                self.created_ids['producto_opciones'].append(response['id'])
-                print(f"✅ Opción creada: {opcion_data['nombre']}")
-                created_count += 1
-            else:
-                print(f"❌ Error creando opción: {opcion_data['nombre']}")
+        for nombre_producto in productos_con_aji:
+            if nombre_producto in productos_map and "nivel_aji" in tipos_map:
+                for nombre, precio, orden in opciones_nivel_aji:
+                    opcion_data = {
+                        "id_producto": productos_map[nombre_producto],
+                        "id_tipo_opcion": tipos_map["nivel_aji"],
+                        "nombre": nombre,
+                        "precio_adicional": precio,
+                        "activo": True,
+                        "orden": orden
+                    }
+                    response = self.make_request('POST', '/api/v1/producto-opciones', opcion_data)
+                    if response and 'id' in response:
+                        self.created_ids['producto_opciones'].append(response['id'])
+                        created_count += 1
+        
+        # Opciones de Acompañamiento (para ceviches y chicharrones)
+        productos_con_acompanamiento = [
+            "Ceviche Clásico", "Ceviche Mixto", "Ceviche de Conchas Negras", "Ceviche de Pulpo",
+            "Chicharrón de Pescado", "Chicharrón de Calamar", "Chicharrón Mixto"
+        ]
+        
+        opciones_acompanamiento = [
+            ("Con camote", 3.00, 1),
+            ("Con choclo", 3.00, 2),
+            ("Con yuca", 3.50, 3),
+            ("Con cancha", 2.00, 4),
+            ("Mixto (camote + choclo)", 5.00, 5),
+        ]
+        
+        for nombre_producto in productos_con_acompanamiento:
+            if nombre_producto in productos_map and "acompanamiento" in tipos_map:
+                for nombre, precio, orden in opciones_acompanamiento:
+                    opcion_data = {
+                        "id_producto": productos_map[nombre_producto],
+                        "id_tipo_opcion": tipos_map["acompanamiento"],
+                        "nombre": nombre,
+                        "precio_adicional": precio,
+                        "activo": True,
+                        "orden": orden
+                    }
+                    response = self.make_request('POST', '/api/v1/producto-opciones', opcion_data)
+                    if response and 'id' in response:
+                        self.created_ids['producto_opciones'].append(response['id'])
+                        created_count += 1
+        
+        # Opciones de Temperatura (para bebidas)
+        productos_bebidas = ["Chicha Morada", "Limonada Frozen", "Inca Kola 1.5L"]
+        
+        opciones_temperatura = [
+            ("Natural", 0.00, 1),
+            ("Helada", 1.00, 2),
+            ("Con hielo", 0.50, 3),
+        ]
+        
+        for nombre_producto in productos_bebidas:
+            if nombre_producto in productos_map and "temperatura" in tipos_map:
+                for nombre, precio, orden in opciones_temperatura:
+                    opcion_data = {
+                        "id_producto": productos_map[nombre_producto],
+                        "id_tipo_opcion": tipos_map["temperatura"],
+                        "nombre": nombre,
+                        "precio_adicional": precio,
+                        "activo": True,
+                        "orden": orden
+                    }
+                    response = self.make_request('POST', '/api/v1/producto-opciones', opcion_data)
+                    if response and 'id' in response:
+                        self.created_ids['producto_opciones'].append(response['id'])
+                        created_count += 1
+        
+        # Opciones de Tamaño (para algunos platos)
+        productos_con_tamano = [
+            "Ceviche Clásico", "Ceviche Mixto", "Arroz con Mariscos", 
+            "Chicha Morada", "Limonada Frozen"
+        ]
+        
+        opciones_tamano = [
+            ("Personal", 0.00, 1),
+            ("Para 2 personas", 15.00, 2),
+            ("Familiar (4 personas)", 30.00, 3),
+        ]
+        
+        for nombre_producto in productos_con_tamano:
+            if nombre_producto in productos_map and "tamano" in tipos_map:
+                for nombre, precio, orden in opciones_tamano:
+                    opcion_data = {
+                        "id_producto": productos_map[nombre_producto],
+                        "id_tipo_opcion": tipos_map["tamano"],
+                        "nombre": nombre,
+                        "precio_adicional": precio,
+                        "activo": True,
+                        "orden": orden
+                    }
+                    response = self.make_request('POST', '/api/v1/producto-opciones', opcion_data)
+                    if response and 'id' in response:
+                        self.created_ids['producto_opciones'].append(response['id'])
+                        created_count += 1
         
         print(f"📊 Opciones de productos creadas: {created_count}")
     
@@ -494,10 +780,10 @@ class ManualSeedCreator:
             self.create_tipos_opciones()
             time.sleep(1)
             
-            self.create_productos_sample()
+            self.create_productos_completos()
             time.sleep(1)
             
-            self.create_producto_opciones_sample()
+            self.create_producto_opciones_completas()
             
             # Resumen final
             self.log_step("RESUMEN FINAL", "Datos creados exitosamente")
