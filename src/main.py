@@ -27,6 +27,7 @@ async def auto_seed_database():
     ejecuta el script de seed para poblar la BD con datos iniciales.
     """
     try:
+        import os
         from sqlalchemy import select, func
         from src.core.database import DatabaseManager
         from src.models.menu.categoria_model import CategoriaModel
@@ -40,6 +41,9 @@ async def auto_seed_database():
             query = select(func.count(CategoriaModel.id))
             result = await session.execute(query)
             count = result.scalar()
+            
+            logger.info(f"📊 Categorías encontradas: {count}")
+            logger.info(f"📊 DATABASE_URL: {os.getenv('DATABASE_URL', 'No configurada')}")
             
             if count == 0:
                 logger.info("🌱 Base de datos vacía detectada. Ejecutando seed automático...")
@@ -59,7 +63,9 @@ async def auto_seed_database():
                 logger.info(f"✅ Base de datos ya contiene datos ({count} categorías). Skip seed.")
             
     except Exception as e:
+        import traceback
         logger.error(f"❌ Error al ejecutar auto-seed: {e}")
+        logger.error(f"Stack trace completo:\n{traceback.format_exc()}")
         logger.warning("⚠️ La aplicación continuará sin datos de seed")
 
 

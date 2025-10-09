@@ -126,43 +126,43 @@ class CevicheriaSeeder:
             {
                 "nombre": "Ceviches",
                 "descripcion": "Ceviches frescos del día con pescados y mariscos selectos",
-                "imagen_path": "/static/categorias/ceviches.jpg",
+                "imagen_path": "https://drive.google.com/file/d/1ZaYA_c1ZGfl6tsPe80-fwSzpHR_LYzSZ/view?usp=sharing",
                 "activo": True
             },
             {
                 "nombre": "Tiraditos",
                 "descripcion": "Finas láminas de pescado fresco con salsas especiales",
-                "imagen_path": "/static/categorias/tiraditos.jpg",
+                "imagen_path": "https://drive.google.com/file/d/10xFfoYsezQRTC3EvLKm28BJGnImhAJjO/view?usp=sharing",
                 "activo": True
             },
             {
                 "nombre": "Chicharrones",
                 "descripcion": "Chicharrones crujientes de pescado y mariscos",
-                "imagen_path": "/static/categorias/chicharrones.jpg",
+                "imagen_path": "https://drive.google.com/file/d/1FYmm0IoKTx3tAgumxpZfSIx4GIrPtD4G/view?usp=sharing",
                 "activo": True
             },
             {
                 "nombre": "Arroces",
                 "descripcion": "Arroces marinos con mariscos frescos",
-                "imagen_path": "/static/categorias/arroces.jpg",
+                "imagen_path": "https://drive.google.com/file/d/14xM_kLEcGtsOORHEp5MCDMCJIGgzs45J/view?usp=sharing",
                 "activo": True
             },
             {
                 "nombre": "Causas",
                 "descripcion": "Causas rellenas de diferentes mariscos",
-                "imagen_path": "/static/categorias/causas.jpg",
+                "imagen_path": "https://drive.google.com/file/d/1kRcHUgMqWTHDEX5XVUYNlGPTnkMOQRsa/view?usp=sharing",
                 "activo": True
             },
             {
                 "nombre": "Bebidas",
                 "descripcion": "Bebidas refrescantes, chicha morada, limonada y más",
-                "imagen_path": "/static/categorias/bebidas.jpg",
+                "imagen_path": "https://drive.google.com/file/d/1AhNWmlJwuWb0XzXV8Zjs0xD2ZPHT6jzm/view?usp=sharing",
                 "activo": True
             },
             {
                 "nombre": "Postres",
                 "descripcion": "Postres tradicionales peruanos",
-                "imagen_path": "/static/categorias/postres.jpg",
+                "imagen_path": "https://drive.google.com/file/d/1gxaT1PCMx1lQ-Hvcug9ujWr3RnVK3WPd/view?usp=sharing",
                 "activo": True
             }
         ]
@@ -247,7 +247,7 @@ class CevicheriaSeeder:
                 "descripcion": "Pescado fresco del día marinado en limón, cebolla morada, ají limo y cilantro. Acompañado de camote, choclo y cancha",
                 "precio_base": Decimal("25.00"),
                 "id_categoria": self.categorias["Ceviches"].id,
-                "imagen_path": "/static/productos/ceviche_clasico.jpg",
+                "imagen_path": "https://drive.google.com/file/d/14MotvG3-NJLZO5bUJjGqyMkOMMSzOZ7L/view?usp=sharing",
                 "disponible": True,
                 "destacado": True
             },
@@ -256,7 +256,7 @@ class CevicheriaSeeder:
                 "descripcion": "Combinación de pescado, pulpo, calamar y langostinos marinados en limón con rocoto molido",
                 "precio_base": Decimal("35.00"),
                 "id_categoria": self.categorias["Ceviches"].id,
-                "imagen_path": "/static/productos/ceviche_mixto.jpg",
+                "imagen_path": "https://drive.google.com/file/d/18wtI2hmnm2mDhV73cU-ow6XJUUgzXVnP/view?usp=sharing",
                 "disponible": True,
                 "destacado": True
             },
@@ -265,7 +265,7 @@ class CevicheriaSeeder:
                 "descripcion": "Conchas negras frescas con su jugo natural, marinadas en limón y ají limo",
                 "precio_base": Decimal("45.00"),
                 "id_categoria": self.categorias["Ceviches"].id,
-                "imagen_path": "/static/productos/ceviche_conchas.jpg",
+                "imagen_path": "https://drive.google.com/file/d/1qsrha511qKobIjyCV91PDmJxPcOz8tOd/view?usp=sharing",
                 "disponible": True,
                 "destacado": True
             },
@@ -274,7 +274,7 @@ class CevicheriaSeeder:
                 "descripcion": "Pulpo tierno marinado en limón con cebolla morada y ají amarillo",
                 "precio_base": Decimal("38.00"),
                 "id_categoria": self.categorias["Ceviches"].id,
-                "imagen_path": "/static/productos/ceviche_pulpo.jpg",
+                "imagen_path": "https://drive.google.com/file/d/1dIm4pjLo3E2g_Zop6rvNXc8OErAmHuBd/view?usp=sharing",
                 "disponible": True,
                 "destacado": False
             },
@@ -284,7 +284,7 @@ class CevicheriaSeeder:
                 "descripcion": "Finas láminas de pescado con salsa de ají amarillo, rocoto y limón",
                 "precio_base": Decimal("28.00"),
                 "id_categoria": self.categorias["Tiraditos"].id,
-                "imagen_path": "/static/productos/tiradito_clasico.jpg",
+                "imagen_path": "https://drive.google.com/file/d/1gXlCGBSnduNLxla2WA1kDnMnci7WpJHh/view?usp=sharing",
                 "disponible": True,
                 "destacado": True
             },
@@ -293,7 +293,7 @@ class CevicheriaSeeder:
                 "descripcion": "Láminas de pescado con salsa de ají amarillo, sillao y aceite de sésamo",
                 "precio_base": Decimal("32.00"),
                 "id_categoria": self.categorias["Tiraditos"].id,
-                "imagen_path": "/static/productos/tiradito_nikkei.jpg",
+                "imagen_path": "https://drive.google.com/file/d/1QNR6LydeY06cg_71gw376Iep3dZddvsI/view?usp=sharing",
                 "disponible": True,
                 "destacado": True
             },
@@ -302,7 +302,7 @@ class CevicheriaSeeder:
                 "descripcion": "Láminas de atún fresco con salsa de maracuyá y ají limo",
                 "precio_base": Decimal("40.00"),
                 "id_categoria": self.categorias["Tiraditos"].id,
-                "imagen_path": "/static/productos/tiradito_atun.jpg",
+                "imagen_path": "https://drive.google.com/file/d/1Nv1fxVvE4zoEzdnQ44hoAhfQnRKiI2ov/view?usp=sharing",
                 "disponible": True,
                 "destacado": False
             },
@@ -312,7 +312,7 @@ class CevicheriaSeeder:
                 "descripcion": "Trozos de pescado empanizados y fritos, servido con yucas y sarsa criolla",
                 "precio_base": Decimal("30.00"),
                 "id_categoria": self.categorias["Chicharrones"].id,
-                "imagen_path": "/static/productos/chicharron_pescado.jpg",
+                "imagen_path": "https://drive.google.com/file/d/1-7MmcqQ0cWRFJUj2uuiXhGHHzGOZseDn/view?usp=sharing",
                 "disponible": True,
                 "destacado": True
             },
@@ -321,7 +321,7 @@ class CevicheriaSeeder:
                 "descripcion": "Anillos de calamar fritos crujientes con salsa tártara",
                 "precio_base": Decimal("32.00"),
                 "id_categoria": self.categorias["Chicharrones"].id,
-                "imagen_path": "/static/productos/chicharron_calamar.jpg",
+                "imagen_path": "https://drive.google.com/file/d/1i0KzBtnznRC71VMMT5ZUPnIbPky7vJYo/view?usp=sharing",
                 "disponible": True,
                 "destacado": True
             },
@@ -330,7 +330,7 @@ class CevicheriaSeeder:
                 "descripcion": "Combinación de pescado, calamar y langostinos fritos con yucas",
                 "precio_base": Decimal("38.00"),
                 "id_categoria": self.categorias["Chicharrones"].id,
-                "imagen_path": "/static/productos/chicharron_mixto.jpg",
+                "imagen_path": "https://drive.google.com/file/d/1eoiQJqdR3SHjeBqcufrNGNnzZJKwgaUf/view?usp=sharing",
                 "disponible": True,
                 "destacado": False
             },
@@ -340,7 +340,7 @@ class CevicheriaSeeder:
                 "descripcion": "Arroz marinero con langostinos, conchas, calamar y pulpo en salsa especial",
                 "precio_base": Decimal("35.00"),
                 "id_categoria": self.categorias["Arroces"].id,
-                "imagen_path": "/static/productos/arroz_mariscos.jpg",
+                "imagen_path": "https://drive.google.com/file/d/1f5J4b16DYg2YYQ3dR4sH5DJzF9HsT2pq/view?usp=sharing",
                 "disponible": True,
                 "destacado": True
             },
@@ -349,7 +349,7 @@ class CevicheriaSeeder:
                 "descripcion": "Arroz frito al wok con mariscos, cebolla china y sillao",
                 "precio_base": Decimal("32.00"),
                 "id_categoria": self.categorias["Arroces"].id,
-                "imagen_path": "/static/productos/chaufa_mariscos.jpg",
+                "imagen_path": "https://drive.google.com/file/d/13YU5MJXp2ai1-Utyo5v9IpS5Dg2te0gw/view?usp=sharing",
                 "disponible": True,
                 "destacado": False
             },
@@ -358,7 +358,7 @@ class CevicheriaSeeder:
                 "descripcion": "Tacu tacu de frijoles con mariscos salteados y salsa criolla",
                 "precio_base": Decimal("38.00"),
                 "id_categoria": self.categorias["Arroces"].id,
-                "imagen_path": "/static/productos/tacutacu_mariscos.jpg",
+                "imagen_path": "https://drive.google.com/file/d/1UUncdgoiAw-af4HLBKz7_S0AiJAqDaV_/view?usp=sharing",
                 "disponible": True,
                 "destacado": True
             },
@@ -368,7 +368,7 @@ class CevicheriaSeeder:
                 "descripcion": "Causa de papa amarilla rellena de langostinos en mayonesa, aguacate y huevo",
                 "precio_base": Decimal("28.00"),
                 "id_categoria": self.categorias["Causas"].id,
-                "imagen_path": "/static/productos/causa_langostinos.jpg",
+                "imagen_path": "https://drive.google.com/file/d/1Q6PhiC41IaNk4-rzTf5hPJOS_UcXlxSi/view?usp=sharing",
                 "disponible": True,
                 "destacado": True
             },
@@ -377,7 +377,7 @@ class CevicheriaSeeder:
                 "descripcion": "Causa rellena de pulpo al olivo con aceitunas y palta",
                 "precio_base": Decimal("30.00"),
                 "id_categoria": self.categorias["Causas"].id,
-                "imagen_path": "/static/productos/causa_pulpo.jpg",
+                "imagen_path": "https://drive.google.com/file/d/1qdxy8MH-XXac8cWwRWeMm2_GHsESYp_g/view?usp=sharing",
                 "disponible": True,
                 "destacado": False
             },
@@ -386,7 +386,7 @@ class CevicheriaSeeder:
                 "descripcion": "Triple causa: langostinos, atún y palta con salsa golf",
                 "precio_base": Decimal("35.00"),
                 "id_categoria": self.categorias["Causas"].id,
-                "imagen_path": "/static/productos/causa_especial.jpg",
+                "imagen_path": "https://drive.google.com/file/d/1busoPwLfMp0FgxAo9g1pc0kcPZazw1ln/view?usp=sharing",
                 "disponible": True,
                 "destacado": True
             },
@@ -396,7 +396,7 @@ class CevicheriaSeeder:
                 "descripcion": "Chicha morada natural preparada con maíz morado, piña y especias",
                 "precio_base": Decimal("8.00"),
                 "id_categoria": self.categorias["Bebidas"].id,
-                "imagen_path": "/static/productos/chicha_morada.jpg",
+                "imagen_path": "https://drive.google.com/file/d/1_w-Wk393ouoSeZdlkSLrWGbNMA7N61xj/view?usp=sharing",
                 "disponible": True,
                 "destacado": True
             },
@@ -405,7 +405,7 @@ class CevicheriaSeeder:
                 "descripcion": "Limonada frozen con hielo y hierba buena",
                 "precio_base": Decimal("10.00"),
                 "id_categoria": self.categorias["Bebidas"].id,
-                "imagen_path": "/static/productos/limonada_frozen.jpg",
+                "imagen_path": "https://drive.google.com/file/d/1fbXhbre-TzuqinCYw5637T375-a8f1Go/view?usp=sharing",
                 "disponible": True,
                 "destacado": True
             },
@@ -414,7 +414,7 @@ class CevicheriaSeeder:
                 "descripcion": "Clásico pisco sour con pisco quebranta, limón, jarabe y clara de huevo",
                 "precio_base": Decimal("18.00"),
                 "id_categoria": self.categorias["Bebidas"].id,
-                "imagen_path": "/static/productos/pisco_sour.jpg",
+                "imagen_path": "https://drive.google.com/file/d/1V5NGG5U4HCbPTEOZkC3UC8OZQlQLSrlQ/view?usp=sharing",
                 "disponible": True,
                 "destacado": True
             },
@@ -423,7 +423,7 @@ class CevicheriaSeeder:
                 "descripcion": "Pisco, ginger ale, limón y hielo",
                 "precio_base": Decimal("15.00"),
                 "id_categoria": self.categorias["Bebidas"].id,
-                "imagen_path": "/static/productos/chilcano.jpg",
+                "imagen_path": "https://drive.google.com/file/d/1QlMnH9bRnnJGrZT6MU8Yj2ddOkl9knKK/view?usp=sharing",
                 "disponible": True,
                 "destacado": False
             },
@@ -432,7 +432,7 @@ class CevicheriaSeeder:
                 "descripcion": "Gaseosa Inca Kola botella de 1.5 litros",
                 "precio_base": Decimal("7.00"),
                 "id_categoria": self.categorias["Bebidas"].id,
-                "imagen_path": "/static/productos/inca_kola.jpg",
+                "imagen_path": "https://drive.google.com/file/d/14KIxsU03UQhq80ijLqdEDJXB0HLgLqr7/view?usp=sharing",
                 "disponible": True,
                 "destacado": False
             },
@@ -441,7 +441,7 @@ class CevicheriaSeeder:
                 "descripcion": "Agua mineral sin gas 625ml",
                 "precio_base": Decimal("4.00"),
                 "id_categoria": self.categorias["Bebidas"].id,
-                "imagen_path": "/static/productos/agua_mineral.jpg",
+                "imagen_path": "https://drive.google.com/file/d/1yJ9gMthGnBnaV6kXLM7pENmiFT5K5u3Z/view?usp=sharing",
                 "disponible": True,
                 "destacado": False
             },
@@ -451,7 +451,7 @@ class CevicheriaSeeder:
                 "descripcion": "Manjar blanco con merengue italiano y oporto",
                 "precio_base": Decimal("12.00"),
                 "id_categoria": self.categorias["Postres"].id,
-                "imagen_path": "/static/productos/suspiro_limeno.jpg",
+                "imagen_path": "https://drive.google.com/file/d/156YIcyAetJUtoqk-8b07LWETKNdjp4IO/view?usp=sharing",
                 "disponible": True,
                 "destacado": True
             },
@@ -460,7 +460,7 @@ class CevicheriaSeeder:
                 "descripcion": "Mazamorra de maíz morado con frutas y arroz con leche",
                 "precio_base": Decimal("10.00"),
                 "id_categoria": self.categorias["Postres"].id,
-                "imagen_path": "/static/productos/mazamorra_morada.jpg",
+                "imagen_path": "https://drive.google.com/file/d/1rXynhqY70wt9UNn0haszs2y0s_5Me6ZF/view?usp=sharing",
                 "disponible": True,
                 "destacado": False
             },
@@ -469,7 +469,7 @@ class CevicheriaSeeder:
                 "descripcion": "Picarones de zapallo y camote con miel de chancaca",
                 "precio_base": Decimal("12.00"),
                 "id_categoria": self.categorias["Postres"].id,
-                "imagen_path": "/static/productos/picarones.jpg",
+                "imagen_path": "https://drive.google.com/file/d/1SnEdVTnPECzLKSRwnEHuErbMPDAHFi5h/view?usp=sharing",
                 "disponible": True,
                 "destacado": True
             },
@@ -478,7 +478,7 @@ class CevicheriaSeeder:
                 "descripcion": "Flan de huevo con caramelo",
                 "precio_base": Decimal("10.00"),
                 "id_categoria": self.categorias["Postres"].id,
-                "imagen_path": "/static/productos/crema_volteada.jpg",
+                "imagen_path": "https://drive.google.com/file/d/1WxJ46tSOhXDVaVi92_4NRx5lk5NHc80e/view?usp=sharing",
                 "disponible": True,
                 "destacado": False
             }
