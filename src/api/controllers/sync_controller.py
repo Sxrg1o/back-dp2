@@ -21,7 +21,7 @@ from src.api.schemas.categoria_schema import CategoriaCreate, CategoriaUpdate
 # Configuración del logger
 logger = logging.getLogger(__name__)
 
-router = APIRouter(prefix="/api/v1/sync", tags=["Sincronización"])
+router = APIRouter(prefix="/sync", tags=["Sincronización"])
 
 
 @router.post(
