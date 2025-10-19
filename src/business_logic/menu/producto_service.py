@@ -16,6 +16,7 @@ from src.api.schemas.producto_schema import (
     ProductoList,
     ProductoCard,
     ProductoCardList,
+    ProductoConOpcionesResponse,
 )
 from src.business_logic.exceptions.producto_exceptions import (
     ProductoValidationError,
