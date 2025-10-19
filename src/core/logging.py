@@ -14,6 +14,13 @@ def configure_logging() -> None:
     """Configure structured logging for the application."""
     settings = get_settings()
 
+    # Configurar explícitamente los niveles de log para SQLAlchemy
+    logging.getLogger("sqlalchemy").setLevel(logging.ERROR)
+    logging.getLogger("sqlalchemy.engine").setLevel(logging.ERROR)
+    logging.getLogger("sqlalchemy.pool").setLevel(logging.ERROR)
+    logging.getLogger("sqlalchemy.dialects").setLevel(logging.ERROR)
+    logging.getLogger("sqlalchemy.orm").setLevel(logging.ERROR)
+    
     # Configure standard library logging
     logging.basicConfig(
         level=getattr(logging, settings.log_level.upper()),
@@ -100,7 +107,12 @@ def get_logging_config() -> Dict[str, Any]:
                 "propagate": False,
             },
             "sqlalchemy": {
-                "level": "WARNING",
+                "level": "ERROR",
+                "handlers": ["default"],
+                "propagate": False,
+            },
+            "sqlalchemy.engine": {
+                "level": "ERROR",
                 "handlers": ["default"],
                 "propagate": False,
             },

@@ -2,7 +2,7 @@
 Repositorio para la gestión de productos en el sistema.
 """
 
-from typing import Optional, List, Tuple
+from typing import Optional, List, Tuple, Dict, Any
 from uuid import UUID
 
 from sqlalchemy.exc import SQLAlchemyError
@@ -169,21 +169,17 @@ class ProductoRepository:
                 update(ProductoModel)
                 .where(ProductoModel.id == producto_id)
                 .values(**valid_fields)
-                .returning(ProductoModel)
             )
 
             result = await self.session.execute(stmt)
             await self.session.commit()
-
-            # Obtener el resultado actualizado
-            updated_producto = result.scalars().first()
-
+            
+            # Consultar el producto actualizado
+            updated_producto = await self.get_by_id(producto_id)
+            
             # Si no se encontró el producto, retornar None
             if not updated_producto:
                 return None
-
-            # Refrescar el objeto desde la base de datos
-            await self.session.refresh(updated_producto)
 
             return updated_producto
         except SQLAlchemyError:
@@ -238,3 +234,132 @@ class ProductoRepository:
         except SQLAlchemyError as e:
             await self.session.rollback()
             raise e
+
+    async def batch_insert(self, productos: List[ProductoModel]) -> List[ProductoModel]:
+        """
+        Inserta múltiples productos en la base de datos en una sola operación.
+        
+        Parameters
+        ----------
+        productos : List[ProductoModel]
+            Lista de instancias de productos a insertar.
+            
+        Returns
+        -------
+        List[ProductoModel]
+            Lista de los productos insertados con sus IDs asignados.
+            
+        Raises
+        ------
+        SQLAlchemyError
+            Si ocurre un error durante la operación en la base de datos.
+        """
+        if not productos:
+            return []
+            
+        try:
+            # Agregar todos los productos a la sesión
+            self.session.add_all(productos)
+            
+            # Flush para generar los IDs y otras columnas generadas automáticamente
+            await self.session.flush()
+            
+            # Commit para confirmar la transacción
+            await self.session.commit()
+            
+            # Refrescar todos los productos para asegurar que tengan sus datos actualizados
+            for producto in productos:
+                await self.session.refresh(producto)
+                
+            return productos
+        except SQLAlchemyError:
+            await self.session.rollback()
+            raise
+            
+    async def batch_update(self, updates: List[Tuple[UUID, Dict[str, Any]]]) -> List[ProductoModel]:
+        """
+        Actualiza múltiples productos en la base de datos en una operación eficiente.
+        
+        Parameters
+        ----------
+        updates : List[Tuple[UUID, Dict[str, Any]]]
+            Lista de tuplas donde cada tupla contiene el ID del producto y un diccionario
+            con los campos a actualizar y sus nuevos valores.
+            
+        Returns
+        -------
+        List[ProductoModel]
+            Lista de los productos actualizados.
+            
+        Raises
+        ------
+        SQLAlchemyError
+            Si ocurre un error durante la operación en la base de datos.
+        """
+        if not updates:
+            return []
+            
+        try:
+            # Recolectar todos los IDs de productos que se actualizarán
+            product_ids = [product_id for product_id, _ in updates]
+            
+            # Realizar actualizaciones utilizando un enfoque más eficiente
+            # que minimiza el número de consultas SQL
+            from sqlalchemy import bindparam
+            
+            # Agrupar actualizaciones por conjuntos de campos a actualizar
+            updates_by_fields = {}
+            
+            for producto_id, update_data in updates:
+                # Filtrar solo los campos válidos
+                valid_fields = {
+                    k: v for k, v in update_data.items() 
+                    if hasattr(ProductoModel, k) and k != "id"
+                }
+                
+                if not valid_fields:
+                    continue
+                    
+                # Crear una clave basada en los nombres de los campos
+                fields_key = frozenset(valid_fields.keys())
+                
+                if fields_key not in updates_by_fields:
+                    updates_by_fields[fields_key] = []
+                    
+                # Añadir esta actualización al grupo correspondiente
+                update_with_id = valid_fields.copy()
+                update_with_id['id'] = producto_id
+                updates_by_fields[fields_key].append(update_with_id)
+                
+            # Para cada grupo de actualizaciones con el mismo conjunto de campos
+            for fields, field_updates in updates_by_fields.items():
+                if not field_updates:
+                    continue
+                    
+                # Construir una actualización parametrizada
+                update_stmt = update(ProductoModel).where(
+                    ProductoModel.id == bindparam('id')
+                )
+                
+                # Añadir los campos a actualizar
+                update_values = {}
+                for field in fields:
+                    update_values[field] = bindparam(field)
+                    
+                update_stmt = update_stmt.values(**update_values)
+                
+                # Ejecutar la actualización para este grupo
+                await self.session.execute(update_stmt, field_updates)
+                
+            # Confirmar todas las actualizaciones
+            await self.session.commit()
+            
+            # Recuperar todos los productos actualizados en una sola consulta
+            query = select(ProductoModel).where(ProductoModel.id.in_(product_ids))
+            result = await self.session.execute(query)
+            updated_productos = result.scalars().all()
+            
+            return list(updated_productos)
+        except SQLAlchemyError:
+            await self.session.rollback()
+            raise

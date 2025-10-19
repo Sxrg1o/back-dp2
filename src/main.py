@@ -10,7 +10,7 @@ from fastapi import FastAPI, APIRouter
 from fastapi.middleware.cors import CORSMiddleware
 
 from src.core.database import create_tables, close_database
-from src.core.config import get_settings
+from src.core.config import get_settings, Settings
 from src.core.logging import configure_logging
 from src.core.dependencies import ErrorHandlerMiddleware
 
@@ -176,7 +176,7 @@ def create_app() -> FastAPI:
     FastAPI
         Instancia configurada de la aplicación FastAPI
     """
-    settings = get_settings()
+    settings: Settings = get_settings()
 
     # Crear la instancia de FastAPI
     app = FastAPI(
