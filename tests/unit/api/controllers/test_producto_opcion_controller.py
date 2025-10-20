@@ -4,7 +4,7 @@ Pruebas unitarias para los endpoints de opciones de productos.
 
 import pytest
 from unittest.mock import AsyncMock, patch
-import uuid
+from ulid import ULID
 from decimal import Decimal
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
@@ -85,7 +85,7 @@ def sample_producto_opcion_id():
     POSTCONDICIONES:
         - Devuelve un string con formato UUID válido para usar como ID de opción de producto
     """
-    return str(uuid.uuid4())
+    return str(str(ULID()))
 
 
 @pytest.fixture
@@ -105,9 +105,9 @@ def sample_producto_opcion_data():
         - Los datos pueden ser usados para construir objetos ProductoOpcionModel o ProductoOpcionResponse
     """
     return {
-        "id": str(uuid.uuid4()),
-        "id_producto": str(uuid.uuid4()),
-        "id_tipo_opcion": str(uuid.uuid4()),
+        "id": str(str(ULID())),
+        "id_producto": str(str(ULID())),
+        "id_tipo_opcion": str(str(ULID())),
         "nombre": "Ají suave",
         "precio_adicional": "0.00",
         "activo": True,
@@ -179,8 +179,8 @@ def test_create_producto_opcion_conflict(test_client, mock_db_session_dependency
     """
     # Arrange
     producto_opcion_data = {
-        "id_producto": str(uuid.uuid4()),
-        "id_tipo_opcion": str(uuid.uuid4()),
+        "id_producto": str(str(ULID())),
+        "id_tipo_opcion": str(str(ULID())),
         "nombre": "Ají suave",
         "precio_adicional": "0.00",
         "activo": True,
@@ -497,7 +497,7 @@ def test_delete_producto_opcion_success(
     # Assert
     assert response.status_code == 204
     assert response.content == b""  # No content
-    mock_producto_opcion_service.delete_producto_opcion.assert_awaited_once_with(uuid.UUID(sample_producto_opcion_id))
+    mock_producto_opcion_service.delete_producto_opcion.assert_awaited_once_with(sample_producto_opcion_id)
 
 
 def test_delete_producto_opcion_not_found(

@@ -20,7 +20,7 @@ POSTCONDICIONES:
 """
 
 from decimal import Decimal
-from uuid import UUID, uuid4
+from ulid import ULID
 from src.models.menu.producto_model import ProductoModel
 
 
@@ -37,8 +37,8 @@ def test_producto_creation():
     POSTCONDICIONES:
         - La instancia debe tener los valores exactos proporcionados.
     """
-    producto_id: UUID = uuid4()
-    categoria_id: UUID = uuid4()
+    producto_id: UUID = str(ULID())
+    categoria_id: UUID = str(ULID())
     producto_nombre = "Hamburguesa Clásica"
     producto_descripcion = "Hamburguesa con carne, lechuga y tomate"
     producto_precio = Decimal("12.50")
@@ -81,8 +81,8 @@ def test_producto_to_dict():
         - El diccionario debe contener todas las claves esperadas.
         - Los valores deben coincidir con los de la instancia original.
     """
-    producto_id: UUID = uuid4()
-    categoria_id: UUID = uuid4()
+    producto_id: UUID = str(ULID())
+    categoria_id: UUID = str(ULID())
     producto_nombre = "Pizza Margarita"
     producto_precio = Decimal("15.00")
     
@@ -122,7 +122,7 @@ def test_producto_disponible_default():
     POSTCONDICIONES:
         - Los atributos con nullable=True deben ser None si no se proporcionan.
     """
-    categoria_id: UUID = uuid4()
+    categoria_id: UUID = str(ULID())
     producto = ProductoModel(
         nombre="test_producto",
         id_categoria=categoria_id,
@@ -150,7 +150,7 @@ def test_producto_decimal_precision():
     POSTCONDICIONES:
         - El precio debe mantener exactamente 2 decimales.
     """
-    categoria_id: UUID = uuid4()
+    categoria_id: UUID = str(ULID())
     producto = ProductoModel(
         nombre="Producto Test",
         id_categoria=categoria_id,

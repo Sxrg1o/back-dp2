@@ -3,7 +3,7 @@ Pydantic schemas for ProductoAlergeno (Product-Allergen relationship) entities.
 """
 
 from typing import Optional, ClassVar, List
-from uuid import UUID
+# UUID removed - using str for ULID compatibility
 from datetime import datetime
 from pydantic import BaseModel, Field, ConfigDict
 from src.core.enums.alergeno_enums import NivelPresencia
@@ -12,8 +12,8 @@ from src.core.enums.alergeno_enums import NivelPresencia
 class ProductoAlergenoBase(BaseModel):
     """Base schema for ProductoAlergeno."""
 
-    id_producto: UUID = Field(description="Product ID")
-    id_alergeno: UUID = Field(description="Allergen ID")
+    id_producto: str = Field(description="Product ID")
+    id_alergeno: str = Field(description="Allergen ID")
     nivel_presencia: NivelPresencia = Field(
         default=NivelPresencia.CONTIENE,
         description="Allergen presence level: contiene, trazas, puede_contener"
@@ -68,8 +68,8 @@ class ProductoAlergenoSummary(BaseModel):
 
     model_config: ClassVar[ConfigDict] = ConfigDict(from_attributes=True)
 
-    id_producto: UUID = Field(description="Product ID")
-    id_alergeno: UUID = Field(description="Allergen ID")
+    id_producto: str = Field(description="Product ID")
+    id_alergeno: str = Field(description="Allergen ID")
     nivel_presencia: NivelPresencia = Field(
         description="Allergen presence level"
     )
