@@ -27,8 +27,8 @@ class MesaBase(BaseModel):
         Zona donde se encuentra la mesa.
     qr_code : Optional[str]
         Código QR asociado a la mesa para identificación rápida.
-    estado : EstadoMesaEnum
-        Estado actual de la mesa (libre, ocupada, reservada, fuera de servicio).
+    estado : EstadoMesa
+        Estado actual de la mesa (disponible, ocupada, reservada, mantenimiento).
     """
     numero: str = Field(
         description="Número identificativo de la mesa.",
@@ -48,8 +48,8 @@ class MesaBase(BaseModel):
         description="Código QR asociado a la mesa para identificación rápida."
     )
     estado: EstadoMesa = Field(
-        default=EstadoMesa.LIBRE,
-        description="Estado actual de la mesa (libre, ocupada, reservada, fuera de servicio)."
+        default=EstadoMesa.DISPONIBLE,
+        description="Estado actual de la mesa (disponible, ocupada, reservada, mantenimiento)."
     )
 
 
@@ -90,7 +90,7 @@ class MesaUpdate(BaseModel):
     )
     estado: Optional[EstadoMesa] = Field(
         default=None,
-        description="Nuevo estado de la mesa (libre, ocupada, reservada, fuera de servicio)."
+        description="Nuevo estado de la mesa (disponible, ocupada, reservada, mantenimiento)."
     )
 
 

@@ -1,20 +1,13 @@
 from sqlalchemy import Integer, String, Boolean, inspect, Enum as SQLEnum
-from enum import Enum
 from typing import Any, Dict, Type, TypeVar
 from sqlalchemy.orm import Mapped, mapped_column
 from sqlalchemy.ext.declarative import declarative_base
 from src.models.mixins.audit_mixin import AuditMixin
 from src.models.base_model import BaseModel
+from src.core.enums.mesa_enums import EstadoMesa
 
 # Definimos un TypeVar para el tipado genérico
 T = TypeVar("T", bound="MesaModel")
-
-
-class EstadoMesaEnum(Enum):
-    LIBRE = "libre"
-    OCUPADA = "ocupada"
-    RESERVADA = "reservada"
-    FUERA_SERVICIO = "fuera_servicio"
 
 
 class MesaModel(BaseModel, AuditMixin):
@@ -37,8 +30,8 @@ class MesaModel(BaseModel, AuditMixin):
         Código QR asociado a la mesa para identificación rápida.
     activo : bool
         Indica si la mesa está activa en el sistema.
-    estado : EstadoMesaEnum
-        Estado actual de la mesa (libre, ocupada, reservada, fuera de servicio).
+    estado : EstadoMesa
+        Estado actual de la mesa (disponible, ocupada, reservada, mantenimiento).
     fecha_creacion : datetime
         Fecha y hora de creación del registro (heredado de AuditableModel).
     fecha_modificacion : datetime
@@ -55,7 +48,7 @@ class MesaModel(BaseModel, AuditMixin):
     zona: Mapped[str] = mapped_column(String(50), nullable=True)
     qr_code: Mapped[str] = mapped_column(String(255), nullable=True)
     activo: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
-    estado: Mapped[EstadoMesaEnum] = mapped_column(SQLEnum(EstadoMesaEnum), nullable=False, default=EstadoMesaEnum.LIBRE)
+    estado: Mapped[EstadoMesa] = mapped_column(SQLEnum(EstadoMesa), nullable=False, default=EstadoMesa.DISPONIBLE)
 
     # Métodos comunes para todos los modelos
     def to_dict(self) -> Dict[str, Any]:
