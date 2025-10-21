@@ -15,13 +15,8 @@ def test_mesa_model_creation():
     POSTCONDICIONES:
         - La instancia debe tener los valores exactos proporcionados durante la creación.
     """
-<<<<<<< HEAD
     mesa_id: UUID = str(ULID())
     mesa_numero = 101
-=======
-    mesa_id: UUID = uuid4()
-    mesa_numero = "101"
->>>>>>> 2e4bc84c7d91b86e665608b0b812efeba99e23b6
     mesa_capacidad = 4
     mesa_zona = "zone 1"
     mesa_qr_code = "QR123456"
@@ -60,13 +55,8 @@ def test_rol_to_dict():
         - El diccionario debe contener todas las claves esperadas.
         - Los valores deben coincidir con los de la instancia original.
     """
-<<<<<<< HEAD
     mesa_id: UUID = str(ULID())
     mesa_numero = 105
-=======
-    mesa_id: UUID = uuid4()
-    mesa_numero = "105"
->>>>>>> 2e4bc84c7d91b86e665608b0b812efeba99e23b6
     mesa_capacidad = 6
     mesa_zona = "zone 2"
     mesa_qr_code = "QR123434156"
