@@ -9,7 +9,7 @@ from sqlalchemy.orm import (
     declared_attr,
     declarative_mixin,
 )
-from sqlalchemy import TIMESTAMP, func
+from sqlalchemy import TIMESTAMP, func, String
 from datetime import datetime
 
 
@@ -49,8 +49,8 @@ class AuditMixin:
     # Seguimiento opcional del usuario que realizó los cambios
     @declared_attr
     def creado_por(cls) -> Mapped[Optional[str]]:
-        return mapped_column(default=None)
+        return mapped_column(String(255), default=None)
 
     @declared_attr
     def modificado_por(cls) -> Mapped[Optional[str]]:
-        return mapped_column(default=None)
+        return mapped_column(String(255), default=None)
