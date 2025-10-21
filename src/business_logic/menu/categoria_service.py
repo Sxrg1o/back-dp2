@@ -2,6 +2,7 @@
 Servicio para la gestión de categorías en el sistema.
 """
 
+from typing import List, Tuple
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.exc import IntegrityError
 
@@ -224,6 +225,117 @@ class CategoriaService:
                 )
             # Si no es por nombre, reenviar la excepción original
             raise
+
+    async def batch_create_categorias(
+        self, categorias_data: List[CategoriaCreate]
+    ) -> List[CategoriaResponse]:
+        """
+        Crea múltiples categorías en una sola operación.
+
+        Parameters
+        ----------
+        categorias_data : List[CategoriaCreate]
+            Lista de datos para crear nuevas categorías.
+
+        Returns
+        -------
+        List[CategoriaResponse]
+            Lista de esquemas de respuesta con los datos de las categorías creadas.
+
+        Raises
+        ------
+        CategoriaConflictError
+            Si ya existe una categoría con alguno de los nombres proporcionados.
+        """
+        if not categorias_data:
+            return []
+
+        try:
+            # Crear modelos de categorías desde los datos
+            categoria_models = [
+                CategoriaModel(
+                    nombre=categoria_data.nombre,
+                    descripcion=categoria_data.descripcion,
+                    imagen_path=categoria_data.imagen_path,
+                )
+                for categoria_data in categorias_data
+            ]
+
+            # Persistir en la base de datos usando batch insert
+            created_categorias = await self.repository.batch_insert(categoria_models)
+
+            # Convertir y retornar como esquemas de respuesta
+            return [
+                CategoriaResponse.model_validate(categoria)
+                for categoria in created_categorias
+            ]
+        except IntegrityError:
+            # Capturar errores de integridad (nombre duplicado)
+            raise CategoriaConflictError(
+                "Una o más categorías ya existen con el mismo nombre"
+            )
+
+    async def batch_update_categorias(
+        self, updates: List[Tuple[str, CategoriaUpdate]]
+    ) -> List[CategoriaResponse]:
+        """
+        Actualiza múltiples categorías en una sola operación.
+
+        Parameters
+        ----------
+        updates : List[Tuple[str, CategoriaUpdate]]
+            Lista de tuplas con el ID (ULID) de la categoría y los datos para actualizarla.
+
+        Returns
+        -------
+        List[CategoriaResponse]
+            Lista de esquemas de respuesta con los datos de las categorías actualizadas.
+
+        Raises
+        ------
+        CategoriaNotFoundError
+            Si alguna de las categorías no existe.
+        CategoriaConflictError
+            Si hay conflictos de integridad (nombres duplicados).
+        """
+        if not updates:
+            return []
+
+        try:
+            # Preparar los datos para el repositorio
+            repository_updates = []
+
+            for categoria_id, categoria_data in updates:
+                # Convertir el esquema de actualización a un diccionario,
+                # excluyendo valores None (campos no proporcionados)
+                update_data = categoria_data.model_dump(exclude_none=True)
+
+                if update_data:  # Solo incluir si hay datos para actualizar
+                    repository_updates.append((categoria_id, update_data))
+
+            # Realizar actualización en lote
+            updated_categorias = await self.repository.batch_update(repository_updates)
+
+            # Verificar si todas las categorías fueron actualizadas
+            if len(updated_categorias) != len(repository_updates):
+                missing_ids = set(u[0] for u in repository_updates) - set(
+                    str(c.id) for c in updated_categorias
+                )
+                if missing_ids:
+                    raise CategoriaNotFoundError(
+                        f"No se encontraron las categorías con IDs: {missing_ids}"
+                    )
+
+            # Convertir y retornar como esquemas de respuesta
+            return [
+                CategoriaResponse.model_validate(categoria)
+                for categoria in updated_categorias
+            ]
+        except IntegrityError:
+            # Capturar errores de integridad (nombre duplicado)
+            raise CategoriaConflictError(
+                "Una o más actualizaciones causaron conflictos de integridad"
+            )
 
     async def get_categorias_con_productos_cards(
         self,

@@ -280,3 +280,108 @@ class CategoriaRepository:
             return list(categorias), total
         except SQLAlchemyError:
             raise
+
+    async def batch_insert(
+        self, categorias: List[CategoriaModel]
+    ) -> List[CategoriaModel]:
+        """
+        Crea múltiples categorías en una sola operación.
+
+        Parameters
+        ----------
+        categorias : List[CategoriaModel]
+            Lista de modelos de categorías a crear.
+
+        Returns
+        -------
+        List[CategoriaModel]
+            Lista de categorías creadas con sus IDs asignados.
+
+        Raises
+        ------
+        SQLAlchemyError
+            Si ocurre un error durante la operación en la base de datos.
+        """
+        if not categorias:
+            return []
+
+        try:
+            self.session.add_all(categorias)
+            await self.session.flush()
+            await self.session.commit()
+            
+            # Refrescar todas las categorías para obtener los IDs generados
+            for categoria in categorias:
+                await self.session.refresh(categoria)
+            
+            return categorias
+        except SQLAlchemyError:
+            await self.session.rollback()
+            raise
+
+    async def batch_update(
+        self, updates: List[Tuple[str, dict]]
+    ) -> List[CategoriaModel]:
+        """
+        Actualiza múltiples categorías en una sola operación.
+
+        Parameters
+        ----------
+        updates : List[Tuple[str, dict]]
+            Lista de tuplas con el ID de la categoría y un diccionario con los campos a actualizar.
+
+        Returns
+        -------
+        List[CategoriaModel]
+            Lista de categorías actualizadas.
+
+        Raises
+        ------
+        SQLAlchemyError
+            Si ocurre un error durante la operación en la base de datos.
+        """
+        if not updates:
+            return []
+
+        try:
+            updated_categorias = []
+
+            for categoria_id, update_data in updates:
+                # Filtrar solo los campos válidos
+                valid_fields = {
+                    k: v for k, v in update_data.items() 
+                    if hasattr(CategoriaModel, k) and k != "id"
+                }
+
+                if not valid_fields:
+                    # Si no hay campos válidos, obtener la categoría sin cambios
+                    categoria = await self.get_by_id(categoria_id)
+                    if categoria:
+                        updated_categorias.append(categoria)
+                    continue
+
+                # Construir y ejecutar la sentencia de actualización
+                stmt = (
+                    update(CategoriaModel)
+                    .where(CategoriaModel.id == categoria_id)
+                    .values(**valid_fields)
+                    .returning(CategoriaModel)
+                )
+
+                result = await self.session.execute(stmt)
+                updated_categoria = result.scalars().first()
+
+                if updated_categoria:
+                    updated_categorias.append(updated_categoria)
+
+            # Commit una sola vez después de todas las actualizaciones
+            await self.session.commit()
+
+            # Refrescar todas las categorías actualizadas
+            for categoria in updated_categorias:
+                await self.session.refresh(categoria)
+
+            return updated_categorias
+        except SQLAlchemyError:
+            await self.session.rollback()
+            raise

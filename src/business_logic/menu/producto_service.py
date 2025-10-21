@@ -2,6 +2,7 @@
 Servicio para la gestión de productos en el sistema.
 """
 
+from typing import List, Tuple
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.exc import IntegrityError
 
@@ -344,6 +345,120 @@ class ProductoService:
                 )
             # Si no es por nombre, reenviar la excepción original
             raise
+
+    async def batch_create_productos(
+        self, productos_data: List[ProductoCreate]
+    ) -> List[ProductoResponse]:
+        """
+        Crea múltiples productos en una sola operación.
+
+        Parameters
+        ----------
+        productos_data : List[ProductoCreate]
+            Lista de datos para crear nuevos productos.
+
+        Returns
+        -------
+        List[ProductoResponse]
+            Lista de esquemas de respuesta con los datos de los productos creados.
+
+        Raises
+        ------
+        ProductoConflictError
+            Si ya existe un producto con alguno de los nombres proporcionados.
+        """
+        if not productos_data:
+            return []
+
+        try:
+            # Crear modelos de productos desde los datos
+            producto_models = [
+                ProductoModel(
+                    id_categoria=producto_data.id_categoria,
+                    nombre=producto_data.nombre,
+                    descripcion=producto_data.descripcion,
+                    precio_base=producto_data.precio_base,
+                    imagen_path=producto_data.imagen_path,
+                    imagen_alt_text=producto_data.imagen_alt_text,
+                )
+                for producto_data in productos_data
+            ]
+
+            # Persistir en la base de datos usando batch insert
+            created_productos = await self.repository.batch_insert(producto_models)
+
+            # Convertir y retornar como esquemas de respuesta
+            return [
+                ProductoResponse.model_validate(producto)
+                for producto in created_productos
+            ]
+        except IntegrityError:
+            # Capturar errores de integridad (nombre duplicado)
+            raise ProductoConflictError(
+                "Uno o más productos ya existen con el mismo nombre"
+            )
+
+    async def batch_update_productos(
+        self, updates: List[Tuple[str, ProductoUpdate]]
+    ) -> List[ProductoResponse]:
+        """
+        Actualiza múltiples productos en una sola operación.
+
+        Parameters
+        ----------
+        updates : List[Tuple[str, ProductoUpdate]]
+            Lista de tuplas con el ID (ULID) del producto y los datos para actualizarlo.
+
+        Returns
+        -------
+        List[ProductoResponse]
+            Lista de esquemas de respuesta con los datos de los productos actualizados.
+
+        Raises
+        ------
+        ProductoNotFoundError
+            Si alguno de los productos no existe.
+        ProductoConflictError
+            Si hay conflictos de integridad (nombres duplicados).
+        """
+        if not updates:
+            return []
+
+        try:
+            # Preparar los datos para el repositorio
+            repository_updates = []
+
+            for producto_id, producto_data in updates:
+                # Convertir el esquema de actualización a un diccionario,
+                # excluyendo valores None (campos no proporcionados)
+                update_data = producto_data.model_dump(exclude_none=True)
+
+                if update_data:  # Solo incluir si hay datos para actualizar
+                    repository_updates.append((producto_id, update_data))
+
+            # Realizar actualización en lote
+            updated_productos = await self.repository.batch_update(repository_updates)
+
+            # Verificar si todos los productos fueron actualizados
+            if len(updated_productos) != len(repository_updates):
+                missing_ids = set(u[0] for u in repository_updates) - set(
+                    str(p.id) for p in updated_productos
+                )
+                if missing_ids:
+                    raise ProductoNotFoundError(
+                        f"No se encontraron los productos con IDs: {missing_ids}"
+                    )
+
+            # Convertir y retornar como esquemas de respuesta
+            return [
+                ProductoResponse.model_validate(producto)
+                for producto in updated_productos
+            ]
+        except IntegrityError:
+            # Capturar errores de integridad (nombre duplicado)
+            raise ProductoConflictError(
+                "Una o más actualizaciones causaron conflictos de integridad"
+            )
 
     async def get_productos_cards_by_categoria(
         self, 

@@ -98,15 +98,12 @@ async def sync_platos(
                 categorias_a_crear.append(nueva_categoria)
                 categorias_nuevas.add(nombre_categoria)
         
-        # Crear categorías nuevas individualmente
-        for categoria_data in categorias_a_crear:
-            try:
-                nueva_cat = await categoria_service.create_categoria(categoria_data)
-                # Actualizar dict con la nueva categoría (cast para compatibilidad de tipos)
-                categorias_dict[nueva_cat.nombre.upper()] = nueva_cat  # type: ignore[assignment]
-                resultados["categorias_creadas"] += 1
-            except Exception as e:
-                logger.error(f"Error creando categoría {categoria_data.nombre}: {e}")
+        categorias_creadas = await categoria_service.batch_create_categorias(categorias_a_crear)
+        resultados["categorias_creadas"] += len(categorias_a_crear)
+        
+        # Actualizar el diccionario de categorías con las recién creadas
+        for categoria in categorias_creadas:
+            categorias_dict[categoria.nombre.upper()] = categoria  # type: ignore[assignment]
 
         # Procesar productos
         for producto_domotica in productos_domotica:
@@ -131,9 +128,9 @@ async def sync_platos(
                 # Nuevo producto - preparamos el objeto ProductoCreate
                 try:
                     # Intentar obtener la categoría
-                    nombre_categoria_upper = producto_domotica.categoria.upper()
-                    if nombre_categoria_upper in categorias_dict:
-                        id_categoria = categorias_dict[nombre_categoria_upper].id
+                    nombre_categoria = producto_domotica.categoria.upper()
+                    if nombre_categoria in categorias_dict:
+                        id_categoria = categorias_dict[nombre_categoria].id
                     else:
                         id_categoria = None
                     
@@ -154,9 +151,9 @@ async def sync_platos(
                 producto_existente = productos_dict[producto_domotica.nombre]
                 try:
                     # Intentar obtener la categoría
-                    nombre_categoria_upper = producto_domotica.categoria.upper()
-                    if nombre_categoria_upper in categorias_dict:
-                        id_categoria = categorias_dict[nombre_categoria_upper].id
+                    nombre_categoria = producto_domotica.categoria.upper()
+                    if nombre_categoria in categorias_dict:
+                        id_categoria = categorias_dict[nombre_categoria].id
                     else:
                         id_categoria = None
                     
