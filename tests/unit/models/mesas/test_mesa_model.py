@@ -1,6 +1,6 @@
 from uuid import UUID, uuid4
 from src.models.auth.rol_model import RolModel
-from src.models.mesas.mesa_model import EstadoMesaEnum, Mesa
+from src.models.mesas.mesa_model import EstadoMesaEnum, MesaModel
 
 def test_mesa_model_creation():
     """
@@ -16,13 +16,13 @@ def test_mesa_model_creation():
         - La instancia debe tener los valores exactos proporcionados durante la creación.
     """
     mesa_id: UUID = uuid4()
-    mesa_numero = 101
+    mesa_numero = "101"
     mesa_capacidad = 4
     mesa_zona = "zone 1"
     mesa_qr_code = "QR123456"
     mesa_estado = EstadoMesaEnum.LIBRE
 
-    mesa = Mesa(
+    mesa = MesaModel(
         id=mesa_id,
         numero=mesa_numero,
         capacidad=mesa_capacidad,
@@ -44,11 +44,11 @@ def test_rol_to_dict():
     Verifica que el método to_dict() funciona correctamente.
 
     PRECONDICIONES:
-        - La clase Mesa debe tener implementado el método to_dict().
+        - La clase MesaModel debe tener implementado el método to_dict().
         - Los atributos id, numero, capacidad, zona, qr_code y estado deben existir en el modelo.
 
     PROCESO:
-        - Crear una instancia de Mesa con valores específicos.
+        - Crear una instancia de MesaModel con valores específicos.
         - Llamar al método to_dict() para obtener un diccionario.
 
     POSTCONDICIONES:
@@ -56,13 +56,13 @@ def test_rol_to_dict():
         - Los valores deben coincidir con los de la instancia original.
     """
     mesa_id: UUID = uuid4()
-    mesa_numero = 105
+    mesa_numero = "105"
     mesa_capacidad = 6
     mesa_zona = "zone 2"
     mesa_qr_code = "QR123434156"
     mesa_estado = EstadoMesaEnum.OCUPADA
 
-    mesa = Mesa(id=mesa_id, numero=mesa_numero, capacidad=mesa_capacidad,
+    mesa = MesaModel(id=mesa_id, numero=mesa_numero, capacidad=mesa_capacidad,
                 zona=mesa_zona, qr_code=mesa_qr_code, estado=mesa_estado)
 
     dict_result = mesa.to_dict()
@@ -89,17 +89,17 @@ def test_mesa_activo_default():
     Verifica el comportamiento del valor predeterminado para el atributo activo.
 
     PRECONDICIONES:
-        - La clase Mesa debe tener un atributo activo con valor predeterminado.
-        - La clase Mesa debe tener un atributo estado con valor predeterminado.
-        - La clase Mesa debe aceptar la creación de instancias sin valor para activo.
+        - La clase MesaModel debe tener un atributo activo con valor predeterminado.
+        - La clase MesaModel debe tener un atributo estado con valor predeterminado.
+        - La clase MesaModel debe aceptar la creación de instancias sin valor para activo.
 
     PROCESO:
-        - Crear una instancia de Mesa proporcionando solo el nombre obligatorio.
+        - Crear una instancia de MesaModel proporcionando solo el nombre obligatorio.
 
     POSTCONDICIONES:
         - Los atributos con nullable=True deben ser None si no se proporcionan.
     """
-    mesa = Mesa(numero=101)
+    mesa = MesaModel(numero="101")
 
     # El default debería ser True según el modelo
     assert mesa.capacidad is None

@@ -99,8 +99,12 @@ async def sync_platos(
                 categorias_a_crear.append(nueva_categoria)
                 categorias_nuevas.add(nombre_categoria)
         
-        await categoria_service.batch_create_categorias(categorias_a_crear)
+        categorias_creadas = await categoria_service.batch_create_categorias(categorias_a_crear)
         resultados["categorias_creadas"] += len(categorias_a_crear)
+        
+        # Actualizar el diccionario de categorías con las recién creadas
+        for categoria in categorias_creadas:
+            categorias_dict[categoria.nombre.upper()] = categoria
 
         # Procesar productos
         for producto_domotica in productos_domotica:
@@ -115,8 +119,9 @@ async def sync_platos(
                 # Nuevo producto - preparamos el objeto ProductoCreate
                 try:
                     # Intentar obtener la categoría
-                    if producto_domotica.categoria in categorias_dict:
-                        id_categoria = categorias_dict[producto_domotica.categoria].id
+                    nombre_categoria = producto_domotica.categoria.upper()
+                    if nombre_categoria in categorias_dict:
+                        id_categoria = categorias_dict[nombre_categoria].id
                     else:
                         id_categoria = None
                     
@@ -137,8 +142,9 @@ async def sync_platos(
                 producto_existente = productos_dict[producto_domotica.nombre]
                 try:
                     # Intentar obtener la categoría
-                    if producto_domotica.categoria in categorias_dict:
-                        id_categoria = categorias_dict[producto_domotica.categoria].id
+                    nombre_categoria = producto_domotica.categoria.upper()
+                    if nombre_categoria in categorias_dict:
+                        id_categoria = categorias_dict[nombre_categoria].id
                     else:
                         id_categoria = None
                     

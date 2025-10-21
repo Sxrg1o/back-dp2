@@ -7,7 +7,7 @@ from src.models.mixins.audit_mixin import AuditMixin
 from src.models.base_model import BaseModel
 
 # Definimos un TypeVar para el tipado genérico
-T = TypeVar("T", bound="Mesa")
+T = TypeVar("T", bound="MesaModel")
 
 
 class EstadoMesaEnum(Enum):
@@ -17,7 +17,7 @@ class EstadoMesaEnum(Enum):
     FUERA_SERVICIO = "fuera_servicio"
 
 
-class Mesa(BaseModel, AuditMixin):
+class MesaModel(BaseModel, AuditMixin):
     __tablename__ = 'mesas'
 
     """Modelo para representar mesas en el sistema.
@@ -27,7 +27,7 @@ class Mesa(BaseModel, AuditMixin):
 
     Attributes
     ----------
-    numero : int
+    numero : str
         Número de la mesa, debe ser único en el sistema.
     capacidad : int, optional
         Capacidad de la mesa.
@@ -50,7 +50,7 @@ class Mesa(BaseModel, AuditMixin):
     """
 
     # Columnas específicas del modelo Mesa
-    numero: Mapped[int] = mapped_column(Integer, nullable=False, unique=True)
+    numero: Mapped[str] = mapped_column(String(50), nullable=False, unique=True)
     capacidad: Mapped[int] = mapped_column(Integer, nullable=True)
     zona: Mapped[str] = mapped_column(String(50), nullable=True)
     qr_code: Mapped[str] = mapped_column(String(255), nullable=True)
