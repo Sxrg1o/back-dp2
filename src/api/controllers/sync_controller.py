@@ -6,11 +6,10 @@ a través del scrapper, y procesarlos para actualizar la base de datos local.
 """
 
 from typing import List, Dict, Any, Set, Tuple
-from uuid import UUID
 from fastapi import APIRouter, Depends, HTTPException, status, Body
 from sqlalchemy.ext.asyncio import AsyncSession
 import logging
-from decimal import Decimal
+from decimal import Decimal, InvalidOperation
 
 from src.core.database import get_database_session
 from src.api.schemas.scrapper_schemas import ProductoDomotica, MesaDomotica
@@ -88,7 +87,7 @@ async def sync_platos(
 
         categorias_a_crear: List[CategoriaCreate] = []
         productos_a_crear: List[ProductoCreate] = []
-        productos_a_actualizar: List[Tuple[UUID, ProductoUpdate]] = []
+        productos_a_actualizar: List[Tuple[str, ProductoUpdate]] = []
         
         categorias_nuevas: Set[str] = set()
         
@@ -99,29 +98,42 @@ async def sync_platos(
                 categorias_a_crear.append(nueva_categoria)
                 categorias_nuevas.add(nombre_categoria)
         
-        categorias_creadas = await categoria_service.batch_create_categorias(categorias_a_crear)
-        resultados["categorias_creadas"] += len(categorias_a_crear)
-        
-        # Actualizar el diccionario de categorías con las recién creadas
-        for categoria in categorias_creadas:
-            categorias_dict[categoria.nombre.upper()] = categoria
+        # Crear categorías nuevas individualmente
+        for categoria_data in categorias_a_crear:
+            try:
+                nueva_cat = await categoria_service.create_categoria(categoria_data)
+                # Actualizar dict con la nueva categoría (cast para compatibilidad de tipos)
+                categorias_dict[nueva_cat.nombre.upper()] = nueva_cat  # type: ignore[assignment]
+                resultados["categorias_creadas"] += 1
+            except Exception as e:
+                logger.error(f"Error creando categoría {categoria_data.nombre}: {e}")
 
         # Procesar productos
         for producto_domotica in productos_domotica:
             # Convertir precio de string a decimal si es necesario
             try:
-                precio = Decimal(producto_domotica.precio.replace(",", ".")) if isinstance(producto_domotica.precio, str) else producto_domotica.precio
-            except (ValueError, TypeError):
+                if isinstance(producto_domotica.precio, Decimal):
+                    precio = producto_domotica.precio
+                elif isinstance(producto_domotica.precio, str):
+                    # Remover símbolos de moneda y espacios
+                    precio_limpio = producto_domotica.precio.replace("S/.", "").replace(",", ".").strip()
+                    precio = Decimal(precio_limpio)
+                elif isinstance(producto_domotica.precio, (int, float)):
+                    precio = Decimal(str(producto_domotica.precio))
+                else:
+                    precio = Decimal("0.0")
+                    logger.warning(f"Tipo de precio desconocido para '{producto_domotica.nombre}': {type(producto_domotica.precio)}")
+            except (ValueError, TypeError, InvalidOperation) as e:
                 precio = Decimal("0.0")
-                logger.warning(f"Error al convertir precio para '{producto_domotica.nombre}': {producto_domotica.precio}")
+                logger.warning(f"Error al convertir precio para '{producto_domotica.nombre}': {producto_domotica.precio} - {e}")
             
             if producto_domotica.nombre not in productos_dict:
                 # Nuevo producto - preparamos el objeto ProductoCreate
                 try:
                     # Intentar obtener la categoría
-                    nombre_categoria = producto_domotica.categoria.upper()
-                    if nombre_categoria in categorias_dict:
-                        id_categoria = categorias_dict[nombre_categoria].id
+                    nombre_categoria_upper = producto_domotica.categoria.upper()
+                    if nombre_categoria_upper in categorias_dict:
+                        id_categoria = categorias_dict[nombre_categoria_upper].id
                     else:
                         id_categoria = None
                     
@@ -142,9 +154,9 @@ async def sync_platos(
                 producto_existente = productos_dict[producto_domotica.nombre]
                 try:
                     # Intentar obtener la categoría
-                    nombre_categoria = producto_domotica.categoria.upper()
-                    if nombre_categoria in categorias_dict:
-                        id_categoria = categorias_dict[nombre_categoria].id
+                    nombre_categoria_upper = producto_domotica.categoria.upper()
+                    if nombre_categoria_upper in categorias_dict:
+                        id_categoria = categorias_dict[nombre_categoria_upper].id
                     else:
                         id_categoria = None
                     
@@ -159,22 +171,23 @@ async def sync_platos(
                 except Exception as e:
                     logger.error(f"Error preparando producto para actualizar: {str(e)}")
 
-        # Ejecutar operaciones en lote
+        # Crear productos nuevos individualmente
         if productos_a_crear:
-            try:
-                productos_creados = await producto_service.batch_create_productos(productos_a_crear)
-                resultados["productos_creados"] += len(productos_creados)
-                logger.info(f"Productos creados en lote: {len(productos_creados)}")
-            except Exception as e:
-                logger.error(f"Error al crear productos en lote: {str(e)}")
+            for producto_data in productos_a_crear:
+                try:
+                    await producto_service.create_producto(producto_data)
+                    resultados["productos_creados"] += 1
+                except Exception as e:
+                    logger.error(f"Error al crear producto {producto_data.nombre}: {str(e)}")
 
+        # Actualizar productos existentes individualmente
         if productos_a_actualizar:
-            try:
-                productos_actualizados = await producto_service.batch_update_productos(productos_a_actualizar)
-                resultados["productos_actualizados"] += len(productos_actualizados)
-                logger.info(f"Productos actualizados en lote: {len(productos_actualizados)}")
-            except Exception as e:
-                logger.error(f"Error al actualizar productos en lote: {str(e)}")
+            for producto_id, producto_update in productos_a_actualizar:
+                try:
+                    await producto_service.update_producto(producto_id, producto_update)
+                    resultados["productos_actualizados"] += 1
+                except Exception as e:
+                    logger.error(f"Error al actualizar producto {producto_id}: {str(e)}")
 
         # Marcar productos inactivos
         productos_vistos = set(producto.nombre for producto in productos_domotica)
@@ -185,17 +198,18 @@ async def sync_platos(
             if nombre not in productos_vistos and producto.disponible:
                 productos_a_desactivar.append((producto.id, ProductoUpdate(disponible=False)))
         
+        # Desactivar productos individualmente
         if productos_a_desactivar:
-            try:
-                productos_desactivados = await producto_service.batch_update_productos(productos_a_desactivar)
-                resultados["productos_desactivados"] += len(productos_desactivados)
-                logger.info(f"Productos desactivados en lote: {len(productos_desactivados)}")
-            except Exception as e:
-                logger.error(f"Error al desactivar productos en lote: {str(e)}")
+            for producto_id, producto_update in productos_a_desactivar:
+                try:
+                    await producto_service.update_producto(producto_id, producto_update)
+                    resultados["productos_desactivados"] += 1
+                except Exception as e:
+                    logger.error(f"Error al desactivar producto {producto_id}: {str(e)}")
 
         return {
             "status": "success",
-            "message": "Sincronización completada correctamente con operaciones por lotes",
+            "message": "Sincronización completada correctamente",
             "resultados": resultados
         }
 

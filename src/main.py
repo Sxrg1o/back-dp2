@@ -10,7 +10,7 @@ from fastapi import FastAPI, APIRouter
 from fastapi.middleware.cors import CORSMiddleware
 
 from src.core.database import create_tables, close_database
-from src.core.config import get_settings, Settings
+from src.core.config import get_settings
 from src.core.logging import configure_logging
 from src.core.dependencies import ErrorHandlerMiddleware
 
@@ -42,8 +42,8 @@ async def auto_seed_database():
             result = await session.execute(query)
             count = result.scalar()
             
-            logger.info(f"📊 Categorías encontradas: {count}")
-            logger.info(f"📊 DATABASE_URL: {os.getenv('DATABASE_URL', 'No configurada')}")
+            logger.info(f"Categorías encontradas: {count}")
+            logger.info(f"DATABASE_URL: {os.getenv('DATABASE_URL', 'No configurada')}")
             
             if count == 0:
                 logger.info("🌱 Base de datos vacía detectada. Ejecutando seed automático...")
@@ -103,7 +103,7 @@ async def lifespan(app: FastAPI):
     await asyncio.sleep(0.5)
 
     # Ejecutar seed automáticamente si la BD está vacía
-    await auto_seed_database()
+    # await auto_seed_database()
 
     logger.info("Restaurant Backend API iniciada correctamente")
 
@@ -176,7 +176,7 @@ def create_app() -> FastAPI:
     FastAPI
         Instancia configurada de la aplicación FastAPI
     """
-    settings: Settings = get_settings()
+    settings = get_settings()
 
     # Crear la instancia de FastAPI
     app = FastAPI(

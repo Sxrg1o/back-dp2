@@ -1,4 +1,4 @@
-from uuid import UUID, uuid4
+from ulid import ULID
 from src.models.auth.rol_model import RolModel
 from src.models.mesas.mesa_model import EstadoMesaEnum, MesaModel
 
@@ -15,8 +15,8 @@ def test_mesa_model_creation():
     POSTCONDICIONES:
         - La instancia debe tener los valores exactos proporcionados durante la creación.
     """
-    mesa_id: UUID = uuid4()
-    mesa_numero = "101"
+    mesa_id: UUID = str(ULID())
+    mesa_numero = 101
     mesa_capacidad = 4
     mesa_zona = "zone 1"
     mesa_qr_code = "QR123456"
@@ -55,8 +55,8 @@ def test_rol_to_dict():
         - El diccionario debe contener todas las claves esperadas.
         - Los valores deben coincidir con los de la instancia original.
     """
-    mesa_id: UUID = uuid4()
-    mesa_numero = "105"
+    mesa_id: UUID = str(ULID())
+    mesa_numero = 105
     mesa_capacidad = 6
     mesa_zona = "zone 2"
     mesa_qr_code = "QR123434156"

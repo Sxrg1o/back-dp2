@@ -3,8 +3,7 @@ Pruebas de integración para los endpoints de alérgenos.
 """
 
 import pytest
-import uuid
-
+from ulid import ULID
 from src.models.menu.alergeno_model import AlergenoModel
 from src.repositories.menu.alergeno_repository import AlergenoRepository
 from src.core.enums.alergeno_enums import NivelRiesgo
@@ -52,7 +51,7 @@ async def test_create_alergeno_integration(async_client, db_session):
 
     # Verify in database
     repo = AlergenoRepository(db_session)
-    alergeno = await repo.get_by_id(uuid.UUID(response_data["id"]))
+    alergeno = await repo.get_by_id(response_data["id"])
     assert alergeno is not None
     assert alergeno.nombre == alergeno_data["nombre"]
 
@@ -164,7 +163,7 @@ async def test_get_alergeno_by_id_not_found_integration(async_client):
         - El mensaje de error debe indicar que no se encontró el alérgeno
     """
     # Arrange
-    non_existent_id = str(uuid.uuid4())
+    non_existent_id = str(str(ULID()))
 
     # Act
     response = await async_client.get(f"/api/v1/alergenos/{non_existent_id}")
@@ -298,7 +297,7 @@ async def test_update_alergeno_not_found_integration(async_client):
         - El mensaje de error debe indicar que no se encontró el alérgeno
     """
     # Arrange
-    non_existent_id = str(uuid.uuid4())
+    non_existent_id = str(str(ULID()))
     update_data = {"nombre": "Alérgeno Inexistente"}
 
     # Act
@@ -425,7 +424,7 @@ async def test_delete_alergeno_not_found_integration(async_client):
         - El mensaje de error debe indicar que no se encontró el alérgeno
     """
     # Arrange
-    non_existent_id = str(uuid.uuid4())
+    non_existent_id = str(str(ULID()))
 
     # Act
     response = await async_client.delete(f"/api/v1/alergenos/{non_existent_id}")

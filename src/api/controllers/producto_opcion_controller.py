@@ -68,7 +68,7 @@ async def create_producto_opcion(
     description="Obtiene los detalles de una opción de producto específica por su ID.",
 )
 async def get_producto_opcion(
-    producto_opcion_id: UUID, session: AsyncSession = Depends(get_database_session)
+    producto_opcion_id: str, session: AsyncSession = Depends(get_database_session)
 ) -> ProductoOpcionResponse:
     """
     Obtiene una opción de producto específica por su ID.
@@ -147,7 +147,7 @@ async def list_producto_opciones(
     description="Actualiza los datos de una opción de producto existente.",
 )
 async def update_producto_opcion(
-    producto_opcion_id: UUID,
+    producto_opcion_id: str,
     producto_opcion_data: ProductoOpcionUpdate,
     session: AsyncSession = Depends(get_database_session),
 ) -> ProductoOpcionResponse:
@@ -189,7 +189,7 @@ async def update_producto_opcion(
     description="Elimina una opción de producto existente del sistema.",
 )
 async def delete_producto_opcion(
-    producto_opcion_id: UUID, session: AsyncSession = Depends(get_database_session)
+    producto_opcion_id: str, session: AsyncSession = Depends(get_database_session)
 ) -> None:
     """
     Elimina una opción de producto existente.

@@ -21,7 +21,7 @@ POSTCONDICIONES:
 """
 
 import pytest
-from uuid import UUID, uuid4
+from ulid import ULID
 from unittest.mock import AsyncMock, MagicMock, patch
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.exc import SQLAlchemyError
@@ -53,11 +53,11 @@ async def test_get_by_id():
     mock_session = AsyncMock(spec=AsyncSession)
     mock_result = MagicMock()
     mock_result.scalars.return_value.first.return_value = RolModel(
-        id=uuid4(), nombre="admin", descripcion="Administrador del sistema"
+        id=str(ULID()), nombre="admin", descripcion="Administrador del sistema"
     )
     mock_session.execute.return_value = mock_result
 
-    rol_id = uuid4()
+    rol_id = str(ULID())
     repository = RolRepository(mock_session)
 
     # Act
@@ -146,7 +146,7 @@ async def test_delete_rol():
     mock_result.rowcount = 1  # Simula que se eliminó una fila
     mock_session.execute.return_value = mock_result
 
-    rol_id = uuid4()
+    rol_id = str(ULID())
     repository = RolRepository(mock_session)
 
     # Act
