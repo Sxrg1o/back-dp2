@@ -49,6 +49,21 @@ class TipoOpcionModel(BaseModel, AuditMixin):
         Boolean, nullable=False, default=True, server_default="1"
     )
     orden: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
+    
+    # Restricciones de selección
+    seleccion_minima: Mapped[int] = mapped_column(
+        Integer,
+        nullable=False,
+        default=0,
+        server_default="0",
+        comment="Cantidad mínima de opciones a seleccionar (0 = opcional)"
+    )
+    seleccion_maxima: Mapped[Optional[int]] = mapped_column(
+        Integer,
+        nullable=True,
+        default=None,
+        comment="Cantidad máxima de opciones (NULL = sin límite)"
+    )
 
     # Relación con ProductoOpcion
     producto_opciones: Mapped[List["ProductoOpcionModel"]] = relationship(

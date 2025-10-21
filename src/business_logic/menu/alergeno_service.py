@@ -2,7 +2,6 @@
 Servicio para la gestión de alérgenos en el sistema.
 """
 
-from uuid import UUID
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.exc import IntegrityError
 
@@ -84,14 +83,14 @@ class AlergenoService:
                 f"Ya existe un alérgeno con el nombre '{alergeno_data.nombre}'"
             )
 
-    async def get_alergeno_by_id(self, alergeno_id: UUID) -> AlergenoResponse:
+    async def get_alergeno_by_id(self, alergeno_id: str) -> AlergenoResponse:
         """
         Obtiene un alérgeno por su ID.
 
         Parameters
         ----------
-        alergeno_id : UUID
-            Identificador único del alérgeno a buscar.
+        alergeno_id : str
+            Identificador único del alérgeno a buscar (ULID).
 
         Returns
         -------
@@ -113,16 +112,14 @@ class AlergenoService:
         # Convertir y retornar como esquema de respuesta
         return AlergenoResponse.model_validate(alergeno)
 
-    async def delete_alergeno(self, alergeno_id: UUID) -> bool:
+    async def delete_alergeno(self, alergeno_id: str) -> bool:
         """
         Elimina un alérgeno por su ID.
-
+        
         Parameters
         ----------
-        alergeno_id : UUID
-            Identificador único del alérgeno a eliminar.
-
-        Returns
+        alergeno_id : str
+            Identificador único del alérgeno a eliminar (ULID).        Returns
         -------
         bool
             True si el alérgeno fue eliminado correctamente.
@@ -174,14 +171,14 @@ class AlergenoService:
         # Retornar esquema de lista
         return AlergenoList(items=alergeno_summaries, total=total)
 
-    async def update_alergeno(self, alergeno_id: UUID, alergeno_data: AlergenoUpdate) -> AlergenoResponse:
+    async def update_alergeno(self, alergeno_id: str, alergeno_data: AlergenoUpdate) -> AlergenoResponse:
         """
         Actualiza un alérgeno existente.
 
         Parameters
         ----------
-        alergeno_id : UUID
-            Identificador único del alérgeno a actualizar.
+        alergeno_id : str
+            Identificador único del alérgeno a actualizar (ULID).
         alergeno_data : AlergenoUpdate
             Datos para actualizar el alérgeno.
 

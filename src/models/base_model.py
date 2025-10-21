@@ -11,8 +11,8 @@ from sqlalchemy.orm import (
     Mapped,
     mapped_column,
 )
-from sqlalchemy import inspect
-from uuid import UUID, uuid4
+from sqlalchemy import inspect, String
+from ulid import ULID
 
 T = TypeVar("T", bound="BaseModel")
 
@@ -26,16 +26,22 @@ class BaseModel(DeclarativeBase):
 
     Attributes
     ----------
-    id : UUID
-        Identificador único primario para cada registro.
+    id : str
+        Identificador único ULID (Universally Unique Lexicographically Sortable Identifier).
+        26 caracteres, ordenado cronológicamente, compatible con UUID v4 existente.
     """
 
     # Metadata configurations can be added here
     __abstract__ = True
 
-    # Definición de clave primaria común - usando UUID como práctica moderna
-    # Alternativamente, se puede usar un entero autoincremental
-    id: Mapped[UUID] = mapped_column(primary_key=True, default=uuid4)
+    # Definición de clave primaria usando ULID
+    # ULID = timestamp-ordered, 26 chars, 160-180% más rápido que UUID v4
+    # Compatible con data antigua UUID v4 (36 chars) - convivencia sin migración
+    id: Mapped[str] = mapped_column(
+        String(36),  # 36 chars para soportar UUID v4 existente + ULID (26 chars)
+        primary_key=True,
+        default=lambda: str(ULID())
+    )
 
     # Métodos comunes para todos los modelos
     def to_dict(self) -> Dict[str, Any]:

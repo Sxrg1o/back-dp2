@@ -4,7 +4,7 @@ Pruebas unitarias para los endpoints de productos.
 
 import pytest
 from unittest.mock import AsyncMock, patch
-import uuid
+from ulid import ULID
 from decimal import Decimal
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
@@ -91,7 +91,7 @@ def sample_producto_id():
     POSTCONDICIONES:
         - Devuelve un string con formato UUID válido para usar como ID de producto
     """
-    return str(uuid.uuid4())
+    return str(str(ULID()))
 
 
 @pytest.fixture
@@ -111,8 +111,8 @@ def sample_producto_data():
         - Los datos pueden ser usados para construir objetos ProductoModel o ProductoResponse
     """
     return {
-        "id": str(uuid.uuid4()),
-        "id_categoria": str(uuid.uuid4()),
+        "id": str(str(ULID())),
+        "id_categoria": str(str(ULID())),
         "nombre": "Hamburguesa Clásica",
         "descripcion": "Hamburguesa con carne, lechuga y tomate",
         "precio_base": "15.99",
@@ -185,7 +185,7 @@ def test_create_producto_conflict(test_client, mock_db_session_dependency, mock_
     """
     # Arrange
     producto_data = {
-        "id_categoria": str(uuid.uuid4()),
+        "id_categoria": str(str(ULID())),
         "nombre": "Hamburguesa Clásica",
         "descripcion": "Hamburguesa con carne",
         "precio_base": "15.99",
@@ -378,7 +378,7 @@ def test_list_productos_with_categoria_filter(
         - El método get_productos del servicio debe haber sido llamado con el id_categoria
     """
     # Arrange
-    id_categoria = uuid.uuid4()
+    id_categoria = str(ULID())
     producto_summary = {
         "id": sample_producto_data["id"],
         "nombre": sample_producto_data["nombre"],
@@ -540,7 +540,7 @@ def test_delete_producto_success(
     # Assert
     assert response.status_code == 204
     assert response.content == b""  # No content
-    mock_producto_service.delete_producto.assert_awaited_once_with(uuid.UUID(sample_producto_id))
+    mock_producto_service.delete_producto.assert_awaited_once_with(sample_producto_id)
 
 
 def test_delete_producto_not_found(

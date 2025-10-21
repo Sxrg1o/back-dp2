@@ -21,7 +21,7 @@ POSTCONDICIONES:
 """
 
 import pytest
-from uuid import UUID, uuid4
+from ulid import ULID
 from decimal import Decimal
 from unittest.mock import AsyncMock, MagicMock, patch
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -54,9 +54,9 @@ async def test_get_by_id():
     mock_session = AsyncMock(spec=AsyncSession)
     mock_result = MagicMock()
     mock_result.scalars.return_value.first.return_value = ProductoOpcionModel(
-        id=uuid4(),
-        id_producto=uuid4(),
-        id_tipo_opcion=uuid4(),
+        id=str(ULID()),
+        id_producto=str(ULID()),
+        id_tipo_opcion=str(ULID()),
         nombre="Ají suave",
         precio_adicional=Decimal("0.00"),
         activo=True,
@@ -64,7 +64,7 @@ async def test_get_by_id():
     )
     mock_session.execute.return_value = mock_result
 
-    opcion_id = uuid4()
+    opcion_id = str(ULID())
     repository = ProductoOpcionRepository(mock_session)
 
     # Act
@@ -104,8 +104,8 @@ async def test_create_producto_opcion():
     # Arrange
     mock_session = AsyncMock(spec=AsyncSession)
     producto_opcion = ProductoOpcionModel(
-        id_producto=uuid4(),
-        id_tipo_opcion=uuid4(),
+        id_producto=str(ULID()),
+        id_tipo_opcion=str(ULID()),
         nombre="Sin ají",
         precio_adicional=Decimal("0.00"),
         activo=True,
@@ -160,7 +160,7 @@ async def test_delete_producto_opcion():
     mock_result.rowcount = 1  # Simula que se eliminó una fila
     mock_session.execute.return_value = mock_result
 
-    opcion_id = uuid4()
+    opcion_id = str(ULID())
     repository = ProductoOpcionRepository(mock_session)
 
     # Act

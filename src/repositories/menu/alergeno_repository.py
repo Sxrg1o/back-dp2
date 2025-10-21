@@ -3,7 +3,6 @@ Repositorio para la gestión de alérgenos en el sistema.
 """
 
 from typing import Optional, List, Tuple
-from uuid import UUID
 
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -64,7 +63,7 @@ class AlergenoRepository:
             await self.session.rollback()
             raise
 
-    async def get_by_id(self, alergeno_id: UUID) -> Optional[AlergenoModel]:
+    async def get_by_id(self, alergeno_id: str) -> Optional[AlergenoModel]:
         """
         Obtiene un alérgeno por su identificador único.
 
@@ -82,7 +81,7 @@ class AlergenoRepository:
         result = await self.session.execute(query)
         return result.scalars().first()
 
-    async def delete(self, alergeno_id: UUID) -> bool:
+    async def delete(self, alergeno_id: str) -> bool:
         """
         Elimina un alérgeno de la base de datos por su ID.
 
@@ -110,7 +109,7 @@ class AlergenoRepository:
             await self.session.rollback()
             raise
 
-    async def update(self, alergeno_id: UUID, **kwargs) -> Optional[AlergenoModel]:
+    async def update(self, alergeno_id: str, **kwargs) -> Optional[AlergenoModel]:
         """
         Actualiza un alérgeno existente con los valores proporcionados.
 

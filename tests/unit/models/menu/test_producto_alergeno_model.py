@@ -5,7 +5,7 @@ Verifica la correcta creación, conversión y manipulación de instancias
 del modelo de relación producto-alérgeno.
 """
 
-from uuid import UUID, uuid4
+from ulid import ULID
 from src.models.menu.producto_alergeno_model import ProductoAlergenoModel
 from src.core.enums.alergeno_enums import NivelPresencia
 
@@ -27,8 +27,8 @@ def test_producto_alergeno_model_creation():
     POSTCONDICIONES:
         - La instancia debe tener los valores exactos proporcionados.
     """
-    producto_id: UUID = uuid4()
-    alergeno_id: UUID = uuid4()
+    producto_id: UUID = str(ULID())
+    alergeno_id: UUID = str(ULID())
     nivel = NivelPresencia.TRAZAS
     notas = "Puede contener trazas por contaminación cruzada"
 
@@ -61,8 +61,8 @@ def test_producto_alergeno_to_dict():
         - El diccionario debe contener todas las claves esperadas.
         - Los valores deben coincidir con los de la instancia original.
     """
-    producto_id: UUID = uuid4()
-    alergeno_id: UUID = uuid4()
+    producto_id: UUID = str(ULID())
+    alergeno_id: UUID = str(ULID())
     nivel = NivelPresencia.CONTIENE
 
     producto_alergeno = ProductoAlergenoModel(
@@ -103,8 +103,8 @@ def test_producto_alergeno_default_values():
         - notas debe ser None si no se proporciona.
         - activo debe ser None en memoria (True después de commit en DB).
     """
-    producto_id: UUID = uuid4()
-    alergeno_id: UUID = uuid4()
+    producto_id: UUID = str(ULID())
+    alergeno_id: UUID = str(ULID())
 
     producto_alergeno = ProductoAlergenoModel(
         id_producto=producto_id,
@@ -133,9 +133,9 @@ def test_producto_alergeno_update_from_dict():
         - Los atributos modificables deben actualizarse.
         - Las claves primarias NO deben cambiar.
     """
-    producto_id: UUID = uuid4()
-    alergeno_id: UUID = uuid4()
-    nuevo_producto_id: UUID = uuid4()
+    producto_id: UUID = str(ULID())
+    alergeno_id: UUID = str(ULID())
+    nuevo_producto_id: UUID = str(ULID())
 
     producto_alergeno = ProductoAlergenoModel(
         id_producto=producto_id,

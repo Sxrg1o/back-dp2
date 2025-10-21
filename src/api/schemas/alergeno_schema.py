@@ -6,7 +6,7 @@ representar los alérgenos en la API.
 """
 
 from typing import Optional, ClassVar, List
-from uuid import UUID
+# UUID removed - using str for ULID compatibility
 from datetime import datetime
 from pydantic import BaseModel, Field, ConfigDict
 
@@ -95,7 +95,7 @@ class AlergenoResponse(AlergenoBase):
     """
     model_config: ClassVar[ConfigDict] = ConfigDict(from_attributes=True)
 
-    id: UUID = Field(description="Identificador único del alérgeno (UUID).")
+    id: str = Field(description="Identificador único del alérgeno (UUID).")
     activo: bool = Field(description="Indica si el alérgeno está activo en el sistema.")
     fecha_creacion: Optional[datetime] = Field(
         default=None, description="Fecha y hora de creación del registro."
@@ -113,7 +113,7 @@ class AlergenoSummary(BaseModel):
     """
     model_config: ClassVar[ConfigDict] = ConfigDict(from_attributes=True)
 
-    id: UUID = Field(description="Identificador único del alérgeno.")
+    id: str = Field(description="Identificador único del alérgeno.")
     nombre: str = Field(description="Nombre del alérgeno.")
     nivel_riesgo: NivelRiesgo = Field(description="Nivel de riesgo asociado.")
     activo: bool = Field(description="Indica si el alérgeno está activo.")

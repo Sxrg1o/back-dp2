@@ -3,8 +3,7 @@ Pruebas de integración para los endpoints de roles.
 """
 
 import pytest
-import uuid
-
+from ulid import ULID
 from src.models.auth.rol_model import RolModel
 from src.repositories.auth.rol_repository import RolRepository
 
@@ -47,7 +46,7 @@ async def test_create_rol_integration(async_client, db_session):
 
     # Verify in database
     repo = RolRepository(db_session)
-    rol = await repo.get_by_id(uuid.UUID(response_data["id"]))
+    rol = await repo.get_by_id(response_data["id"])
     assert rol is not None
     assert rol.nombre == rol_data["nombre"]
 
@@ -146,7 +145,7 @@ async def test_get_rol_by_id_not_found_integration(async_client):
         - El mensaje de error debe indicar que no se encontró el rol
     """
     # Arrange
-    non_existent_id = str(uuid.uuid4())
+    non_existent_id = str(str(ULID()))
 
     # Act
     response = await async_client.get(f"/api/v1/roles/{non_existent_id}")
@@ -264,7 +263,7 @@ async def test_update_rol_not_found_integration(async_client):
         - El mensaje de error debe indicar que no se encontró el rol
     """
     # Arrange
-    non_existent_id = str(uuid.uuid4())
+    non_existent_id = str(str(ULID()))
     update_data = {"nombre": "Rol Inexistente"}
 
     # Act
@@ -379,7 +378,7 @@ async def test_delete_rol_not_found_integration(async_client):
         - El mensaje de error debe indicar que no se encontró el rol
     """
     # Arrange
-    non_existent_id = str(uuid.uuid4())
+    non_existent_id = str(str(ULID()))
 
     # Act
     response = await async_client.delete(f"/api/v1/roles/{non_existent_id}")

@@ -2,7 +2,6 @@
 Servicio para la gestión de roles en el sistema.
 """
 
-from uuid import UUID
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.exc import IntegrityError
 
@@ -79,14 +78,14 @@ class RolService:
                 f"Ya existe un rol con el nombre '{rol_data.nombre}'"
             )
 
-    async def get_rol_by_id(self, rol_id: UUID) -> RolResponse:
+    async def get_rol_by_id(self, rol_id: str) -> RolResponse:
         """
         Obtiene un rol por su ID.
 
         Parameters
         ----------
-        rol_id : UUID
-            Identificador único del rol a buscar.
+        rol_id : str
+            Identificador único del rol a buscar (ULID).
 
         Returns
         -------
@@ -108,14 +107,14 @@ class RolService:
         # Convertir y retornar como esquema de respuesta
         return RolResponse.model_validate(rol)
 
-    async def delete_rol(self, rol_id: UUID) -> bool:
+    async def delete_rol(self, rol_id: str) -> bool:
         """
         Elimina un rol por su ID.
         
         Parameters
         ----------
-        rol_id : UUID
-            Identificador único del rol a eliminar.
+        rol_id : str
+            Identificador único del rol a eliminar (ULID).
 
         Returns
         -------
@@ -169,14 +168,14 @@ class RolService:
         # Retornar esquema de lista
         return RolList(items=rol_summaries, total=total)
 
-    async def update_rol(self, rol_id: UUID, rol_data: RolUpdate) -> RolResponse:
+    async def update_rol(self, rol_id: str, rol_data: RolUpdate) -> RolResponse:
         """
         Actualiza un rol existente.
 
         Parameters
         ----------
-        rol_id : UUID
-            Identificador único del rol a actualizar.
+        rol_id : str
+            Identificador único del rol a actualizar (ULID).
         rol_data : RolUpdate
             Datos para actualizar el rol.
 

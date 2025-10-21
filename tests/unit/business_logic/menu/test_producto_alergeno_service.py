@@ -3,7 +3,7 @@ Pruebas unitarias para el servicio de relaciones producto-alérgeno.
 """
 
 import pytest
-import uuid
+from ulid import ULID
 from unittest.mock import AsyncMock
 from sqlalchemy.ext.asyncio import AsyncSession
 from datetime import datetime
@@ -52,8 +52,8 @@ def sample_producto_alergeno_data():
     Fixture que proporciona datos de muestra para una relación producto-alérgeno.
     """
     return {
-        "id_producto": uuid.uuid4(),
-        "id_alergeno": uuid.uuid4(),
+        "id_producto": str(ULID()),
+        "id_alergeno": str(ULID()),
         "nivel_presencia": NivelPresencia.CONTIENE,
         "notas": "Contiene gluten",
         "activo": True,
@@ -210,8 +210,8 @@ async def test_get_producto_alergeno_by_id_not_found(
         - El servicio debe lanzar ProductoAlergenoNotFoundError.
     """
     # Arrange
-    id_producto = uuid.uuid4()
-    id_alergeno = uuid.uuid4()
+    id_producto = str(ULID())
+    id_alergeno = str(ULID())
     mock_repository.get_by_id.return_value = None
 
     # Act & Assert
@@ -283,8 +283,8 @@ async def test_delete_producto_alergeno_not_found(
         - El servicio debe lanzar ProductoAlergenoNotFoundError.
     """
     # Arrange
-    id_producto = uuid.uuid4()
-    id_alergeno = uuid.uuid4()
+    id_producto = str(ULID())
+    id_alergeno = str(ULID())
     mock_repository.get_by_id.return_value = None
 
     # Act & Assert
@@ -323,8 +323,8 @@ async def test_get_producto_alergenos_success(
     producto_alergenos = [
         ProductoAlergenoModel(**sample_producto_alergeno_data),
         ProductoAlergenoModel(
-            id_producto=uuid.uuid4(),
-            id_alergeno=uuid.uuid4(),
+            id_producto=str(ULID()),
+            id_alergeno=str(ULID()),
             nivel_presencia=NivelPresencia.TRAZAS,
             notas="Puede contener trazas",
             activo=True,
@@ -442,8 +442,8 @@ async def test_update_producto_alergeno_not_found(
         - El servicio debe lanzar ProductoAlergenoNotFoundError.
     """
     # Arrange
-    id_producto = uuid.uuid4()
-    id_alergeno = uuid.uuid4()
+    id_producto = str(ULID())
+    id_alergeno = str(ULID())
     update_data = ProductoAlergenoUpdate(nivel_presencia=NivelPresencia.TRAZAS)
     mock_repository.update.return_value = None
 

@@ -8,7 +8,7 @@ NOTA: Los ejemplos usan modelos existentes (Rol, Producto, Categoria, Alergeno)
 """
 
 import pytest
-from uuid import uuid4
+from ulid import ULID
 from decimal import Decimal
 from src.models.auth.rol_model import RolModel
 from src.models.menu.producto_model import ProductoModel
@@ -25,7 +25,7 @@ def test_ejemplo_fixture_simple(fake_rol_data):
     
     ANTES (manual):
         data = {
-            "id": uuid4(),
+            "id": str(ULID()),
             "nombre": "Admin",
             "descripcion": "Administrador del sistema",
             "activo": True
@@ -220,19 +220,19 @@ def test_comparacion_antes_despues(fake_rol_data, create_fake_rol):
     """
     ANTES (manual - 10 líneas por cada rol):
         rol1_data = {
-            "id": uuid4(),
+            "id": str(ULID()),
             "nombre": "Admin",
             "descripcion": "Administrador del sistema",
             "activo": True
         }
         rol2_data = {
-            "id": uuid4(),
+            "id": str(ULID()),
             "nombre": "Usuario",
             "descripcion": "Usuario normal",
             "activo": True
         }
         rol3_data = {
-            "id": uuid4(),
+            "id": str(ULID()),
             "nombre": "Invitado",
             "descripcion": "Usuario invitado",
             "activo": False

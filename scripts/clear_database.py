@@ -6,6 +6,7 @@ Usar solo en desarrollo/testing.
 
 Ejecutar con:
     python -m scripts.clear_database
+    
 """
 import asyncio
 import sys

@@ -1,7 +1,7 @@
 """
 Pruebas unitarias para el servicio de productos.
 """
-import uuid
+from ulid import ULID
 import pytest
 from unittest.mock import AsyncMock
 from decimal import Decimal
@@ -44,8 +44,8 @@ def sample_producto_data():
     Fixture que proporciona datos de muestra para un producto.
     """
     return {
-        "id": uuid.uuid4(),
-        "id_categoria": uuid.uuid4(),
+        "id": str(ULID()),
+        "id_categoria": str(ULID()),
         "nombre": "Test Producto",
         "descripcion": "Producto para pruebas",
         "precio_base": Decimal("15.99"),
@@ -188,7 +188,7 @@ async def test_get_producto_by_id_not_found(producto_service, mock_repository):
         - El servicio debe lanzar ProductoNotFoundError.
     """
     # Arrange
-    producto_id = uuid.uuid4()
+    producto_id = str(ULID())
     mock_repository.get_by_id.return_value = None
 
     # Act & Assert
@@ -247,7 +247,7 @@ async def test_delete_producto_not_found(producto_service, mock_repository):
         - El servicio debe lanzar ProductoNotFoundError.
     """
     # Arrange
-    producto_id = uuid.uuid4()
+    producto_id = str(ULID())
     mock_repository.get_by_id.return_value = None
 
     # Act & Assert
@@ -280,8 +280,8 @@ async def test_get_productos_success(producto_service, mock_repository, sample_p
     productos = [
         ProductoModel(**sample_producto_data),
         ProductoModel(
-            id=uuid.uuid4(),
-            id_categoria=uuid.uuid4(),
+            id=str(ULID()),
+            id_categoria=str(ULID()),
             nombre="Otro Producto",
             descripcion="Otro producto para pruebas",
             precio_base=Decimal("20.00"),
@@ -346,7 +346,7 @@ async def test_get_productos_with_categoria_filter(producto_service, mock_reposi
         - El repositorio debe ser llamado con el id_categoria correcto.
     """
     # Arrange
-    id_categoria = uuid.uuid4()
+    id_categoria = str(ULID())
     productos = [
         ProductoModel(**sample_producto_data),
     ]
@@ -423,7 +423,7 @@ async def test_update_producto_not_found(producto_service, mock_repository):
         - El servicio debe lanzar ProductoNotFoundError.
     """
     # Arrange
-    producto_id = uuid.uuid4()
+    producto_id = str(ULID())
     update_data = ProductoUpdate(nombre="Producto Actualizado")
     mock_repository.update.return_value = None
 

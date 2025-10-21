@@ -3,7 +3,7 @@ Pruebas de integración para el repositorio de alérgenos.
 """
 
 import pytest
-from uuid import uuid4
+from ulid import ULID
 
 from src.models.menu.alergeno_model import AlergenoModel
 from src.repositories.menu.alergeno_repository import AlergenoRepository
@@ -105,7 +105,7 @@ async def test_integration_get_alergeno_by_id(alergeno_repository: AlergenoRepos
     assert alergeno_recuperado.nivel_riesgo == NivelRiesgo.ALTO
 
     # Probar con ID inexistente
-    alergeno_inexistente = await alergeno_repository.get_by_id(uuid4())
+    alergeno_inexistente = await alergeno_repository.get_by_id(str(ULID()))
     assert alergeno_inexistente is None
 
 
@@ -149,7 +149,7 @@ async def test_integration_delete_alergeno(alergeno_repository: AlergenoReposito
     assert alergeno_eliminado is None
 
     # Probar eliminar un alérgeno inexistente
-    resultado_no_existe = await alergeno_repository.delete(uuid4())
+    resultado_no_existe = await alergeno_repository.delete(str(ULID()))
     assert resultado_no_existe is False
 
 

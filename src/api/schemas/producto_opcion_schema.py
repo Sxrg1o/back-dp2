@@ -3,7 +3,7 @@ Pydantic schemas for ProductoOpcion (Product Option) entities.
 """
 
 from typing import Optional, ClassVar, List
-from uuid import UUID
+# UUID removed - using str for ULID compatibility
 from datetime import datetime
 from decimal import Decimal
 from pydantic import BaseModel, Field, ConfigDict
@@ -36,8 +36,8 @@ class ProductoOpcionBase(BaseModel):
 class ProductoOpcionCreate(ProductoOpcionBase):
     """Schema for creating a new producto opcion."""
 
-    id_producto: UUID = Field(description="Product ID")
-    id_tipo_opcion: UUID = Field(description="Option type ID")
+    id_producto: str = Field(description="Product ID")
+    id_tipo_opcion: str = Field(description="Option type ID")
 
 
 class ProductoOpcionUpdate(BaseModel):
@@ -63,11 +63,11 @@ class ProductoOpcionUpdate(BaseModel):
         description="Display order for the option",
         ge=0
     )
-    id_producto: Optional[UUID] = Field(
+    id_producto: Optional[str] = Field(
         default=None,
         description="Product ID"
     )
-    id_tipo_opcion: Optional[UUID] = Field(
+    id_tipo_opcion: Optional[str] = Field(
         default=None,
         description="Option type ID"
     )
@@ -78,9 +78,9 @@ class ProductoOpcionResponse(ProductoOpcionBase):
 
     model_config: ClassVar[ConfigDict] = ConfigDict(from_attributes=True)
 
-    id: UUID = Field(description="Product option ID")
-    id_producto: UUID = Field(description="Product ID")
-    id_tipo_opcion: UUID = Field(description="Option type ID")
+    id: str = Field(description="Product option ID")
+    id_producto: str = Field(description="Product ID")
+    id_tipo_opcion: str = Field(description="Option type ID")
     fecha_creacion: Optional[datetime] = Field(
         default=None, description="Creation timestamp"
     )
@@ -94,9 +94,9 @@ class ProductoOpcionSummary(BaseModel):
 
     model_config: ClassVar[ConfigDict] = ConfigDict(from_attributes=True)
 
-    id: UUID = Field(description="Product option ID")
-    id_producto: UUID = Field(description="Product ID")
-    id_tipo_opcion: UUID = Field(description="Option type ID")
+    id: str = Field(description="Product option ID")
+    id_producto: str = Field(description="Product ID")
+    id_tipo_opcion: str = Field(description="Option type ID")
     nombre: str = Field(description="Option name")
     precio_adicional: Decimal = Field(description="Additional price")
     activo: bool = Field(description="Indicates if the option is active")

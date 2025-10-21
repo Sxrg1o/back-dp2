@@ -4,7 +4,7 @@ Pruebas unitarias para el servicio de alérgenos.
 
 import pytest
 from unittest.mock import AsyncMock
-import uuid
+from ulid import ULID
 from datetime import datetime
 
 from src.business_logic.menu.alergeno_service import AlergenoService
@@ -44,7 +44,7 @@ def sample_alergeno_data():
     Fixture que proporciona datos de muestra para un alérgeno.
     """
     return {
-        "id": uuid.uuid4(),
+        "id": str(ULID()),
         "nombre": "Test Alérgeno",
         "descripcion": "Alérgeno para pruebas",
         "icono": "🧪",
@@ -184,7 +184,7 @@ async def test_get_alergeno_by_id_not_found(alergeno_service, mock_repository):
         - El servicio debe lanzar AlergenoNotFoundError.
     """
     # Arrange
-    alergeno_id = uuid.uuid4()
+    alergeno_id = str(ULID())
     mock_repository.get_by_id.return_value = None
 
     # Act & Assert
@@ -243,7 +243,7 @@ async def test_delete_alergeno_not_found(alergeno_service, mock_repository):
         - El servicio debe lanzar AlergenoNotFoundError.
     """
     # Arrange
-    alergeno_id = uuid.uuid4()
+    alergeno_id = str(ULID())
     mock_repository.get_by_id.return_value = None
 
     # Act & Assert
@@ -276,7 +276,7 @@ async def test_get_alergenos_success(alergeno_service, mock_repository, sample_a
     alergenos = [
         AlergenoModel(**sample_alergeno_data),
         AlergenoModel(
-            id=uuid.uuid4(),
+            id=str(ULID()),
             nombre="Otro Alérgeno",
             descripcion="Otro alérgeno para pruebas",
             nivel_riesgo=NivelRiesgo.ALTO,
@@ -390,7 +390,7 @@ async def test_update_alergeno_not_found(alergeno_service, mock_repository):
         - El servicio debe lanzar AlergenoNotFoundError.
     """
     # Arrange
-    alergeno_id = uuid.uuid4()
+    alergeno_id = str(ULID())
     update_data = AlergenoUpdate(nombre="Alérgeno Actualizado")
     mock_repository.update.return_value = None
 

@@ -3,7 +3,6 @@ Repositorio para la gestión de roles en el sistema.
 """
 
 from typing import Optional, List, Tuple
-from uuid import UUID
 
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -64,7 +63,7 @@ class RolRepository:
             await self.session.rollback()
             raise
 
-    async def get_by_id(self, rol_id: UUID) -> Optional[RolModel]:
+    async def get_by_id(self, rol_id: str) -> Optional[RolModel]:
         """
         Obtiene un rol por su identificador único.
 
@@ -82,7 +81,7 @@ class RolRepository:
         result = await self.session.execute(query)
         return result.scalars().first()
 
-    async def delete(self, rol_id: UUID) -> bool:
+    async def delete(self, rol_id: str) -> bool:
         """
         Elimina un rol de la base de datos por su ID.
 
@@ -110,7 +109,7 @@ class RolRepository:
             await self.session.rollback()
             raise
 
-    async def update(self, rol_id: UUID, **kwargs) -> Optional[RolModel]:
+    async def update(self, rol_id: str, **kwargs) -> Optional[RolModel]:
         """
         Actualiza un rol existente con los valores proporcionados.
 

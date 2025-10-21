@@ -69,7 +69,7 @@ async def create_categoria(
     description="Obtiene los detalles de una categoría específica por su ID.",
 )
 async def get_categoria(
-    categoria_id: UUID, session: AsyncSession = Depends(get_database_session)
+    categoria_id: str, session: AsyncSession = Depends(get_database_session)
 ) -> CategoriaResponse:
     """
     Obtiene una categoría específica por su ID.
@@ -148,7 +148,7 @@ async def list_categorias(
     description="Actualiza los datos de una categoría existente.",
 )
 async def update_categoria(
-    categoria_id: UUID,
+    categoria_id: str,
     categoria_data: CategoriaUpdate,
     session: AsyncSession = Depends(get_database_session),
 ) -> CategoriaResponse:
@@ -190,7 +190,7 @@ async def update_categoria(
     description="Elimina una categoría existente del sistema.",
 )
 async def delete_categoria(
-    categoria_id: UUID, session: AsyncSession = Depends(get_database_session)
+    categoria_id: str, session: AsyncSession = Depends(get_database_session)
 ) -> None:
     """
     Elimina una categoría existente.

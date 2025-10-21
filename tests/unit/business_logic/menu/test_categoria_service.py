@@ -4,7 +4,7 @@ Pruebas unitarias para el servicio de categorías.
 
 import pytest
 from unittest.mock import AsyncMock
-import uuid
+from ulid import ULID
 from datetime import datetime
 
 
@@ -44,7 +44,7 @@ def sample_categoria_data():
     Fixture que proporciona datos de muestra para una categoría.
     """
     return {
-        "id": uuid.uuid4(),
+        "id": str(ULID()),
         "nombre": "Test Categoría",
         "descripcion": "Categoría para pruebas",
         "imagen_path": "/images/test.jpg",
@@ -179,7 +179,7 @@ async def test_get_categoria_by_id_not_found(categoria_service, mock_repository)
         - El servicio debe lanzar CategoriaNotFoundError.
     """
     # Arrange
-    categoria_id = uuid.uuid4()
+    categoria_id = str(ULID())
     mock_repository.get_by_id.return_value = None
 
     # Act & Assert
@@ -238,7 +238,7 @@ async def test_delete_categoria_not_found(categoria_service, mock_repository):
         - El servicio debe lanzar CategoriaNotFoundError.
     """
     # Arrange
-    categoria_id = uuid.uuid4()
+    categoria_id = str(ULID())
     mock_repository.get_by_id.return_value = None
 
     # Act & Assert
@@ -271,7 +271,7 @@ async def test_get_categorias_success(categoria_service, mock_repository, sample
     categorias = [
         CategoriaModel(**sample_categoria_data),
         CategoriaModel(
-            id=uuid.uuid4(),
+            id=str(ULID()),
             nombre="Otra Categoría",
             descripcion="Otra categoría para pruebas",
             imagen_path="/images/otra.jpg",
@@ -385,7 +385,7 @@ async def test_update_categoria_not_found(categoria_service, mock_repository):
         - El servicio debe lanzar CategoriaNotFoundError.
     """
     # Arrange
-    categoria_id = uuid.uuid4()
+    categoria_id = str(ULID())
     update_data = CategoriaUpdate(nombre="Categoría Actualizada")
     mock_repository.update.return_value = None
 

@@ -3,7 +3,7 @@ Pruebas unitarias para los endpoints de relaciones producto-alérgeno.
 """
 
 import pytest
-from uuid import UUID, uuid4
+from ulid import ULID
 from unittest.mock import AsyncMock, patch
 from datetime import datetime
 from fastapi import FastAPI
@@ -82,13 +82,13 @@ def mock_producto_alergeno_service():
 @pytest.fixture
 def sample_producto_id():
     """ID de producto de ejemplo para las pruebas."""
-    return UUID("12345678-1234-5678-1234-567812345678")
+    return "12345678-1234-5678-1234-567812345678"  # UUID v4 string (backward compatible)
 
 
 @pytest.fixture
 def sample_alergeno_id():
     """ID de alérgeno de ejemplo para las pruebas."""
-    return UUID("87654321-4321-8765-4321-876543218765")
+    return "87654321-4321-8765-4321-876543218765"  # UUID v4 string (backward compatible)
 
 
 @pytest.fixture

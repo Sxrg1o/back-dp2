@@ -21,7 +21,7 @@ POSTCONDICIONES:
 """
 
 import pytest
-from uuid import UUID, uuid4
+from ulid import ULID
 from unittest.mock import AsyncMock, MagicMock, patch
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.exc import SQLAlchemyError
@@ -53,14 +53,14 @@ async def test_get_by_id():
     mock_session = AsyncMock(spec=AsyncSession)
     mock_result = MagicMock()
     mock_result.scalars.return_value.first.return_value = TipoOpcionModel(
-        id=uuid4(), 
+        id=str(ULID()), 
         codigo="nivel_aji", 
         nombre="Nivel de Ají",
         activo=True
     )
     mock_session.execute.return_value = mock_result
 
-    tipo_opcion_id = uuid4()
+    tipo_opcion_id = str(ULID())
     repository = TipoOpcionRepository(mock_session)
 
     # Act
@@ -154,7 +154,7 @@ async def test_delete_tipo_opcion():
     mock_result.rowcount = 1  # Simula que se eliminó una fila
     mock_session.execute.return_value = mock_result
 
-    tipo_opcion_id = uuid4()
+    tipo_opcion_id = str(ULID())
     repository = TipoOpcionRepository(mock_session)
 
     # Act
@@ -211,7 +211,7 @@ async def test_get_by_codigo():
     mock_session = AsyncMock(spec=AsyncSession)
     mock_result = MagicMock()
     mock_result.scalars.return_value.first.return_value = TipoOpcionModel(
-        id=uuid4(), 
+        id=str(ULID()), 
         codigo="acompanamiento", 
         nombre="Acompañamiento",
         activo=True
@@ -256,8 +256,8 @@ async def test_get_activos():
     mock_session = AsyncMock(spec=AsyncSession)
     mock_result = MagicMock()
     mock_tipos_opciones = [
-        TipoOpcionModel(id=uuid4(), codigo="nivel_aji", nombre="Nivel de Ají", activo=True, orden=1),
-        TipoOpcionModel(id=uuid4(), codigo="temperatura", nombre="Temperatura", activo=True, orden=2),
+        TipoOpcionModel(id=str(ULID()), codigo="nivel_aji", nombre="Nivel de Ají", activo=True, orden=1),
+        TipoOpcionModel(id=str(ULID()), codigo="temperatura", nombre="Temperatura", activo=True, orden=2),
     ]
     mock_result.scalars.return_value.all.return_value = mock_tipos_opciones
     mock_session.execute.return_value = mock_result
@@ -298,8 +298,8 @@ async def test_get_all():
     # Mock para la consulta de tipos de opciones
     mock_result = MagicMock()
     mock_tipos_opciones = [
-        TipoOpcionModel(id=uuid4(), codigo="nivel_aji", nombre="Nivel de Ají"),
-        TipoOpcionModel(id=uuid4(), codigo="temperatura", nombre="Temperatura"),
+        TipoOpcionModel(id=str(ULID()), codigo="nivel_aji", nombre="Nivel de Ají"),
+        TipoOpcionModel(id=str(ULID()), codigo="temperatura", nombre="Temperatura"),
     ]
     mock_result.scalars.return_value.all.return_value = mock_tipos_opciones
     

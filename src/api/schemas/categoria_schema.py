@@ -3,7 +3,7 @@ Pydantic schemas for Categoria (Category) entities.
 """
 
 from typing import Optional, ClassVar, List
-from uuid import UUID
+# UUID removed - using str for ULID compatibility
 from datetime import datetime
 from pydantic import BaseModel, Field, ConfigDict
 
@@ -57,7 +57,7 @@ class CategoriaResponse(CategoriaBase):
 
     model_config: ClassVar[ConfigDict] = ConfigDict(from_attributes=True)
 
-    id: UUID = Field(description="Category ID")
+    id: str = Field(description="Category ID")
     activo: bool = Field(description="Indicates if the category is active")
     fecha_creacion: Optional[datetime] = Field(
         default=None, description="Creation timestamp"
@@ -72,7 +72,7 @@ class CategoriaSummary(BaseModel):
     
     model_config: ClassVar[ConfigDict] = ConfigDict(from_attributes=True)
     
-    id: UUID = Field(description="Category ID")
+    id: str = Field(description="Category ID")
     nombre: str = Field(description="Category name")
     descripcion: Optional[str] = Field(default=None, description="Category description")
     imagen_path: Optional[str] = Field(default=None, description="Category image path")
@@ -93,7 +93,7 @@ class ProductoCardMinimal(BaseModel):
     
     model_config: ClassVar[ConfigDict] = ConfigDict(from_attributes=True)
     
-    id: UUID = Field(description="Product ID")
+    id: str = Field(description="Product ID")
     nombre: str = Field(description="Product name")
     imagen_path: Optional[str] = Field(default=None, description="Product image path")
 
@@ -103,7 +103,7 @@ class CategoriaConProductosCard(BaseModel):
     
     model_config: ClassVar[ConfigDict] = ConfigDict(from_attributes=True)
     
-    id: UUID = Field(description="Category ID")
+    id: str = Field(description="Category ID")
     nombre: str = Field(description="Category name")
     imagen_path: Optional[str] = Field(default=None, description="Category image path")
     productos: List[ProductoCardMinimal] = Field(default_factory=list, description="Products in this category")

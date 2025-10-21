@@ -4,7 +4,7 @@ Pruebas unitarias para los endpoints de categorías.
 
 import pytest
 from unittest.mock import AsyncMock, patch
-import uuid
+from ulid import ULID
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
 
@@ -84,7 +84,7 @@ def sample_categoria_id():
     POSTCONDICIONES:
         - Devuelve un string con formato UUID válido para usar como ID de categoría
     """
-    return str(uuid.uuid4())
+    return str(str(ULID()))
 
 
 @pytest.fixture
@@ -104,7 +104,7 @@ def sample_categoria_data():
         - Los datos pueden ser usados para construir objetos CategoriaModel o CategoriaResponse
     """
     return {
-        "id": str(uuid.uuid4()),
+        "id": str(str(ULID())),
         "nombre": "Bebidas",
         "descripcion": "Bebidas frías y calientes",
         "imagen_path": "/images/bebidas.jpg",
@@ -487,7 +487,7 @@ def test_delete_categoria_success(
     # Assert
     assert response.status_code == 204
     assert response.content == b""  # No content
-    mock_categoria_service.delete_categoria.assert_awaited_once_with(uuid.UUID(sample_categoria_id))
+    mock_categoria_service.delete_categoria.assert_awaited_once_with(sample_categoria_id)
 
 
 def test_delete_categoria_not_found(
