@@ -168,23 +168,22 @@ async def sync_platos(
                 except Exception as e:
                     logger.error(f"Error preparando producto para actualizar: {str(e)}")
 
-        # Crear productos nuevos individualmente
+        # ✅ BATCH: Ejecutar operaciones en lote para productos
         if productos_a_crear:
-            for producto_data in productos_a_crear:
-                try:
-                    await producto_service.create_producto(producto_data)
-                    resultados["productos_creados"] += 1
-                except Exception as e:
-                    logger.error(f"Error al crear producto {producto_data.nombre}: {str(e)}")
+            try:
+                productos_creados = await producto_service.batch_create_productos(productos_a_crear)
+                resultados["productos_creados"] += len(productos_creados)
+                logger.info(f"✅ Productos creados en lote: {len(productos_creados)}")
+            except Exception as e:
+                logger.error(f"❌ Error al crear productos en lote: {str(e)}")
 
-        # Actualizar productos existentes individualmente
         if productos_a_actualizar:
-            for producto_id, producto_update in productos_a_actualizar:
-                try:
-                    await producto_service.update_producto(producto_id, producto_update)
-                    resultados["productos_actualizados"] += 1
-                except Exception as e:
-                    logger.error(f"Error al actualizar producto {producto_id}: {str(e)}")
+            try:
+                productos_actualizados = await producto_service.batch_update_productos(productos_a_actualizar)
+                resultados["productos_actualizados"] += len(productos_actualizados)
+                logger.info(f"✅ Productos actualizados en lote: {len(productos_actualizados)}")
+            except Exception as e:
+                logger.error(f"❌ Error al actualizar productos en lote: {str(e)}")
 
         # Marcar productos inactivos
         productos_vistos = set(producto.nombre for producto in productos_domotica)
@@ -195,18 +194,18 @@ async def sync_platos(
             if nombre not in productos_vistos and producto.disponible:
                 productos_a_desactivar.append((producto.id, ProductoUpdate(disponible=False)))
         
-        # Desactivar productos individualmente
+        # ✅ BATCH: Desactivar productos en lote
         if productos_a_desactivar:
-            for producto_id, producto_update in productos_a_desactivar:
-                try:
-                    await producto_service.update_producto(producto_id, producto_update)
-                    resultados["productos_desactivados"] += 1
-                except Exception as e:
-                    logger.error(f"Error al desactivar producto {producto_id}: {str(e)}")
+            try:
+                productos_desactivados = await producto_service.batch_update_productos(productos_a_desactivar)
+                resultados["productos_desactivados"] += len(productos_desactivados)
+                logger.info(f"✅ Productos desactivados en lote: {len(productos_desactivados)}")
+            except Exception as e:
+                logger.error(f"❌ Error al desactivar productos en lote: {str(e)}")
 
         return {
             "status": "success",
-            "message": "Sincronización completada correctamente",
+            "message": "Sincronización completada correctamente con operaciones por lotes",
             "resultados": resultados
         }
 
