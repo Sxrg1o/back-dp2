@@ -43,10 +43,6 @@ class MesaBase(BaseModel):
         default=None,
         description="Zona donde se encuentra la mesa."
     )
-    qr_code: Optional[str] = Field(
-        default=None,
-        description="Código QR asociado a la mesa para identificación rápida."
-    )
     estado: EstadoMesa = Field(
         default=EstadoMesa.LIBRE,
         description="Estado actual de la mesa (libre, ocupada, reservada, fuera de servicio)."
@@ -84,10 +80,6 @@ class MesaUpdate(BaseModel):
         default=None,
         description="Nueva zona donde se encuentra la mesa."
     )
-    qr_code: Optional[str] = Field(
-        default=None,
-        description="Nuevo código QR asociado a la mesa."
-    )
     estado: Optional[EstadoMesa] = Field(
         default=None,
         description="Nuevo estado de la mesa (libre, ocupada, reservada, fuera de servicio)."
@@ -103,7 +95,7 @@ class MesaResponse(MesaBase):
     """
     model_config: ClassVar[ConfigDict] = ConfigDict(from_attributes=True)
 
-    id: UUID = Field(description="Identificador único de la mesa (UUID).")
+    id: str = Field(description="Identificador único de la mesa (ULID).")
     activo: bool = Field(description="Indica si la mesa está activa en el sistema.")
     fecha_creacion: Optional[datetime] = Field(
         default=None, description="Fecha y hora de creación del registro."
@@ -121,11 +113,10 @@ class MesaSummary(BaseModel):
     """
     model_config: ClassVar[ConfigDict] = ConfigDict(from_attributes=True)
 
-    id: UUID = Field(description="Identificador único de la mesa (UUID).")
+    id: str = Field(description="Identificador único de la mesa (ULID).")
     numero: str = Field(description="Número de la mesa.")
     capacidad: Optional[int] = Field(description="Capacidad de la mesa.")
     zona: Optional[str] = Field(description="Zona donde se encuentra la mesa.")
-    qr_code: Optional[str] = Field(description="Código QR asociado a la mesa.")
     estado: EstadoMesa = Field(description="Estado actual de la mesa.")
 
 class MesaList(BaseModel):

@@ -1,3 +1,73 @@
+from typing import List
+
+
+from typing import List
+from uuid import UUID
+from fastapi import APIRouter, Depends, HTTPException, status, Query
+from sqlalchemy.ext.asyncio import AsyncSession
+from src.core.database import get_database_session
+from src.business_logic.mesas.mesa_service import MesaService
+from src.api.schemas.mesa_schema import (
+    MesaCreate,
+    MesaResponse,
+    MesaUpdate,
+    MesaList,
+)
+from src.business_logic.exceptions.mesa_exceptions import (
+    MesaValidationError,
+    MesaNotFoundError,
+    MesaConflictError,
+)
+
+router = APIRouter(prefix="/mesas", tags=["Mesas"])
+
+@router.post(
+    "/batch",
+    response_model=List[MesaResponse],
+    status_code=status.HTTP_201_CREATED,
+    summary="Crear múltiples mesas (batch)",
+    description="Crea varias mesas en una sola operación batch.",
+)
+async def batch_create_mesas(
+    mesas_data: List[MesaCreate],
+    session: AsyncSession = Depends(get_database_session),
+) -> List[MesaResponse]:
+    """
+    Crea múltiples mesas en una sola operación batch.
+    """
+    try:
+        mesa_service = MesaService(session)
+        return await mesa_service.batch_create_mesas(mesas_data)
+    except MesaConflictError as e:
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=str(e))
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error interno del servidor: {str(e)}",
+        )
+
+@router.delete(
+    "/batch",
+    status_code=status.HTTP_200_OK,
+    summary="Eliminar múltiples mesas (batch)",
+    description="Elimina varias mesas en una sola operación batch.",
+)
+async def batch_delete_mesas(
+    mesa_ids: List[UUID],
+    session: AsyncSession = Depends(get_database_session),
+) -> dict:
+    """
+    Elimina múltiples mesas en una sola operación batch.
+    """
+    try:
+        mesa_service = MesaService(session)
+        deleted_count = await mesa_service.batch_delete_mesas(mesa_ids)
+        return {"deleted_count": deleted_count}
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error interno del servidor: {str(e)}",
+        )
 """
 Endpoints para gestión de mesas.
 """
