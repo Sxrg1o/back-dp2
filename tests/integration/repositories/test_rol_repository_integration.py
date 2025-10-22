@@ -3,7 +3,7 @@ Pruebas de integración para el repositorio de roles.
 """
 
 import pytest
-from uuid import uuid4
+from ulid import ULID
 
 from src.models.auth.rol_model import RolModel
 from src.repositories.auth.rol_repository import RolRepository
@@ -92,7 +92,7 @@ async def test_integration_get_rol_by_id(rol_repository: RolRepository):
     assert rol_recuperado.descripcion == "Rol para probar get_by_id"
 
     # Probar con ID inexistente
-    rol_inexistente = await rol_repository.get_by_id(uuid4())
+    rol_inexistente = await rol_repository.get_by_id(str(ULID()))
     assert rol_inexistente is None
 
 
@@ -132,5 +132,5 @@ async def test_integration_delete_rol(rol_repository: RolRepository):
     assert rol_eliminado is None
 
     # Probar eliminar un rol inexistente
-    resultado_no_existe = await rol_repository.delete(uuid4())
+    resultado_no_existe = await rol_repository.delete(str(ULID()))
     assert resultado_no_existe is False

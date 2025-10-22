@@ -4,7 +4,7 @@ Pruebas unitarias para el servicio de opciones de productos.
 
 import pytest
 from unittest.mock import AsyncMock
-import uuid
+from ulid import ULID
 from datetime import datetime
 from decimal import Decimal
 
@@ -44,9 +44,9 @@ def sample_producto_opcion_data():
     Fixture que proporciona datos de muestra para una opción de producto.
     """
     return {
-        "id": uuid.uuid4(),
-        "id_producto": uuid.uuid4(),
-        "id_tipo_opcion": uuid.uuid4(),
+        "id": str(ULID()),
+        "id_producto": str(ULID()),
+        "id_tipo_opcion": str(ULID()),
         "nombre": "Ají suave",
         "precio_adicional": Decimal("0.00"),
         "activo": True,
@@ -185,7 +185,7 @@ async def test_get_producto_opcion_by_id_not_found(producto_opcion_service, mock
         - El servicio debe lanzar ProductoOpcionNotFoundError.
     """
     # Arrange
-    producto_opcion_id = uuid.uuid4()
+    producto_opcion_id = str(ULID())
     mock_repository.get_by_id.return_value = None
 
     # Act & Assert
@@ -244,7 +244,7 @@ async def test_delete_producto_opcion_not_found(producto_opcion_service, mock_re
         - El servicio debe lanzar ProductoOpcionNotFoundError.
     """
     # Arrange
-    producto_opcion_id = uuid.uuid4()
+    producto_opcion_id = str(ULID())
     mock_repository.get_by_id.return_value = None
 
     # Act & Assert
@@ -277,9 +277,9 @@ async def test_get_producto_opciones_success(producto_opcion_service, mock_repos
     producto_opciones = [
         ProductoOpcionModel(**sample_producto_opcion_data),
         ProductoOpcionModel(
-            id=uuid.uuid4(),
-            id_producto=uuid.uuid4(),
-            id_tipo_opcion=uuid.uuid4(),
+            id=str(ULID()),
+            id_producto=str(ULID()),
+            id_tipo_opcion=str(ULID()),
             nombre="Sin ají",
             precio_adicional=Decimal("0.00"),
             activo=True,
@@ -387,7 +387,7 @@ async def test_update_producto_opcion_not_found(producto_opcion_service, mock_re
         - El servicio debe lanzar ProductoOpcionNotFoundError.
     """
     # Arrange
-    producto_opcion_id = uuid.uuid4()
+    producto_opcion_id = str(ULID())
     update_data = ProductoOpcionUpdate(nombre="Ají picante")
     mock_repository.update.return_value = None
 

@@ -7,7 +7,7 @@ from typing import AsyncGenerator, Optional
 
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine, async_sessionmaker
 
-from src.core.config import get_settings, Settings
+from src.core.config import get_settings
 from src.models.base_model import BaseModel
 
 
@@ -46,7 +46,7 @@ class DatabaseManager:
 
     def __init__(self):
         if not hasattr(self, "_initialized") or not self._initialized:
-            settings: Settings = get_settings()
+            settings = get_settings()
 
             # Check if we're using SQLite (which doesn't support regular connection pooling)
             is_sqlite = settings.database_url.startswith("sqlite")

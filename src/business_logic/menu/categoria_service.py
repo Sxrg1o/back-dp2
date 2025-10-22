@@ -2,8 +2,7 @@
 Servicio para la gestión de categorías en el sistema.
 """
 
-from uuid import UUID
-from typing import List, Tuple, Dict, Any
+from typing import List, Tuple
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.exc import IntegrityError
 
@@ -49,12 +48,10 @@ class CategoriaService:
         """
         self.repository = CategoriaRepository(session)
 
-    async def create_categoria(
-        self, categoria_data: CategoriaCreate
-    ) -> CategoriaResponse:
+    async def create_categoria(self, categoria_data: CategoriaCreate) -> CategoriaResponse:
         """
         Crea una nueva categoría en el sistema.
-
+        
         Parameters
         ----------
         categoria_data : CategoriaCreate
@@ -75,7 +72,7 @@ class CategoriaService:
             categoria = CategoriaModel(
                 nombre=categoria_data.nombre,
                 descripcion=categoria_data.descripcion,
-                imagen_path=categoria_data.imagen_path,
+                imagen_path=categoria_data.imagen_path
             )
 
             # Persistir en la base de datos
@@ -89,14 +86,14 @@ class CategoriaService:
                 f"Ya existe una categoría con el nombre '{categoria_data.nombre}'"
             )
 
-    async def get_categoria_by_id(self, categoria_id: UUID) -> CategoriaResponse:
+    async def get_categoria_by_id(self, categoria_id: str) -> CategoriaResponse:
         """
         Obtiene una categoría por su ID.
 
         Parameters
         ----------
-        categoria_id : UUID
-            Identificador único de la categoría a buscar.
+        categoria_id : str
+            Identificador único de la categoría a buscar (ULID).
 
         Returns
         -------
@@ -113,21 +110,19 @@ class CategoriaService:
 
         # Verificar si existe
         if not categoria:
-            raise CategoriaNotFoundError(
-                f"No se encontró la categoría con ID {categoria_id}"
-            )
+            raise CategoriaNotFoundError(f"No se encontró la categoría con ID {categoria_id}")
 
         # Convertir y retornar como esquema de respuesta
         return CategoriaResponse.model_validate(categoria)
 
-    async def delete_categoria(self, categoria_id: UUID) -> bool:
+    async def delete_categoria(self, categoria_id: str) -> bool:
         """
         Elimina una categoría por su ID.
-
+        
         Parameters
         ----------
-        categoria_id : UUID
-            Identificador único de la categoría a eliminar.
+        categoria_id : str
+            Identificador único de la categoría a eliminar (ULID).
 
         Returns
         -------
@@ -142,9 +137,7 @@ class CategoriaService:
         # Verificar primero si la categoría existe
         categoria = await self.repository.get_by_id(categoria_id)
         if not categoria:
-            raise CategoriaNotFoundError(
-                f"No se encontró la categoría con ID {categoria_id}"
-            )
+            raise CategoriaNotFoundError(f"No se encontró la categoría con ID {categoria_id}")
 
         # Eliminar la categoría
         result = await self.repository.delete(categoria_id)
@@ -178,23 +171,19 @@ class CategoriaService:
         categorias, total = await self.repository.get_all(skip, limit)
 
         # Convertir modelos a esquemas de resumen
-        categoria_summaries = [
-            CategoriaSummary.model_validate(categoria) for categoria in categorias
-        ]
+        categoria_summaries = [CategoriaSummary.model_validate(categoria) for categoria in categorias]
 
         # Retornar esquema de lista
         return CategoriaList(items=categoria_summaries, total=total)
 
-    async def update_categoria(
-        self, categoria_id: UUID, categoria_data: CategoriaUpdate
-    ) -> CategoriaResponse:
+    async def update_categoria(self, categoria_id: str, categoria_data: CategoriaUpdate) -> CategoriaResponse:
         """
         Actualiza una categoría existente.
 
         Parameters
         ----------
-        categoria_id : UUID
-            Identificador único de la categoría a actualizar.
+        categoria_id : str
+            Identificador único de la categoría a actualizar (ULID).
         categoria_data : CategoriaUpdate
             Datos para actualizar la categoría.
 
@@ -220,15 +209,11 @@ class CategoriaService:
 
         try:
             # Actualizar la categoría
-            updated_categoria = await self.repository.update(
-                categoria_id, **update_data
-            )
+            updated_categoria = await self.repository.update(categoria_id, **update_data)
 
             # Verificar si la categoría fue encontrada
             if not updated_categoria:
-                raise CategoriaNotFoundError(
-                    f"No se encontró la categoría con ID {categoria_id}"
-                )
+                raise CategoriaNotFoundError(f"No se encontró la categoría con ID {categoria_id}")
 
             # Convertir y retornar como esquema de respuesta
             return CategoriaResponse.model_validate(updated_categoria)
@@ -291,15 +276,15 @@ class CategoriaService:
             )
 
     async def batch_update_categorias(
-        self, updates: List[Tuple[UUID, CategoriaUpdate]]
+        self, updates: List[Tuple[str, CategoriaUpdate]]
     ) -> List[CategoriaResponse]:
         """
         Actualiza múltiples categorías en una sola operación.
 
         Parameters
         ----------
-        updates : List[Tuple[UUID, CategoriaUpdate]]
-            Lista de tuplas con el ID de la categoría y los datos para actualizarla.
+        updates : List[Tuple[str, CategoriaUpdate]]
+            Lista de tuplas con el ID (ULID) de la categoría y los datos para actualizarla.
 
         Returns
         -------
@@ -334,7 +319,7 @@ class CategoriaService:
             # Verificar si todas las categorías fueron actualizadas
             if len(updated_categorias) != len(repository_updates):
                 missing_ids = set(u[0] for u in repository_updates) - set(
-                    c.id for c in updated_categorias
+                    str(c.id) for c in updated_categorias
                 )
                 if missing_ids:
                     raise CategoriaNotFoundError(
@@ -353,7 +338,9 @@ class CategoriaService:
             )
 
     async def get_categorias_con_productos_cards(
-        self, skip: int = 0, limit: int = 100
+        self,
+        skip: int = 0,
+        limit: int = 100
     ) -> CategoriaConProductosCardList:
         """
         Obtiene una lista de categorías con sus productos en formato minimal (solo id, nombre, imagen).
@@ -372,7 +359,9 @@ class CategoriaService:
         """
         # Obtener categorías con productos eager-loaded
         categorias, total = await self.repository.get_all_with_productos(
-            skip=skip, limit=limit, activo=True  # Solo categorías activas
+            skip=skip,
+            limit=limit,
+            activo=True  # Solo categorías activas
         )
 
         # Construir la lista de categorías con productos
@@ -383,7 +372,7 @@ class CategoriaService:
                 ProductoCardMinimal(
                     id=producto.id,
                     nombre=producto.nombre,
-                    imagen_path=producto.imagen_path,
+                    imagen_path=producto.imagen_path
                 )
                 for producto in categoria.productos
             ]
@@ -393,7 +382,7 @@ class CategoriaService:
                 id=categoria.id,
                 nombre=categoria.nombre,
                 imagen_path=categoria.imagen_path,
-                productos=productos_minimal,
+                productos=productos_minimal
             )
             items.append(categoria_card)
 

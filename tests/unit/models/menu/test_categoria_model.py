@@ -19,7 +19,7 @@ POSTCONDICIONES:
     - El modelo debe funcionar según las especificaciones.
 """
 
-from uuid import UUID, uuid4
+from ulid import ULID
 from src.models.menu.categoria_model import CategoriaModel
 
 
@@ -36,7 +36,7 @@ def test_categoria_creation():
     POSTCONDICIONES:
         - La instancia debe tener los valores exactos proporcionados.
     """
-    categoria_id: UUID = uuid4()
+    categoria_id: str = str(ULID())
     categoria_nombre = "Entradas"
     categoria_descripcion = "Platos de entrada y aperitivos"
     categoria_imagen = "/images/entradas.jpg"
@@ -70,7 +70,7 @@ def test_categoria_to_dict():
         - El diccionario debe contener todas las claves esperadas.
         - Los valores deben coincidir con los de la instancia original.
     """
-    categoria_id: UUID = uuid4()
+    categoria_id: str = str(ULID())
     categoria_nombre = "Postres"
     categoria_descripcion = "Dulces y postres"
     categoria = CategoriaModel(

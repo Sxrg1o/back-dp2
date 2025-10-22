@@ -6,11 +6,10 @@ a través del scrapper, y procesarlos para actualizar la base de datos local.
 """
 
 from typing import List, Dict, Any, Set, Tuple
-from uuid import UUID
 from fastapi import APIRouter, Depends, HTTPException, status, Body
 from sqlalchemy.ext.asyncio import AsyncSession
 import logging
-from decimal import Decimal
+from decimal import Decimal, InvalidOperation
 
 from src.core.database import get_database_session
 from src.api.schemas.scrapper_schemas import ProductoDomotica, MesaDomotica
@@ -88,7 +87,7 @@ async def sync_platos(
 
         categorias_a_crear: List[CategoriaCreate] = []
         productos_a_crear: List[ProductoCreate] = []
-        productos_a_actualizar: List[Tuple[UUID, ProductoUpdate]] = []
+        productos_a_actualizar: List[Tuple[str, ProductoUpdate]] = []
         
         categorias_nuevas: Set[str] = set()
         
@@ -104,16 +103,26 @@ async def sync_platos(
         
         # Actualizar el diccionario de categorías con las recién creadas
         for categoria in categorias_creadas:
-            categorias_dict[categoria.nombre.upper()] = categoria
+            categorias_dict[categoria.nombre.upper()] = categoria  # type: ignore[assignment]
 
         # Procesar productos
         for producto_domotica in productos_domotica:
             # Convertir precio de string a decimal si es necesario
             try:
-                precio = Decimal(producto_domotica.precio.replace(",", ".")) if isinstance(producto_domotica.precio, str) else producto_domotica.precio
-            except (ValueError, TypeError):
+                if isinstance(producto_domotica.precio, Decimal):
+                    precio = producto_domotica.precio
+                elif isinstance(producto_domotica.precio, str):
+                    # Remover símbolos de moneda y espacios
+                    precio_limpio = producto_domotica.precio.replace("S/.", "").replace(",", ".").strip()
+                    precio = Decimal(precio_limpio)
+                elif isinstance(producto_domotica.precio, (int, float)):
+                    precio = Decimal(str(producto_domotica.precio))
+                else:
+                    precio = Decimal("0.0")
+                    logger.warning(f"Tipo de precio desconocido para '{producto_domotica.nombre}': {type(producto_domotica.precio)}")
+            except (ValueError, TypeError, InvalidOperation) as e:
                 precio = Decimal("0.0")
-                logger.warning(f"Error al convertir precio para '{producto_domotica.nombre}': {producto_domotica.precio}")
+                logger.warning(f"Error al convertir precio para '{producto_domotica.nombre}': {producto_domotica.precio} - {e}")
             
             if producto_domotica.nombre not in productos_dict:
                 # Nuevo producto - preparamos el objeto ProductoCreate
@@ -159,22 +168,22 @@ async def sync_platos(
                 except Exception as e:
                     logger.error(f"Error preparando producto para actualizar: {str(e)}")
 
-        # Ejecutar operaciones en lote
+        # ✅ BATCH: Ejecutar operaciones en lote para productos
         if productos_a_crear:
             try:
                 productos_creados = await producto_service.batch_create_productos(productos_a_crear)
                 resultados["productos_creados"] += len(productos_creados)
-                logger.info(f"Productos creados en lote: {len(productos_creados)}")
+                logger.info(f"✅ Productos creados en lote: {len(productos_creados)}")
             except Exception as e:
-                logger.error(f"Error al crear productos en lote: {str(e)}")
+                logger.error(f"❌ Error al crear productos en lote: {str(e)}")
 
         if productos_a_actualizar:
             try:
                 productos_actualizados = await producto_service.batch_update_productos(productos_a_actualizar)
                 resultados["productos_actualizados"] += len(productos_actualizados)
-                logger.info(f"Productos actualizados en lote: {len(productos_actualizados)}")
+                logger.info(f"✅ Productos actualizados en lote: {len(productos_actualizados)}")
             except Exception as e:
-                logger.error(f"Error al actualizar productos en lote: {str(e)}")
+                logger.error(f"❌ Error al actualizar productos en lote: {str(e)}")
 
         # Marcar productos inactivos
         productos_vistos = set(producto.nombre for producto in productos_domotica)
@@ -185,13 +194,14 @@ async def sync_platos(
             if nombre not in productos_vistos and producto.disponible:
                 productos_a_desactivar.append((producto.id, ProductoUpdate(disponible=False)))
         
+        # ✅ BATCH: Desactivar productos en lote
         if productos_a_desactivar:
             try:
                 productos_desactivados = await producto_service.batch_update_productos(productos_a_desactivar)
                 resultados["productos_desactivados"] += len(productos_desactivados)
-                logger.info(f"Productos desactivados en lote: {len(productos_desactivados)}")
+                logger.info(f"✅ Productos desactivados en lote: {len(productos_desactivados)}")
             except Exception as e:
-                logger.error(f"Error al desactivar productos en lote: {str(e)}")
+                logger.error(f"❌ Error al desactivar productos en lote: {str(e)}")
 
         return {
             "status": "success",
@@ -269,4 +279,125 @@ async def sync_mesas(
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Error durante la sincronización: {str(e)}",
+        )
+
+
+@router.post(
+    "/enrich",
+    status_code=status.HTTP_200_OK,
+    summary="Enriquecer datos existentes",
+    description="Ejecuta el script de enriquecimiento para agregar alérgenos, tipos de opciones y relaciones a los productos existentes. Este endpoint debe ejecutarse DESPUÉS de sincronizar los productos desde Domotica.",
+)
+async def enrich_database(
+    session: AsyncSession = Depends(get_database_session),
+) -> Dict[str, Any]:
+    """
+    Enriquece los datos existentes en la base de datos.
+    
+    Este endpoint debe ejecutarse DESPUÉS de sincronizar los productos desde Domotica.
+    
+    Realiza las siguientes operaciones:
+    1. Crea 8 alérgenos comunes (si no existen)
+    2. Crea 4 tipos de opciones (si no existen)
+    3. Asocia alérgenos a productos usando reglas inteligentes basadas en nombres
+    4. Crea opciones de productos (nivel de ají, acompañamientos, bebidas, extras)
+    5. Crea roles de usuario (si no existen)
+    6. Actualiza imágenes de productos y categorías desde seed data
+    
+    Parameters
+    ----------
+    session : AsyncSession
+        Sesión de base de datos proporcionada por FastAPI
+        
+    Returns
+    -------
+    Dict[str, Any]
+        Resumen de las operaciones realizadas incluyendo:
+        - status: Estado de la operación
+        - message: Mensaje descriptivo
+        - data: Estadísticas del enriquecimiento (productos procesados, alérgenos creados, etc.)
+        
+    Raises
+    ------
+    HTTPException
+        Si ocurre un error durante el proceso de enriquecimiento
+        
+    Example
+    -------
+    Response exitoso:
+    ```json
+    {
+        "status": "success",
+        "message": "Enriquecimiento completado exitosamente",
+        "data": {
+            "productos_procesados": 274,
+            "alergenos_creados": 8,
+            "tipos_opciones_creados": 4,
+            "relaciones_alergenos": 150,
+            "opciones_creadas": 800
+        }
+    }
+    ```
+    """
+    try:
+        from scripts.enrich_existing_data import DataEnricher
+        from sqlalchemy import select, func
+        from src.models.menu.producto_model import ProductoModel
+        from src.models.menu.alergeno_model import AlergenoModel
+        from src.models.pedidos.tipo_opciones_model import TipoOpcionModel
+        
+        logger.info("🌱 Iniciando enriquecimiento de datos...")
+        
+        # Obtener estadísticas antes del enriquecimiento
+        query_productos = select(func.count(ProductoModel.id))
+        result_productos = await session.execute(query_productos)
+        productos_count = result_productos.scalar() or 0
+        
+        query_alergenos = select(func.count(AlergenoModel.id))
+        result_alergenos = await session.execute(query_alergenos)
+        alergenos_antes = result_alergenos.scalar() or 0
+        
+        query_tipos = select(func.count(TipoOpcionModel.id))
+        result_tipos = await session.execute(query_tipos)
+        tipos_antes = result_tipos.scalar() or 0
+        
+        logger.info(f"📊 Estado inicial: {productos_count} productos, {alergenos_antes} alérgenos, {tipos_antes} tipos de opciones")
+        
+        # Crear enricher y ejecutar
+        enricher = DataEnricher(session)
+        await enricher.enrich_all()
+        
+        # Commit de los cambios
+        await session.commit()
+        
+        # Obtener estadísticas después del enriquecimiento
+        query_alergenos_despues = select(func.count(AlergenoModel.id))
+        result_alergenos_despues = await session.execute(query_alergenos_despues)
+        alergenos_despues = result_alergenos_despues.scalar() or 0
+        
+        query_tipos_despues = select(func.count(TipoOpcionModel.id))
+        result_tipos_despues = await session.execute(query_tipos_despues)
+        tipos_despues = result_tipos_despues.scalar() or 0
+        
+        logger.info(f"✅ Enriquecimiento completado: {alergenos_despues - alergenos_antes} alérgenos nuevos, {tipos_despues - tipos_antes} tipos nuevos")
+        
+        return {
+            "status": "success",
+            "message": "Enriquecimiento completado exitosamente",
+            "data": {
+                "productos_procesados": productos_count,
+                "alergenos_creados": alergenos_despues - alergenos_antes,
+                "alergenos_totales": alergenos_despues,
+                "tipos_opciones_creados": tipos_despues - tipos_antes,
+                "tipos_opciones_totales": tipos_despues,
+            }
+        }
+        
+    except Exception as e:
+        import traceback
+        logger.error(f"❌ Error durante el enriquecimiento: {str(e)}")
+        logger.error(f"Stack trace:\n{traceback.format_exc()}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error durante el enriquecimiento: {str(e)}",
         )

@@ -3,7 +3,7 @@ Pruebas de integración para el servicio de alérgenos.
 """
 
 import pytest
-from uuid import uuid4
+from ulid import ULID
 
 from src.business_logic.menu.alergeno_service import AlergenoService
 from src.api.schemas.alergeno_schema import AlergenoCreate, AlergenoUpdate
@@ -111,7 +111,7 @@ async def test_integration_get_alergeno_by_id(alergeno_service: AlergenoService)
 
     # Probar con ID inexistente
     with pytest.raises(AlergenoNotFoundError):
-        await alergeno_service.get_alergeno_by_id(uuid4())
+        await alergeno_service.get_alergeno_by_id(str(ULID()))
 
 
 @pytest.mark.asyncio
@@ -155,7 +155,7 @@ async def test_integration_delete_alergeno(alergeno_service: AlergenoService):
 
     # Probar eliminar un alérgeno inexistente
     with pytest.raises(AlergenoNotFoundError):
-        await alergeno_service.delete_alergeno(uuid4())
+        await alergeno_service.delete_alergeno(str(ULID()))
 
 
 @pytest.mark.asyncio
@@ -258,7 +258,7 @@ async def test_integration_update_alergeno(alergeno_service: AlergenoService):
 
     # Probar actualizar un alérgeno inexistente
     with pytest.raises(AlergenoNotFoundError):
-        await alergeno_service.update_alergeno(uuid4(), update_data)
+        await alergeno_service.update_alergeno(str(ULID()), update_data)
 
 
 @pytest.mark.asyncio

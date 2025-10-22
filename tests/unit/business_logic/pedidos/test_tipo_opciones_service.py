@@ -4,7 +4,7 @@ Pruebas unitarias para el servicio de tipos de opciones.
 
 import pytest
 from unittest.mock import AsyncMock
-import uuid
+from ulid import ULID
 from datetime import datetime
 
 from src.business_logic.pedidos.tipo_opciones_service import TipoOpcionService
@@ -43,7 +43,7 @@ def sample_tipo_opcion_data():
     Fixture que proporciona datos de muestra para un tipo de opción.
     """
     return {
-        "id": uuid.uuid4(),
+        "id": str(ULID()),
         "codigo": "nivel_aji",
         "nombre": "Nivel de Ají",
         "descripcion": "Nivel de picante del plato",
@@ -187,7 +187,7 @@ async def test_get_tipo_opcion_by_id_not_found(tipo_opcion_service, mock_reposit
         - El servicio debe lanzar TipoOpcionNotFoundError.
     """
     # Arrange
-    tipo_opcion_id = uuid.uuid4()
+    tipo_opcion_id = str(ULID())
     mock_repository.get_by_id.return_value = None
 
     # Act & Assert
@@ -246,7 +246,7 @@ async def test_delete_tipo_opcion_not_found(tipo_opcion_service, mock_repository
         - El servicio debe lanzar TipoOpcionNotFoundError.
     """
     # Arrange
-    tipo_opcion_id = uuid.uuid4()
+    tipo_opcion_id = str(ULID())
     mock_repository.get_by_id.return_value = None
 
     # Act & Assert
@@ -279,7 +279,7 @@ async def test_get_tipos_opciones_success(tipo_opcion_service, mock_repository, 
     tipos_opciones = [
         TipoOpcionModel(**sample_tipo_opcion_data),
         TipoOpcionModel(
-            id=uuid.uuid4(),
+            id=str(ULID()),
             codigo="temperatura",
             nombre="Temperatura",
             descripcion="Nivel de temperatura de la bebida",
@@ -394,7 +394,7 @@ async def test_update_tipo_opcion_not_found(tipo_opcion_service, mock_repository
         - El servicio debe lanzar TipoOpcionNotFoundError.
     """
     # Arrange
-    tipo_opcion_id = uuid.uuid4()
+    tipo_opcion_id = str(ULID())
     update_data = TipoOpcionUpdate(nombre="Tipo de Opción Actualizado")
     mock_repository.update.return_value = None
 

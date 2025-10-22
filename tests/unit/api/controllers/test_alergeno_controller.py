@@ -4,7 +4,7 @@ Pruebas unitarias para los endpoints de alérgenos.
 
 import pytest
 from unittest.mock import AsyncMock, patch
-import uuid
+from ulid import ULID
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
 
@@ -85,7 +85,7 @@ def sample_alergeno_id():
     POSTCONDICIONES:
         - Devuelve un string con formato UUID válido para usar como ID de alérgeno
     """
-    return str(uuid.uuid4())
+    return str(str(ULID()))
 
 
 @pytest.fixture
@@ -106,7 +106,7 @@ def sample_alergeno_data():
         - Los datos pueden ser usados para construir objetos AlergenoModel o AlergenoResponse
     """
     return {
-        "id": str(uuid.uuid4()),
+        "id": str(str(ULID())),
         "nombre": "Gluten",
         "descripcion": "Proteína presente en cereales como trigo, cebada y centeno",
         "icono": "🌾",
@@ -491,7 +491,7 @@ def test_delete_alergeno_success(
     # Assert
     assert response.status_code == 204
     assert response.content == b""  # No content
-    mock_alergeno_service.delete_alergeno.assert_awaited_once_with(uuid.UUID(sample_alergeno_id))
+    mock_alergeno_service.delete_alergeno.assert_awaited_once_with(sample_alergeno_id)
 
 
 def test_delete_alergeno_not_found(

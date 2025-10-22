@@ -116,7 +116,7 @@ async def list_all_productos_cards(
     description="Obtiene una lista paginada de productos de una categoría específica en formato card con información completa.",
 )
 async def list_productos_cards_by_categoria(
-    categoria_id: UUID,
+    categoria_id: str,
     skip: int = Query(0, ge=0, description="Número de registros a omitir (paginación)"),
     limit: int = Query(
         100, gt=0, le=500, description="Número máximo de registros a retornar"
@@ -164,7 +164,7 @@ async def list_productos_cards_by_categoria(
     description="Obtiene los detalles de un producto específico por su ID.",
 )
 async def get_producto(
-    producto_id: UUID, session: AsyncSession = Depends(get_database_session)
+    producto_id: str, session: AsyncSession = Depends(get_database_session)
 ) -> ProductoResponse:
     """
     Obtiene un producto específico por su ID.
@@ -197,21 +197,55 @@ async def get_producto(
     "/{producto_id}/opciones",
     response_model=ProductoConOpcionesResponse,
     status_code=status.HTTP_200_OK,
-    summary="Obtener un producto con todas sus opciones",
-    description="Obtiene los detalles completos de un producto con todas sus opciones disponibles.",
+    summary="Obtener producto con opciones agrupadas por tipo",
+    description="""
+    Obtiene los detalles completos de un producto con todas sus opciones 
+    **agrupadas por tipo de opción**.
+    
+    **Cambios recientes:**
+    - ✅ Ahora incluye `descripcion` y `precio_base` del producto
+    - ✅ Opciones agrupadas en `tipos_opciones[]` por tipo
+    - ✅ Cada tipo incluye metadata (obligatorio, múltiple selección, orden)
+    
+    **Estructura de respuesta:**
+    ```json
+    {
+      "id": "01K7ZCT8PNJA2J8EB83NHA1MK4",
+      "nombre": "Ceviche Clásico",
+      "descripcion": "Pescado fresco del día marinado...",
+      "precio_base": "25.00",
+      "tipos_opciones": [
+        {
+          "id_tipo_opcion": "01K7...",
+          "nombre_tipo": "Nivel de picante",
+          "obligatorio": true,
+          "multiple_seleccion": false,
+          "opciones": [
+            {"nombre": "Sin ají", "precio_adicional": "0.00"},
+            {"nombre": "Ají suave", "precio_adicional": "0.00"}
+          ]
+        }
+      ]
+    }
+    ```
+    
+    **Errores posibles:**
+    - 404: Si no se encuentra un producto con el ID proporcionado
+    - 500: Si ocurre un error interno del servidor
+    """,
 )
 async def get_producto_con_opciones(
-    producto_id: UUID, session: AsyncSession = Depends(get_database_session)
+    producto_id: str, session: AsyncSession = Depends(get_database_session)
 ):
     """
-    Obtiene un producto específico por su ID con todas sus opciones.
+    Obtiene un producto específico por su ID con opciones agrupadas por tipo.
     
     Args:
-        producto_id: ID del producto a buscar.
+        producto_id: ID del producto a buscar (ULID).
         session: Sesión de base de datos.
         
     Returns:
-        El producto encontrado con todos sus datos y todas sus opciones.
+        El producto con descripción, precio y opciones agrupadas por tipo.
         
     Raises:
         HTTPException:
@@ -242,7 +276,7 @@ async def list_productos(
     limit: int = Query(
         100, gt=0, le=500, description="Número máximo de registros a retornar"
     ),
-    id_categoria: UUID = Query(None, description="Filtrar productos por ID de categoría"),
+    id_categoria: str = Query(None, description="Filtrar productos por ID de categoría"),
     session: AsyncSession = Depends(get_database_session),
 ) -> ProductoList:
     """
@@ -282,7 +316,7 @@ async def list_productos(
     description="Actualiza los datos de un producto existente.",
 )
 async def update_producto(
-    producto_id: UUID,
+    producto_id: str,
     producto_data: ProductoUpdate,
     session: AsyncSession = Depends(get_database_session),
 ) -> ProductoResponse:
@@ -324,7 +358,7 @@ async def update_producto(
     description="Elimina un producto existente del sistema.",
 )
 async def delete_producto(
-    producto_id: UUID, session: AsyncSession = Depends(get_database_session)
+    producto_id: str, session: AsyncSession = Depends(get_database_session)
 ) -> None:
     """
     Elimina un producto existente.
