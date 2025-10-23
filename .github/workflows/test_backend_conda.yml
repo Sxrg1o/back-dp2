@@ -1,0 +1,58 @@
+name: Backend Tests (Conda)
+
+on:
+  push:
+    branches: [ main, dev, fix/* ]
+  pull_request:
+    branches: [ main, dev ]
+  workflow_dispatch:
+
+jobs:
+  test-conda:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        python-version: ['3.11']
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Miniconda
+        uses: conda-incubator/setup-miniconda@v3
+        with:
+          environment-file: environment.yml
+          activate-environment: back-dp2
+          python-version: ${{ matrix.python-version }}
+          auto-activate-base: false
+          use-mamba: true
+
+      - name: Verify environment
+        shell: bash -l {0}
+        run: |
+          conda info
+          conda list
+          python --version
+
+      - name: Run tests
+        shell: bash -l {0}
+        env:
+          DATABASE_URL: "sqlite+aiosqlite:///:memory:"
+          DATABASE_TEST_URL: "sqlite+aiosqlite:///:memory:"
+          SECRET_KEY: "test_secret_key_for_testing_only"
+          ENVIRONMENT: "test"
+        run: |
+          pytest tests/ --cov=src --cov-report=xml --cov-report=term-missing -v
+
+      - name: Upload coverage report
+        uses: codecov/codecov-action@v3
+        with:
+          file: ./coverage.xml
+          fail_ci_if_error: false
+          flags: ${{ matrix.os }}
+
+      - name: Check test results
+        if: ${{ success() }}
+        shell: bash -l {0}
+        run: echo "✓ All tests passed on ${{ matrix.os }}!"

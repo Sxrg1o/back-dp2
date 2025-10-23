@@ -176,6 +176,26 @@ docker-compose -f docker/docker-compose.yml logs -f restaurant-api
 
 ### 4. Instalación Local (Desarrollo)
 
+#### Opción A: Con Conda (Recomendado)
+
+```bash
+# Windows
+.\setup-conda.ps1
+
+# Linux/Mac
+bash setup-conda.sh
+
+# Activar entorno
+conda activate back-dp2
+
+# Ejecutar aplicación
+uvicorn src.main:app --reload
+```
+
+Ver [CONDA.md](./CONDA.md) para más información sobre Conda.
+
+#### Opción B: Con venv tradicional
+
 ```bash
 # Crear entorno virtual
 python -m venv venv
@@ -256,15 +276,26 @@ Una vez ejecutada la aplicación, puedes acceder a:
 ## Testing
 
 ```bash
-# Ejecutar tests
+# Activar entorno (si usas Conda)
+conda activate back-dp2
+
+# Ejecutar todos los tests
 pytest
 
-# Con cobertura
-pytest --cov=src
+# Con cobertura detallada
+pytest --cov=src --cov-report=term-missing
+
+# Generar reporte HTML
+pytest --cov=src --cov-report=html
 
 # Tests específicos
 pytest tests/unit/business_logic/
-pytest tests/integration/
+pytest tests/integration/api/
+pytest tests/integration/repositories/
+
+# Tests por marcadores
+pytest -m asyncio
+pytest -k "test_create"
 ```
 
 ## Despliegue
