@@ -57,8 +57,8 @@ class MesaDomotica(BaseModel):
     zona: str
     """Zona o área del restaurante donde se ubica la mesa"""
 
-    nota: str = ""
-    """Notas adicionales sobre la mesa"""
+    nota: Optional[str] = ""
+    """Notas adicionales sobre la mesa. Puede ser null o string vacío."""
 
     model_config = {
         "json_schema_extra": {
