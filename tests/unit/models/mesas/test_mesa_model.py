@@ -99,3 +99,4 @@ def test_mesa_activo_default():
     # El default debería ser True según el modelo
     assert mesa.capacidad is None
     assert mesa.zona is None
+
