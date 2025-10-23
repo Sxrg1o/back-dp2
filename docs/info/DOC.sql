@@ -16,8 +16,8 @@ CREATE TABLE rol (
     descripcion        VARCHAR(255) NULL,
     fecha_creacion     TIMESTAMP    DEFAULT CURRENT_TIMESTAMP NULL,
     fecha_modificacion TIMESTAMP    DEFAULT CURRENT_TIMESTAMP NULL ON UPDATE CURRENT_TIMESTAMP,
-    creado_por         CHAR(36)     NULL,
-    modificado_por     CHAR(36)     NULL,
+    creado_por         CHAR(36)     NULL COMMENT 'ID del usuario que creó el registro (sin FK)',
+    modificado_por     CHAR(36)     NULL COMMENT 'ID del usuario que modificó el registro (sin FK)',
     CONSTRAINT uq_rol_nombre UNIQUE (nombre)
 ) COMMENT='Roles del sistema (cliente, mesero, cocina, admin)';
 
@@ -39,15 +39,11 @@ CREATE TABLE usuario (
     ultimo_acceso      TIMESTAMP    NULL,
     fecha_creacion     TIMESTAMP    DEFAULT CURRENT_TIMESTAMP NULL,
     fecha_modificacion TIMESTAMP    DEFAULT CURRENT_TIMESTAMP NULL ON UPDATE CURRENT_TIMESTAMP,
-    creado_por         CHAR(36)     NULL,
-    modificado_por     CHAR(36)     NULL,
+    creado_por         CHAR(36)     NULL COMMENT 'ID del usuario que creó el registro (sin FK)',
+    modificado_por     CHAR(36)     NULL COMMENT 'ID del usuario que modificó el registro (sin FK)',
     CONSTRAINT uq_usuario_email UNIQUE (email),
     CONSTRAINT fk_usuario_rol
-        FOREIGN KEY (id_rol) REFERENCES rol (id),
-    CONSTRAINT fk_usuario_creado_por
-        FOREIGN KEY (creado_por) REFERENCES usuario (id) ON DELETE SET NULL,
-    CONSTRAINT fk_usuario_modificado_por
-        FOREIGN KEY (modificado_por) REFERENCES usuario (id) ON DELETE SET NULL
+        FOREIGN KEY (id_rol) REFERENCES rol (id)
 ) COMMENT='Usuarios del sistema (staff y clientes registrados)';
 
 CREATE INDEX idx_usuario_activo         ON usuario (activo);
@@ -55,13 +51,6 @@ CREATE INDEX idx_usuario_email          ON usuario (email);
 CREATE INDEX idx_usuario_rol            ON usuario (id_rol);
 CREATE INDEX idx_usuario_creado_por     ON usuario (creado_por);
 CREATE INDEX idx_usuario_modificado_por ON usuario (modificado_por); 
-
-
-ALTER TABLE rol
-  ADD CONSTRAINT fk_rol_creado_por
-    FOREIGN KEY (creado_por) REFERENCES usuario (id) ON DELETE SET NULL,
-  ADD CONSTRAINT fk_rol_modificado_por
-    FOREIGN KEY (modificado_por) REFERENCES usuario (id) ON DELETE SET NULL;
 
 -- --------------------------------------------------------------------------
 -- CATEGORIA
@@ -74,12 +63,8 @@ CREATE TABLE categoria (
     imagen_path        VARCHAR(255)                           NULL,
     fecha_creacion     TIMESTAMP                              DEFAULT CURRENT_TIMESTAMP NULL,
     fecha_modificacion TIMESTAMP                              DEFAULT CURRENT_TIMESTAMP NULL ON UPDATE CURRENT_TIMESTAMP,
-    creado_por         CHAR(36)                               NULL,
-    modificado_por     CHAR(36)                               NULL,
-    CONSTRAINT fk_categoria_creado_por
-        FOREIGN KEY (creado_por) REFERENCES usuario (id) ON DELETE SET NULL,
-    CONSTRAINT fk_categoria_modificado_por
-        FOREIGN KEY (modificado_por) REFERENCES usuario (id) ON DELETE SET NULL
+    creado_por         CHAR(36)                               NULL COMMENT 'ID del usuario que creó el registro (sin FK)',
+    modificado_por     CHAR(36)                               NULL COMMENT 'ID del usuario que modificó el registro (sin FK)'
 ) COMMENT='Categorías principales del menú';
 
 CREATE INDEX idx_categoria_activo         ON categoria (activo);
@@ -98,13 +83,9 @@ CREATE TABLE alergeno (
     activo             TINYINT(1)                             DEFAULT 1 NULL,
     fecha_creacion     TIMESTAMP                              DEFAULT CURRENT_TIMESTAMP NULL,
     fecha_modificacion TIMESTAMP                              DEFAULT CURRENT_TIMESTAMP NULL ON UPDATE CURRENT_TIMESTAMP,
-    creado_por         CHAR(36)                               NULL,
-    modificado_por     CHAR(36)                               NULL,
-    CONSTRAINT uq_alergeno_nombre UNIQUE (nombre),
-    CONSTRAINT fk_alergeno_creado_por
-        FOREIGN KEY (creado_por) REFERENCES usuario (id) ON DELETE SET NULL,
-    CONSTRAINT fk_alergeno_modificado_por
-        FOREIGN KEY (modificado_por) REFERENCES usuario (id) ON DELETE SET NULL
+    creado_por         CHAR(36)                               NULL COMMENT 'ID del usuario que creó el registro (sin FK)',
+    modificado_por     CHAR(36)                               NULL COMMENT 'ID del usuario que modificó el registro (sin FK)',
+    CONSTRAINT uq_alergeno_nombre UNIQUE (nombre)
 ) COMMENT='Catálogo de alérgenos alimentarios';
 
 CREATE INDEX idx_alergeno_activo          ON alergeno (activo);
@@ -124,15 +105,11 @@ CREATE TABLE mesas (
     activo             TINYINT(1)                             DEFAULT 1 NULL,
     fecha_creacion     TIMESTAMP                              DEFAULT CURRENT_TIMESTAMP NULL,
     fecha_modificacion TIMESTAMP                              DEFAULT CURRENT_TIMESTAMP NULL ON UPDATE CURRENT_TIMESTAMP,
-    creado_por         CHAR(36)                               NULL,
-    modificado_por     CHAR(36)                               NULL,
+    creado_por         CHAR(36)                               NULL COMMENT 'ID del usuario que creó el registro (sin FK)',
+    modificado_por     CHAR(36)                               NULL COMMENT 'ID del usuario que modificó el registro (sin FK)',
     CONSTRAINT uq_mesa_numero UNIQUE (numero),
     CONSTRAINT uq_mesa_qr UNIQUE (qr_code),
-    CONSTRAINT chk_mesa_capacidad CHECK (capacidad > 0),
-    CONSTRAINT fk_mesa_creado_por
-        FOREIGN KEY (creado_por) REFERENCES usuario (id) ON DELETE SET NULL,
-    CONSTRAINT fk_mesa_modificado_por
-        FOREIGN KEY (modificado_por) REFERENCES usuario (id) ON DELETE SET NULL
+    CONSTRAINT chk_mesa_capacidad CHECK (capacidad > 0)
 ) COMMENT='Mesas físicas del restaurante';
 
 CREATE INDEX idx_mesa_activo          ON mesas (activo);
@@ -158,15 +135,11 @@ CREATE TABLE producto (
     activo             TINYINT(1)                             DEFAULT 1 NULL,
     fecha_creacion     TIMESTAMP                              DEFAULT CURRENT_TIMESTAMP NULL,
     fecha_modificacion TIMESTAMP                              DEFAULT CURRENT_TIMESTAMP NULL ON UPDATE CURRENT_TIMESTAMP,
-    creado_por         CHAR(36)                               NULL,
-    modificado_por     CHAR(36)                               NULL,
+    creado_por         CHAR(36)                               NULL COMMENT 'ID del usuario que creó el registro (sin FK)',
+    modificado_por     CHAR(36)                               NULL COMMENT 'ID del usuario que modificó el registro (sin FK)',
     CONSTRAINT fk_producto_categoria
         FOREIGN KEY (id_categoria) REFERENCES categoria (id),
-    CONSTRAINT chk_producto_precio CHECK (precio_base > 0),
-    CONSTRAINT fk_producto_creado_por
-        FOREIGN KEY (creado_por) REFERENCES usuario (id) ON DELETE SET NULL,
-    CONSTRAINT fk_producto_modificado_por
-        FOREIGN KEY (modificado_por) REFERENCES usuario (id) ON DELETE SET NULL
+    CONSTRAINT chk_producto_precio CHECK (precio_base > 0)
 ) COMMENT='Platos disponibles en el menú';
 
 CREATE FULLTEXT INDEX idx_producto_busqueda   ON producto (nombre, descripcion);
@@ -192,13 +165,9 @@ CREATE TABLE tipo_opcion (
     seleccion_maxima   INT UNSIGNED                           NULL COMMENT 'Cantidad máxima de opciones (NULL = sin límite)',
     fecha_creacion     TIMESTAMP                              DEFAULT CURRENT_TIMESTAMP NULL,
     fecha_modificacion TIMESTAMP                              DEFAULT CURRENT_TIMESTAMP NULL ON UPDATE CURRENT_TIMESTAMP,
-    creado_por         CHAR(36)                               NULL,
-    modificado_por     CHAR(36)                               NULL,
-    CONSTRAINT uq_tipo_opcion_codigo UNIQUE (codigo),
-    CONSTRAINT fk_tipoop_creado_por
-        FOREIGN KEY (creado_por) REFERENCES usuario (id) ON DELETE SET NULL,
-    CONSTRAINT fk_tipoop_modificado_por
-        FOREIGN KEY (modificado_por) REFERENCES usuario (id) ON DELETE SET NULL
+    creado_por         CHAR(36)                               NULL COMMENT 'ID del usuario que creó el registro (sin FK)',
+    modificado_por     CHAR(36)                               NULL COMMENT 'ID del usuario que modificó el registro (sin FK)',
+    CONSTRAINT uq_tipo_opcion_codigo UNIQUE (codigo)
 );
 
 CREATE INDEX idx_tipoop_activo            ON tipo_opcion (activo);
@@ -218,16 +187,12 @@ CREATE TABLE producto_opcion (
     orden              INT UNSIGNED                           DEFAULT 0 NULL,
     fecha_creacion     TIMESTAMP                              DEFAULT CURRENT_TIMESTAMP NULL,
     fecha_modificacion TIMESTAMP                              DEFAULT CURRENT_TIMESTAMP NULL ON UPDATE CURRENT_TIMESTAMP,
-    creado_por         CHAR(36)                               NULL,
-    modificado_por     CHAR(36)                               NULL,
+    creado_por         CHAR(36)                               NULL COMMENT 'ID del usuario que creó el registro (sin FK)',
+    modificado_por     CHAR(36)                               NULL COMMENT 'ID del usuario que modificó el registro (sin FK)',
     CONSTRAINT fk_prodop_producto
         FOREIGN KEY (id_producto) REFERENCES producto (id) ON DELETE CASCADE,
     CONSTRAINT fk_prodop_tipo
-        FOREIGN KEY (id_tipo_opcion) REFERENCES tipo_opcion (id),
-    CONSTRAINT fk_prodop_creado_por
-        FOREIGN KEY (creado_por) REFERENCES usuario (id) ON DELETE SET NULL,
-    CONSTRAINT fk_prodop_modificado_por
-        FOREIGN KEY (modificado_por) REFERENCES usuario (id) ON DELETE SET NULL
+        FOREIGN KEY (id_tipo_opcion) REFERENCES tipo_opcion (id)
 );
 
 CREATE INDEX idx_prodop_tipo           ON producto_opcion (id_tipo_opcion);
@@ -257,15 +222,11 @@ CREATE TABLE pedido (
     fecha_cancelado      TIMESTAMP                               NULL,
     fecha_creacion       TIMESTAMP                               DEFAULT CURRENT_TIMESTAMP NULL,
     fecha_modificacion   TIMESTAMP                               DEFAULT CURRENT_TIMESTAMP NULL ON UPDATE CURRENT_TIMESTAMP,
-    creado_por           CHAR(36)                                NULL,
-    modificado_por       CHAR(36)                                NULL,
+    creado_por           CHAR(36)                                NULL COMMENT 'ID del usuario que creó el registro (sin FK)',
+    modificado_por       CHAR(36)                                NULL COMMENT 'ID del usuario que modificó el registro (sin FK)',
     CONSTRAINT uq_pedido_numero UNIQUE (numero_pedido),
     CONSTRAINT fk_pedido_mesa
         FOREIGN KEY (id_mesa) REFERENCES mesas (id),
-    CONSTRAINT fk_pedido_creado_por
-        FOREIGN KEY (creado_por) REFERENCES usuario (id) ON DELETE SET NULL,
-    CONSTRAINT fk_pedido_modificado_por
-        FOREIGN KEY (modificado_por) REFERENCES usuario (id) ON DELETE SET NULL,
     CONSTRAINT chk_pedido_totales CHECK (subtotal >= 0 AND total >= 0)
 ) COMMENT='Pedidos/órdenes del restaurante';
 
@@ -287,17 +248,13 @@ CREATE TABLE producto_alergeno (
     activo             TINYINT(1)                             DEFAULT 1 NULL,
     fecha_creacion     TIMESTAMP                              DEFAULT CURRENT_TIMESTAMP NULL,
     fecha_modificacion TIMESTAMP                              DEFAULT CURRENT_TIMESTAMP NULL ON UPDATE CURRENT_TIMESTAMP,
-    creado_por         CHAR(36)                               NULL,
-    modificado_por     CHAR(36)                               NULL,
+    creado_por         CHAR(36)                               NULL COMMENT 'ID del usuario que creó el registro (sin FK)',
+    modificado_por     CHAR(36)                               NULL COMMENT 'ID del usuario que modificó el registro (sin FK)',
     PRIMARY KEY (id_producto, id_alergeno),
     CONSTRAINT fk_prod_alerg_producto
         FOREIGN KEY (id_producto) REFERENCES producto (id) ON DELETE CASCADE,
     CONSTRAINT fk_prod_alerg_alergeno
-        FOREIGN KEY (id_alergeno) REFERENCES alergeno (id),
-    CONSTRAINT fk_prod_alerg_creado_por
-        FOREIGN KEY (creado_por) REFERENCES usuario (id) ON DELETE SET NULL,
-    CONSTRAINT fk_prod_alerg_modificado_por
-        FOREIGN KEY (modificado_por) REFERENCES usuario (id) ON DELETE SET NULL
+        FOREIGN KEY (id_alergeno) REFERENCES alergeno (id)
 ) COMMENT='Alérgenos presentes en cada producto';
 
 CREATE INDEX idx_prod_alerg_alergeno      ON producto_alergeno (id_alergeno);
@@ -320,16 +277,12 @@ CREATE TABLE pedido_producto (
     notas_personalizacion VARCHAR(200)                          NULL COMMENT 'Notas libres del cliente',
     fecha_creacion       TIMESTAMP                               DEFAULT CURRENT_TIMESTAMP NULL,
     fecha_modificacion   TIMESTAMP                               DEFAULT CURRENT_TIMESTAMP NULL ON UPDATE CURRENT_TIMESTAMP,
-    creado_por           CHAR(36)                                NULL,
-    modificado_por       CHAR(36)                                NULL,
+    creado_por           CHAR(36)                                NULL COMMENT 'ID del usuario que creó el registro (sin FK)',
+    modificado_por       CHAR(36)                                NULL COMMENT 'ID del usuario que modificó el registro (sin FK)',
     CONSTRAINT fk_pedprod_pedido
         FOREIGN KEY (id_pedido) REFERENCES pedido (id) ON DELETE CASCADE,
     CONSTRAINT fk_pedprod_producto
-        FOREIGN KEY (id_producto) REFERENCES producto (id),
-    CONSTRAINT fk_pedprod_creado_por
-        FOREIGN KEY (creado_por) REFERENCES usuario (id) ON DELETE SET NULL,
-    CONSTRAINT fk_pedprod_modificado_por
-        FOREIGN KEY (modificado_por) REFERENCES usuario (id) ON DELETE SET NULL
+        FOREIGN KEY (id_producto) REFERENCES producto (id)
 ) COMMENT='Items/productos ordenados en cada pedido';
 
 CREATE INDEX idx_pedprod_producto        ON pedido_producto (id_producto);
@@ -348,15 +301,11 @@ CREATE TABLE division_cuenta (
     notas               VARCHAR(200)                           NULL,
     created_at          TIMESTAMP                               DEFAULT CURRENT_TIMESTAMP NULL,
     updated_at          TIMESTAMP                               DEFAULT CURRENT_TIMESTAMP NULL ON UPDATE CURRENT_TIMESTAMP,
-    creado_por          CHAR(36)                                NULL,
-    modificado_por      CHAR(36)                                NULL,
+    creado_por          CHAR(36)                                NULL COMMENT 'ID del usuario que creó el registro (sin FK)',
+    modificado_por      CHAR(36)                                NULL COMMENT 'ID del usuario que modificó el registro (sin FK)',
     CONSTRAINT fk_divcta_pedido
         FOREIGN KEY (id_pedido) REFERENCES pedido (id) ON DELETE CASCADE,
-    CONSTRAINT chk_divcta_cant CHECK (cantidad_personas > 0),
-    CONSTRAINT fk_divcta_creado_por
-        FOREIGN KEY (creado_por) REFERENCES usuario (id) ON DELETE SET NULL,
-    CONSTRAINT fk_divcta_modificado_por
-        FOREIGN KEY (modificado_por) REFERENCES usuario (id) ON DELETE SET NULL
+    CONSTRAINT chk_divcta_cant CHECK (cantidad_personas > 0)
 ) COMMENT='Configuración de división de cuenta';
 
 CREATE INDEX idx_divcta_pedido          ON division_cuenta (id_pedido);
@@ -373,17 +322,13 @@ CREATE TABLE division_cuenta_detalle (
     persona_numero      INT UNSIGNED                           NOT NULL COMMENT 'Identificador de persona (1, 2, 3, etc)',
     monto_asignado      DECIMAL(10,2)                          NOT NULL COMMENT 'Monto que esta persona debe pagar por este item',
     created_at          TIMESTAMP                               DEFAULT CURRENT_TIMESTAMP NULL,
-    creado_por          CHAR(36)                                NULL,
-    modificado_por      CHAR(36)                                NULL,
+    creado_por          CHAR(36)                                NULL COMMENT 'ID del usuario que creó el registro (sin FK)',
+    modificado_por      CHAR(36)                                NULL COMMENT 'ID del usuario que modificó el registro (sin FK)',
     CONSTRAINT fk_divdet_divcta
         FOREIGN KEY (id_division_cuenta) REFERENCES division_cuenta (id) ON DELETE CASCADE,
     CONSTRAINT fk_divdet_pedprod
         FOREIGN KEY (id_pedido_producto) REFERENCES pedido_producto (id) ON DELETE CASCADE,
-    CONSTRAINT chk_divdet_monto CHECK (monto_asignado >= 0),
-    CONSTRAINT fk_divdet_creado_por
-        FOREIGN KEY (creado_por) REFERENCES usuario (id) ON DELETE SET NULL,
-    CONSTRAINT fk_divdet_modificado_por
-        FOREIGN KEY (modificado_por) REFERENCES usuario (id) ON DELETE SET NULL
+    CONSTRAINT chk_divdet_monto CHECK (monto_asignado >= 0)
 ) COMMENT='Detalle de qué items paga cada persona';
 
 CREATE INDEX idx_divdet_pedprod        ON division_cuenta_detalle (id_pedido_producto);
@@ -401,16 +346,12 @@ CREATE TABLE pedido_opcion (
     id_producto_opcion CHAR(36)                               NOT NULL,
     precio_adicional   DECIMAL(10,2)                          DEFAULT 0.00 NULL COMMENT 'Precio al momento del pedido',
     fecha_creacion     TIMESTAMP                              DEFAULT CURRENT_TIMESTAMP NULL,
-    creado_por         CHAR(36)                               NULL,
-    modificado_por     CHAR(36)                               NULL,
+    creado_por         CHAR(36)                               NULL COMMENT 'ID del usuario que creó el registro (sin FK)',
+    modificado_por     CHAR(36)                               NULL COMMENT 'ID del usuario que modificó el registro (sin FK)',
     CONSTRAINT fk_pedopc_pedprod
         FOREIGN KEY (id_pedido_producto) REFERENCES pedido_producto (id) ON DELETE CASCADE,
     CONSTRAINT fk_pedopc_prodop
-        FOREIGN KEY (id_producto_opcion) REFERENCES producto_opcion (id),
-    CONSTRAINT fk_pedopc_creado_por
-        FOREIGN KEY (creado_por) REFERENCES usuario (id) ON DELETE SET NULL,
-    CONSTRAINT fk_pedopc_modificado_por
-        FOREIGN KEY (modificado_por) REFERENCES usuario (id) ON DELETE SET NULL
+        FOREIGN KEY (id_producto_opcion) REFERENCES producto_opcion (id)
 ) COMMENT='Opciones/personalizaciones aplicadas a cada item del pedido';
 
 CREATE INDEX idx_pedopc_prodop         ON pedido_opcion (id_producto_opcion);
@@ -437,16 +378,12 @@ CREATE TABLE pago (
     fecha_completado   TIMESTAMP                              NULL,
     fecha_creacion     TIMESTAMP                              DEFAULT CURRENT_TIMESTAMP NULL,
     fecha_modificacion TIMESTAMP                              DEFAULT CURRENT_TIMESTAMP NULL ON UPDATE CURRENT_TIMESTAMP,
-    creado_por         CHAR(36)                               NULL,
-    modificado_por     CHAR(36)                               NULL,
+    creado_por         CHAR(36)                               NULL COMMENT 'ID del usuario que creó el registro (sin FK)',
+    modificado_por     CHAR(36)                               NULL COMMENT 'ID del usuario que modificó el registro (sin FK)',
     CONSTRAINT fk_pago_pedido
         FOREIGN KEY (id_pedido) REFERENCES pedido (id),
     CONSTRAINT fk_pago_usuario
         FOREIGN KEY (id_usuario) REFERENCES usuario (id) ON DELETE SET NULL,
-    CONSTRAINT fk_pago_creado_por
-        FOREIGN KEY (creado_por) REFERENCES usuario (id) ON DELETE SET NULL,
-    CONSTRAINT fk_pago_modificado_por
-        FOREIGN KEY (modificado_por) REFERENCES usuario (id) ON DELETE SET NULL,
     CONSTRAINT chk_pago_montos CHECK (monto >= 0 AND total >= 0)
 ) COMMENT='Pagos realizados por cada persona';
 
