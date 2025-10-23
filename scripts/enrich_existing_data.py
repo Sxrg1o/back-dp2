@@ -666,16 +666,16 @@ class DataEnricher:
             # CEVICHES (faltan imágenes - agregar URLs después)
             "CEVICHE DE POTA": "",
             "CEVICHE NORTENO": "",
-            "CEVICHE LIMENO": "",
+            "CEVICHE LIMENO": "https://drive.google.com/file/d/1ZaYA_c1ZGfl6tsPe80-fwSzpHR_LYzSZ/view?usp=sharing",
             "CEVICHE CARRETILLERO": "",
             "CEVICHE MIXTO NORTENO": "",
-            "CEVICHE MIXTO LIMENO": "",
+            "CEVICHE MIXTO LIMENO": "https://drive.google.com/file/d/1ZaYA_c1ZGfl6tsPe80-fwSzpHR_LYzSZ/view?usp=sharing",
             "CEVICHE DE CONCHAS NEGRAS CON LANGOSTINOS": "",
             "CEVICHE DE CONCHAS NEGRAS CON PULPO": "",
             "CEVICHE DE CONCHAS NEGRAS CON PESCADO": "",
             "CEVICHE PESCADO CON PULPO": "",
             "CONCHAS NEGRAS CON LANGOSTINOS Y PULPO": "",
-            "FUENTE CEVICHE PESCADO": "",
+            "FUENTE CEVICHE PESCADO": "https://drive.google.com/file/d/1ZaYA_c1ZGfl6tsPe80-fwSzpHR_LYzSZ/view?usp=sharing",
             "FUENTE CEVICHE DE POTA": "",
             "FUENTE CEVICHE MIXTO": "",
             "FUENTE BARRA ARENA": "",
@@ -699,16 +699,16 @@ class DataEnricher:
             "CHICHARRON MIXTO": "https://drive.google.com/file/d/1eoiQJqdR3SHjeBqcufrNGNnzZJKwgaUf/view?usp=sharing",
             
             # CHICHARRONES (faltan imágenes)
-            "CHICHARRON DE PULPO": "",
+            "CHICHARRON DE PULPO": "https://drive.google.com/file/d/1qdabG7kbNr86IpRQALOw1mgQDxBRTnsC/view?usp=sharing",
             
             # ARROCES (ya tienen imagen los siguientes)
             "ARROZ CON MARISCOS": "https://drive.google.com/file/d/1f5J4b16DYg2YYQ3dR4sH5DJzF9HsT2pq/view?usp=sharing",
-            "ARROZ CHAUFA DE MARISCOS": "https://drive.google.com/file/d/13YU5MJXp2ai1-Utyo5v9IpS5Dg2te0gw/view?usp=sharing",
-            "TACU TACU CON MARISCOS": "https://drive.google.com/file/d/1UUncdgoiAw-af4HLBKz7_S0AiJAqDaV_/view?usp=sharing",
+            "ARROZ CHAUFA DE MARISCOS": "https://drive.google.com/file/d/1UUncdgoiAw-af4HLBKz7_S0AiJAqDaV_/view?usp=sharing",
+            "TACU TACU CON MARISCOS": "https://drive.google.com/file/d/12zU5d9MgOFY1tRjurnOMZ-QR38I-RHo2/view?usp=sharing",
             
             # ARROCES (faltan imágenes)
             "FILETE DE PESCADO A LA PLANCHA": "https://drive.google.com/file/d/1yRLGVNmJ5bYmf-v995gE3v5mf-1fjsqd/view?usp=sharing",
-            "FILETE DE PESCADO FRITO": "",
+            "FILETE DE PESCADO FRITO": "https://drive.google.com/file/d/1yRLGVNmJ5bYmf-v995gE3v5mf-1fjsqd/view?usp=sharing",
             "CHAUFA DE PESCADO": "",
             "CHAUFA DE MARISCOS": "",
             "ARROZ NORTENO DE PESCADO": "",
@@ -727,15 +727,15 @@ class DataEnricher:
             "CAUSA ESPECIAL": "https://drive.google.com/file/d/1busoPwLfMp0FgxAo9g1pc0kcPZazw1ln/view?usp=sharing",
             
             # CAUSAS (faltan imágenes)
-            "CAUSA DE CANGREJO": "https://drive.google.com/file/d/1b55LxE19x947NLQty-FF6eGdMv-kZZ9M/view?usp=sharing",
-            "CAUSA DE PULPO AL OLIVO": "https://drive.google.com/file/d/1b55LxE19x947NLQty-FF6eGdMv-kZZ9M/view?usp=sharing",
-            "CAUSA ACEVICHADA LIMENA": "https://drive.google.com/file/d/1b55LxE19x947NLQty-FF6eGdMv-kZZ9M/view?usp=sharing",
-            "CAUSA ACEVICHADA NORTENA": "https://drive.google.com/file/d/1b55LxE19x947NLQty-FF6eGdMv-kZZ9M/view?usp=sharing",
-            "CAUSA CARRETILLERA": "https://drive.google.com/file/d/1b55LxE19x947NLQty-FF6eGdMv-kZZ9M/view?usp=sharing",
-            "CAUSA DE LANGOSTINOS": "https://drive.google.com/file/d/1b55LxE19x947NLQty-FF6eGdMv-kZZ9M/view?usp=sharing",
+            "CAUSA DE CANGREJO": "https://drive.google.com/file/d/1W4hdy1zz8WQ5-u3DXJlnw7p9on3Cbd5Q/view?usp=sharing",
+            "CAUSA DE PULPO AL OLIVO": "https://drive.google.com/file/d/1rGDz0fOqxT9yhkouWdDthsInxauU4hu2/view?usp=sharing",
+            "CAUSA ACEVICHADA LIMENA": "https://drive.google.com/file/d/1Sdvoadea5xZDLe8D9-eBwwvQqNNMsh99/view?usp=sharing",
+            "CAUSA ACEVICHADA NORTENA": "https://drive.google.com/file/d/1-_FHzh7nCyUuKg0a4OQW5pYcw1KekU7c/view?usp=sharing",
+            "CAUSA CARRETILLERA": "https://drive.google.com/file/d/1jYm98IAVsnLnoHZ2bspDzA8-pjeJXPqS/view?usp=sharing",
+            "CAUSA DE LANGOSTINOS": "https://drive.google.com/file/d/1PZ_ranfFskKxIKJWu4S_B5bJayetpuSY/view?usp=sharing",
             "TRIO CAUSERO": "https://drive.google.com/file/d/1b55LxE19x947NLQty-FF6eGdMv-kZZ9M/view?usp=sharing",
             "CAUSA DE CANGREJO ACEVICHADA": "https://drive.google.com/file/d/1W4hdy1zz8WQ5-u3DXJlnw7p9on3Cbd5Q/view?usp=sharing",
-            "CAUSA DE PESCADO": "https://drive.google.com/file/d/1u9myGB5Q4CDnyBvjR6SZ1d91YvXmGXJm/view?usp=sharing",
+            "CAUSA DE PESCADO": "https://drive.google.com/file/d/1u9myGB5Q4CDnyBvjR6SZ1d91YvXmGXJm/view?usp=sharingg",
             "CAUSA DE LOMO SALTADO": "https://drive.google.com/file/d/11VFQnoDFQzUTiqiYX2MXlIVcifYosEbQ/view?usp=sharing",
             "CAUSA DE LOMO FINO": "https://drive.google.com/file/d/107MTUjtrlpK5Wbwxo-c0k1nr-fABYrLF/view?usp=sharing",
             "CAUSA DE POLLO 30 PORC": "https://drive.google.com/file/d/1dGJGUCRprCtRqJCFnxL6XBHqCOXcb47-/view?usp=sharing",
@@ -757,8 +757,8 @@ class DataEnricher:
             # LECHE DE TIGRE (faltan imágenes)
             "LECHE DE TIGRE": "https://drive.google.com/file/d/1Ci_Ujn_DUZdYcT0yDF6Ms7O3aXn1pEUL/view?usp=sharing",
             "LECHE CARRETILLERA": "https://drive.google.com/file/d/1b55LxE19x947NLQty-FF6eGdMv-kZZ9M/view?usp=sharing",
-            "LECHE DE PANTERA": "https://drive.google.com/file/d/1b55LxE19x947NLQty-FF6eGdMv-kZZ9M/view?usp=sharing",
-            "LECHE DE MARISCOS": "https://drive.google.com/file/d/1b55LxE19x947NLQty-FF6eGdMv-kZZ9M/view?usp=sharing",
+            "LECHE DE PANTERA": "https://drive.google.com/file/d/1vxvWPvGLpek4IULJSPGVerSskJs38sI9/view?usp=sharing",
+            "LECHE DE MARISCOS": "https://drive.google.com/file/d/1JmJCPjmPzwjl4M9_rk60u1FcOh_CLF0e/view?usp=sharing",
             "LECHE BARRA ARENA": "https://drive.google.com/file/d/1b55LxE19x947NLQty-FF6eGdMv-kZZ9M/view?usp=sharing",
             
             # TACU TACU (faltan imágenes)
@@ -780,11 +780,11 @@ class DataEnricher:
             "AGUADITO DE MARISCOS": "",
             
             # DUO MARINO (faltan imágenes)
-            "DUO CARRETILLERO": "",
-            "DUO BARRA ARENA": "",
+            "DUO CARRETILLERO": "https://drive.google.com/file/d/1nVCbCj6U7cjF-jQqYfY05CHDPSUJx7f1/view?usp=sharing",
+            "DUO BARRA ARENA": "https://drive.google.com/file/d/1nVCbCj6U7cjF-jQqYfY05CHDPSUJx7f1/view?usp=sharing",
             
             # TRIO MARINO (faltan imágenes)
-            "TRIO MARINO": "",
+            "TRIO MARINO": "https://drive.google.com/file/d/1NH3M9iey30HGYW4y5iqx4QDEpoUBguGu/view?usp=sharing",
             
             # PROMOCIONES (faltan imágenes)
             "PROMOCION CEVICHE + CHICHARRON": "",
@@ -811,8 +811,8 @@ class DataEnricher:
             "AGUA MINERAL SAN LUIS": "https://drive.google.com/file/d/1yJ9gMthGnBnaV6kXLM7pENmiFT5K5u3Z/view?usp=sharing",
             
             # BEBIDAS SIN ALCOHOL (faltan imágenes)
-            "LIMONADA CLASICA": "",
-            "LIMONADA DE HIERBA BUENA": "",
+            "LIMONADA CLASICA": "https://drive.google.com/file/d/1fbXhbre-TzuqinCYw5637T375-a8f1Go/view?usp=sharing",
+            "LIMONADA DE HIERBA BUENA": "https://drive.google.com/file/d/1fbXhbre-TzuqinCYw5637T375-a8f1Go/view?usp=sharing",
             "CHICHA MORADA NATURAL": "",
             "MARACUYA": "",
             "COCA COLA": "",
@@ -857,9 +857,9 @@ class DataEnricher:
             "CHILCANO DE MARACUYA NORMAL": "",
             
             # MAKIS Y ALITAS (faltan imágenes)
-            "MAKI DE LANGOSTINOS": "",
-            "MAKI ACEVICHADO": "",
-            "ALITAS BROASTER": "",
+            "MAKI DE LANGOSTINOS": "https://drive.google.com/file/d/1NxiGRZw3di91BCuxzEJv6xAmhj4r5H6A/view?usp=sharing",
+            "MAKI ACEVICHADO": "https://drive.google.com/file/d/1NxiGRZw3di91BCuxzEJv6xAmhj4r5H6A/view?usp=sharing",
+            "ALITAS BROASTER": "https://drive.google.com/file/d/15JROipoRmMIDj-YKO8Sc5UcZmi8kZKyU/view?usp=sharing",
         }
         
         # ==================== MAPEO DE IMÁGENES DE CATEGORÍAS ====================
@@ -867,7 +867,7 @@ class DataEnricher:
             # Categorías con imagen
             "CEVICHES": "https://drive.google.com/file/d/1ZaYA_c1ZGfl6tsPe80-fwSzpHR_LYzSZ/view?usp=sharing",
             "TIRADITOS": "https://drive.google.com/file/d/10xFfoYsezQRTC3EvLKm28BJGnImhAJjO/view?usp=sharing",
-            "CHICHARRONES": "https://drive.google.com/file/d/1FYmm0IoKTx3tAgumxpZfSIx4GIrPtD4G/view?usp=sharing",
+            "CHICHARRONES": "https://drive.google.com/file/d/1qdabG7kbNr86IpRQALOw1mgQDxBRTnsC/view?usp=sharing",
             "ARROCES": "https://drive.google.com/file/d/14xM_kLEcGtsOORHEp5MCDMCJIGgzs45J/view?usp=sharing",
             "CAUSAS": "https://drive.google.com/file/d/1kRcHUgMqWTHDEX5XVUYNlGPTnkMOQRsa/view?usp=sharing",
             "BEBIDAS": "https://drive.google.com/file/d/1AhNWmlJwuWb0XzXV8Zjs0xD2ZPHT6jzm/view?usp=sharing",
@@ -881,20 +881,20 @@ class DataEnricher:
             "SOPAS": "https://drive.google.com/file/d/127Vv8P18h1cZ6G6X5l6Cv6sRQdJJbew3/view?usp=sharing",
             "TIRADITO": "https://drive.google.com/file/d/1XEkm66yVz95ctKVeKDxhDT00ghRaWTsD/view?usp=sharing",
             "CHICHARRON": "https://drive.google.com/file/d/1qdabG7kbNr86IpRQALOw1mgQDxBRTnsC/view?usp=sharing",
-            "DUO MARINO": "https://drive.google.com/file/d/1xqCTdniMc1oEquUE1SuP3zea8rj0En8-/view?usp=sharing",
+            "DUO MARINO": "https://drive.google.com/file/d/1WxJ46tSOhXDVaVi92_4NRx5lk5NHc80e/view?usp=sharing",
             "TRIO MARINO": "https://drive.google.com/file/d/1NH3M9iey30HGYW4y5iqx4QDEpoUBguGu/view?usp=sharing",
             "PROMOCIONES": "https://drive.google.com/file/d/1J_V9gwOdKJK9VTiCxtyXqvji_tU8gUzn/view?usp=sharing",
-            "RONDA MARINA": "https://drive.google.com/file/d/1DC60g10NriP0GJi6xExHn7bODsoen-DZ/view?usp=sharing",
+            "RONDA MARINA": "https://drive.google.com/file/d/1UMcWZiq_-XMicbaPUoYzQVhadjw6jQF2/view?usp=sharing",
             "BEBIDAS CON ALCOHOL": "https://drive.google.com/file/d/1DC60g10NriP0GJi6xExHn7bODsoen-DZ/view?usp=sharing",
             "BEBIDAS SIN ALCOHOL": "https://drive.google.com/file/d/10k3cw073DyCS37uq3zyfI9AvFso5EZe9/view?usp=sharing",
             "adicionales": "https://drive.google.com/file/d/1iw3mybv70s_ihUbqkzzk6qAfkEogU3aL/view?usp=sharing",
             "PORCIONES": "",
             "BAR ARENA": "",
-            "CONSUMO": "",
+            "CONSUMO": "https://drive.google.com/file/d/1oHxDCheRX92vZk7HlUS3iBpgL1qFi2Yz/view?usp=sharing",
             "PESCADOS ENTEROS": "",
             "CRIOLLO": "",
             "CHILCANOS PRECIO NORMAL": "",
-            "MAKIS Y ALITAS": "",
+            "MAKIS Y ALITAS": "https://drive.google.com/file/d/1MEkKCJuwHUoXyIyHWsidNAy2RzoTxxs6/view?usp=sharing",
         }
         
         # ==================== ACTUALIZAR IMÁGENES DE PRODUCTOS ====================
