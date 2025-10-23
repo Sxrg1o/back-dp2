@@ -15,6 +15,35 @@ from src.models.mesas.mesa_model import MesaModel
 
 
 class MesaRepository:
+    async def batch_delete(self, mesa_ids: List[UUID]) -> int:
+        """
+        Elimina múltiples mesas por sus IDs en una sola operación batch.
+
+        Parameters
+        ----------
+        mesa_ids : List[UUID]
+            Lista de IDs de las mesas a eliminar.
+
+        Returns
+        -------
+        int
+            Número de mesas eliminadas.
+
+        Raises
+        ------
+        SQLAlchemyError
+            Si ocurre un error durante la operación en la base de datos.
+        """
+        if not mesa_ids:
+            return 0
+        try:
+            stmt = delete(MesaModel).where(MesaModel.id.in_(mesa_ids))
+            result = await self.session.execute(stmt)
+            await self.session.commit()
+            return result.rowcount
+        except SQLAlchemyError:
+            await self.session.rollback()
+            raise
     """Repositorio para gestionar operaciones CRUD del modelo de mesas.
 
     Proporciona acceso a la capa de persistencia para las operaciones

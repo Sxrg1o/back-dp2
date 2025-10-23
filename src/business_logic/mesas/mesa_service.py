@@ -23,6 +23,48 @@ from src.business_logic.exceptions.mesa_exceptions import (
 
 
 class MesaService:
+    async def batch_create_mesas(self, mesas_data: list[MesaCreate]) -> list[MesaResponse]:
+        """
+        Crea múltiples mesas en una sola operación batch.
+
+        Parameters
+        ----------
+        mesas_data : list[MesaCreate]
+            Lista de datos para crear las mesas.
+
+        Returns
+        -------
+        list[MesaResponse]
+            Lista de esquemas de respuesta con los datos de las mesas creadas.
+        """
+        mesas_models = [
+            MesaModel(
+                numero=mesa.numero,
+                capacidad=mesa.capacidad,
+                zona=mesa.zona,
+                estado=mesa.estado
+            )
+            for mesa in mesas_data
+        ]
+        created_mesas = await self.repository.batch_insert(mesas_models)
+        return [MesaResponse.model_validate(mesa) for mesa in created_mesas]
+
+    async def batch_delete_mesas(self, mesa_ids: list[UUID]) -> int:
+        """
+        Elimina múltiples mesas por sus IDs en una sola operación batch.
+
+        Parameters
+        ----------
+        mesa_ids : list[UUID]
+            Lista de IDs de las mesas a eliminar.
+
+        Returns
+        -------
+        int
+            Número de mesas eliminadas.
+        """
+        deleted_count = await self.repository.batch_delete(mesa_ids)
+        return deleted_count
     """Servicio para la gestión de mesas en el sistema.
 
     Esta clase implementa la lógica de negocio para operaciones relacionadas
@@ -70,7 +112,6 @@ class MesaService:
                 numero=mesa_data.numero,
                 capacidad=mesa_data.capacidad,
                 zona=mesa_data.zona,
-                qr_code=mesa_data.qr_code,
                 estado=mesa_data.estado
             )
 

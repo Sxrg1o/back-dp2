@@ -20,7 +20,6 @@ def test_mesa_model_creation():
     mesa_numero = 101
     mesa_capacidad = 4
     mesa_zona = "zone 1"
-    mesa_qr_code = "QR123456"
     mesa_estado = EstadoMesa.LIBRE
 
     mesa = MesaModel(
@@ -28,7 +27,6 @@ def test_mesa_model_creation():
         numero=mesa_numero,
         capacidad=mesa_capacidad,
         zona=mesa_zona,
-        qr_code=mesa_qr_code,
         estado=mesa_estado
     )
 
@@ -36,7 +34,6 @@ def test_mesa_model_creation():
     assert mesa.numero == mesa_numero
     assert mesa.capacidad == mesa_capacidad
     assert mesa.zona == mesa_zona
-    assert mesa.qr_code == mesa_qr_code
     assert mesa.estado == mesa_estado
 
    
@@ -60,11 +57,10 @@ def test_rol_to_dict():
     mesa_numero = 105
     mesa_capacidad = 6
     mesa_zona = "zone 2"
-    mesa_qr_code = "QR123434156"
     mesa_estado = EstadoMesa.OCUPADA
 
     mesa = MesaModel(id=mesa_id, numero=mesa_numero, capacidad=mesa_capacidad,
-                zona=mesa_zona, qr_code=mesa_qr_code, estado=mesa_estado)
+                zona=mesa_zona, estado=mesa_estado)
 
     dict_result = mesa.to_dict()
 
@@ -72,14 +68,12 @@ def test_rol_to_dict():
     assert "numero" in dict_result
     assert "capacidad" in dict_result
     assert "zona" in dict_result
-    assert "qr_code" in dict_result
     assert "estado" in dict_result
 
     assert dict_result["id"] == mesa_id
     assert dict_result["numero"] == mesa_numero
     assert dict_result["capacidad"] == mesa_capacidad
     assert dict_result["zona"] == mesa_zona
-    assert dict_result["qr_code"] == mesa_qr_code
     assert dict_result["estado"] == mesa_estado
     assert dict_result["activo"] is None
     
@@ -105,4 +99,4 @@ def test_mesa_activo_default():
     # El default debería ser True según el modelo
     assert mesa.capacidad is None
     assert mesa.zona is None
-    assert mesa.qr_code is None
+

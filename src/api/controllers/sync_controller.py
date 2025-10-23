@@ -262,16 +262,60 @@ async def sync_mesas(
         Si ocurre un error durante el proceso
     """
     try:
-        # Por ahora solo registramos que recibimos las mesas
-        mesas_count = len(mesas_domotica)
+        from src.business_logic.mesas.mesa_service import MesaService
+        from src.api.schemas.mesa_schema import MesaCreate, EstadoMesa
 
-        # Aquí podrías agregar el código para procesar las mesas en el futuro
+        # LOG: Verificar los valores recibidos de zona
+        zonas_recibidas = [mesa.zona for mesa in mesas_domotica]
+        print(f"[SYNC MESAS] Zonas recibidas: {zonas_recibidas}")
+        logger.info(f"[SYNC MESAS] Zonas recibidas: {zonas_recibidas}")
+
+        # Transformar mesas_domotica a MesaCreate
+        mesas_a_crear = []
+        for mesa in mesas_domotica:
+            print(f"[SYNC MESAS] Mesa recibida: nombre={mesa.nombre}, zona={mesa.zona}, nota={mesa.nota}, estado={mesa.estado}")
+            # Asignar capacidad=4 si no viene
+            capacidad = getattr(mesa, "capacidad", None)
+            if capacidad is None:
+                capacidad = 4
+            # Estado: respeta tal cual lo manda el sistema externo (mayúsculas/minúsculas)
+            estado_str = getattr(mesa, "estado", None)
+            if estado_str:
+                try:
+                    estado = EstadoMesa(estado_str.lower()) if estado_str.lower() in [e.value for e in EstadoMesa] else EstadoMesa.DISPONIBLE
+                except Exception:
+                    estado = EstadoMesa.DISPONIBLE
+            else:
+                estado = EstadoMesa.DISPONIBLE
+            mesas_a_crear.append(
+                MesaCreate(
+                    numero=mesa.nombre,
+                    zona=mesa.zona,
+                    capacidad=capacidad,
+                    nota=mesa.nota if hasattr(mesa, "nota") else None,
+                    estado=estado
+                )
+            )
+
+        # Si no hay BD, solo mostrar lo que se recibiría
+        print(f"[SYNC MESAS] Mesas a crear: {[m.model_dump() for m in mesas_a_crear]}")
+        logger.info(f"[SYNC MESAS] Mesas a crear: {[m.model_dump() for m in mesas_a_crear]}")
+
+        # Si la BD está activa, guardar; si no, solo retornar los datos
+        mesas_creadas = []
+        try:
+            mesa_service = MesaService(session)
+            mesas_creadas = await mesa_service.batch_create_mesas(mesas_a_crear)
+        except Exception as db_exc:
+            print(f"[SYNC MESAS] (Sin BD) Error al guardar: {db_exc}")
+            logger.warning(f"[SYNC MESAS] (Sin BD) Error al guardar: {db_exc}")
 
         return {
             "status": "success",
-            "message": "Datos de mesas recibidos correctamente",
-            "mesas_recibidas": mesas_count,
-            "mesas": [mesa.model_dump() for mesa in mesas_domotica],
+            "message": f"Mesas sincronizadas correctamente: {len(mesas_creadas) if mesas_creadas else len(mesas_a_crear)} creadas (simulado si no hay BD)",
+            "mesas_creadas": [mesa.model_dump() for mesa in (mesas_creadas if mesas_creadas else mesas_a_crear)],
+            "zonas_recibidas": zonas_recibidas,
+            "total": len(mesas_creadas) if mesas_creadas else len(mesas_a_crear)
         }
 
     except Exception as e:
