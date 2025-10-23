@@ -43,9 +43,13 @@ class MesaBase(BaseModel):
         default=None,
         description="Zona donde se encuentra la mesa."
     )
+    nota: Optional[str] = Field(
+        default=None,
+        description="Notas adicionales sobre la mesa."
+    )
     estado: EstadoMesa = Field(
-        default=EstadoMesa.LIBRE,
-        description="Estado actual de la mesa (libre, ocupada, reservada, fuera de servicio)."
+        default=EstadoMesa.DISPONIBLE,
+        description="Estado actual de la mesa (libre, disponible, ocupada, reservada, fuera de servicio)."
     )
 
 
@@ -80,9 +84,13 @@ class MesaUpdate(BaseModel):
         default=None,
         description="Nueva zona donde se encuentra la mesa."
     )
+    nota: Optional[str] = Field(
+        default=None,
+        description="Nueva nota de la mesa."
+    )
     estado: Optional[EstadoMesa] = Field(
         default=None,
-        description="Nuevo estado de la mesa (libre, ocupada, reservada, fuera de servicio)."
+        description="Nuevo estado de la mesa (libre, disponible, ocupada, reservada, fuera de servicio)."
     )
 
 
@@ -117,6 +125,7 @@ class MesaSummary(BaseModel):
     numero: str = Field(description="Número de la mesa.")
     capacidad: Optional[int] = Field(description="Capacidad de la mesa.")
     zona: Optional[str] = Field(description="Zona donde se encuentra la mesa.")
+    nota: Optional[str] = Field(description="Notas adicionales sobre la mesa.")
     estado: EstadoMesa = Field(description="Estado actual de la mesa.")
 
 class MesaList(BaseModel):

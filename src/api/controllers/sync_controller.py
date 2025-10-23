@@ -273,14 +273,27 @@ async def sync_mesas(
         # Transformar mesas_domotica a MesaCreate
         mesas_a_crear = []
         for mesa in mesas_domotica:
-            print(f"[SYNC MESAS] Mesa recibida: nombre={mesa.nombre}, zona={mesa.zona}, nota={mesa.nota}")
+            print(f"[SYNC MESAS] Mesa recibida: nombre={mesa.nombre}, zona={mesa.zona}, nota={mesa.nota}, estado={mesa.estado}")
+            # Asignar capacidad=4 si no viene
+            capacidad = getattr(mesa, "capacidad", None)
+            if capacidad is None:
+                capacidad = 4
+            # Estado: respeta tal cual lo manda el sistema externo (mayúsculas/minúsculas)
+            estado_str = getattr(mesa, "estado", None)
+            if estado_str:
+                try:
+                    estado = EstadoMesa(estado_str.lower()) if estado_str.lower() in [e.value for e in EstadoMesa] else EstadoMesa.DISPONIBLE
+                except Exception:
+                    estado = EstadoMesa.DISPONIBLE
+            else:
+                estado = EstadoMesa.DISPONIBLE
             mesas_a_crear.append(
                 MesaCreate(
                     numero=mesa.nombre,
                     zona=mesa.zona,
-                    capacidad=None,
-                    # qr_code eliminado
-                    estado=EstadoMesa.LIBRE
+                    capacidad=capacidad,
+                    nota=mesa.nota if hasattr(mesa, "nota") else None,
+                    estado=estado
                 )
             )
 

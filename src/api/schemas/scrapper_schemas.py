@@ -60,6 +60,8 @@ class MesaDomotica(BaseModel):
     nota: Optional[str] = ""
     """Notas adicionales sobre la mesa. Puede ser null o string vacío."""
 
+    estado: Optional[str] = None
+    """Estado actual de la mesa (ej. 'ocupado', 'libre'). Puede ser null."""
     model_config = {
         "json_schema_extra": {
             "examples": [
