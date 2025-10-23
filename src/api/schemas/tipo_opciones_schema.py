@@ -51,6 +51,14 @@ class TipoOpcionBase(BaseModel):
         default=None,
         description="Orden de visualización o prioridad."
     )
+    seleccion_minima: Optional[int] = Field(
+        default=0,
+        description="Cantidad mínima de opciones a seleccionar (0 = opcional)"
+    )
+    seleccion_maxima: Optional[int] = Field(
+        default=None,
+        description="Cantidad máxima de opciones (None = sin límite)"
+    )
 
 
 class TipoOpcionCreate(TipoOpcionBase):
@@ -95,6 +103,14 @@ class TipoOpcionUpdate(BaseModel):
         default=None,
         description="Nuevo orden de visualización."
     )
+    seleccion_minima: Optional[int] = Field(
+        default=None,
+        description="Nueva cantidad mínima de opciones a seleccionar."
+    )
+    seleccion_maxima: Optional[int] = Field(
+        default=None,
+        description="Nueva cantidad máxima de opciones."
+    )
 
 
 class TipoOpcionResponse(TipoOpcionBase):
@@ -128,6 +144,8 @@ class TipoOpcionSummary(BaseModel):
     nombre: str = Field(description="Nombre del tipo de opción.")
     activo: bool = Field(description="Indica si el tipo de opción está activo.")
     orden: Optional[int] = Field(description="Orden de visualización.")
+    seleccion_minima: Optional[int] = Field(default=0, description="Cantidad mínima de opciones a seleccionar (0 = opcional)")
+    seleccion_maxima: Optional[int] = Field(default=None, description="Cantidad máxima de opciones (None = sin límite)")
 
 
 class TipoOpcionList(BaseModel):
