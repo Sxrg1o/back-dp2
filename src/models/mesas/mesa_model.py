@@ -46,9 +46,9 @@ class MesaModel(BaseModel, AuditMixin):
     numero: Mapped[str] = mapped_column(String(50), nullable=False, unique=True)
     capacidad: Mapped[int] = mapped_column(Integer, nullable=True)
     zona: Mapped[str] = mapped_column(String(50), nullable=True)
-    qr_code: Mapped[str] = mapped_column(String(255), nullable=True)
+    nota: Mapped[str] = mapped_column(String(255), nullable=True)
     activo: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
-    estado: Mapped[EstadoMesa] = mapped_column(SQLEnum(EstadoMesa), nullable=False, default=EstadoMesa.LIBRE)
+    estado: Mapped[EstadoMesa] = mapped_column(SQLEnum(EstadoMesa), nullable=False, default=EstadoMesa.DISPONIBLE)
 
     # Métodos comunes para todos los modelos
     def to_dict(self) -> Dict[str, Any]:
