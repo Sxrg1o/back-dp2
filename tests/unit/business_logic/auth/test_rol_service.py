@@ -4,7 +4,7 @@ Pruebas unitarias para el servicio de roles.
 
 import pytest
 from unittest.mock import AsyncMock
-import uuid
+from ulid import ULID
 from datetime import datetime
 
 
@@ -44,7 +44,7 @@ def sample_rol_data():
     Fixture que proporciona datos de muestra para un rol.
     """
     return {
-        "id": uuid.uuid4(),
+        "id": str(ULID()),
         "nombre": "Test Rol",
         "descripcion": "Rol para pruebas",
         "activo": True,
@@ -172,7 +172,7 @@ async def test_get_rol_by_id_not_found(rol_service, mock_repository):
         - El servicio debe lanzar RolNotFoundError.
     """
     # Arrange
-    rol_id = uuid.uuid4()
+    rol_id = str(ULID())
     mock_repository.get_by_id.return_value = None
 
     # Act & Assert
@@ -231,7 +231,7 @@ async def test_delete_rol_not_found(rol_service, mock_repository):
         - El servicio debe lanzar RolNotFoundError.
     """
     # Arrange
-    rol_id = uuid.uuid4()
+    rol_id = str(ULID())
     mock_repository.get_by_id.return_value = None
 
     # Act & Assert
@@ -264,7 +264,7 @@ async def test_get_roles_success(rol_service, mock_repository, sample_rol_data):
     roles = [
         RolModel(**sample_rol_data),
         RolModel(
-            id=uuid.uuid4(),
+            id=str(ULID()),
             nombre="Otro Rol",
             descripcion="Otro rol para pruebas",
             activo=True,
@@ -370,7 +370,7 @@ async def test_update_rol_not_found(rol_service, mock_repository):
         - El servicio debe lanzar RolNotFoundError.
     """
     # Arrange
-    rol_id = uuid.uuid4()
+    rol_id = str(ULID())
     update_data = RolUpdate(nombre="Rol Actualizado")
     mock_repository.update.return_value = None
 

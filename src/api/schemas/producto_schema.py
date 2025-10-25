@@ -3,7 +3,7 @@ Pydantic schemas for Producto (Product) entities.
 """
 
 from typing import Optional, ClassVar, List, TYPE_CHECKING
-from uuid import UUID
+# UUID removed - using str for ULID compatibility
 from datetime import datetime
 from decimal import Decimal
 from pydantic import BaseModel, Field, ConfigDict
@@ -31,7 +31,7 @@ class ProductoBase(BaseModel):
 class ProductoCreate(ProductoBase):
     """Schema for creating a new producto."""
 
-    id_categoria: UUID = Field(description="Category ID")
+    id_categoria: str = Field(description="Category ID")
 
 
 class ProductoUpdate(BaseModel):
@@ -52,7 +52,7 @@ class ProductoUpdate(BaseModel):
     imagen_alt_text: Optional[str] = Field(
         default=None, description="Image alt text", max_length=255
     )
-    id_categoria: Optional[UUID] = Field(
+    id_categoria: Optional[str] = Field(
         default=None, description="Category ID"
     )
     disponible: Optional[bool] = Field(
@@ -68,8 +68,8 @@ class ProductoResponse(ProductoBase):
 
     model_config: ClassVar[ConfigDict] = ConfigDict(from_attributes=True)
 
-    id: UUID = Field(description="Product ID")
-    id_categoria: UUID = Field(description="Category ID")
+    id: str = Field(description="Product ID")
+    id_categoria: str = Field(description="Category ID")
     disponible: bool = Field(description="Indicates if the product is available")
     destacado: bool = Field(description="Indicates if the product is featured")
     fecha_creacion: Optional[datetime] = Field(
@@ -85,8 +85,9 @@ class ProductoSummary(BaseModel):
     
     model_config: ClassVar[ConfigDict] = ConfigDict(from_attributes=True)
     
-    id: UUID = Field(description="Product ID")
+    id: str = Field(description="Product ID")
     nombre: str = Field(description="Product name")
+    imagen_path: Optional[str] = Field(default=None, description="Product image path")
     precio_base: Decimal = Field(description="Base price")
     disponible: bool = Field(description="Indicates if the product is available")
 
@@ -98,14 +99,60 @@ class ProductoList(BaseModel):
     total: int = Field(description="Total number of products")
 
 
-class ProductoConOpcionesResponse(ProductoResponse):
-    """Schema for producto with all its opciones (complete data)."""
+class ProductoOpcionDetalleSchema(BaseModel):
+    """Schema for individual product option within a type."""
     
     model_config: ClassVar[ConfigDict] = ConfigDict(from_attributes=True)
     
-    opciones: List["ProductoOpcionResponse"] = Field(
+    id: str = Field(description="Option ID")
+    nombre: str = Field(description="Option name")
+    precio_adicional: Decimal = Field(description="Additional price for this option")
+    activo: bool = Field(description="Whether the option is active")
+    orden: int = Field(description="Display order")
+    fecha_creacion: datetime = Field(description="Creation timestamp")
+    fecha_modificacion: datetime = Field(description="Last modification timestamp")
+
+
+class TipoOpcionConOpcionesSchema(BaseModel):
+    """Schema for option type with its grouped options."""
+    
+    model_config: ClassVar[ConfigDict] = ConfigDict(from_attributes=True)
+    
+    id_tipo_opcion: str = Field(description="Option type ID")
+    nombre_tipo: str = Field(description="Option type name")
+    descripcion_tipo: Optional[str] = Field(
+        default=None, 
+        description="Option type description"
+    )
+    seleccion_minima: int = Field(
+        default=0,
+        ge=0,
+        description="Minimum number of options to select (0 = optional)"
+    )
+    seleccion_maxima: Optional[int] = Field(
+        default=None,
+        ge=1,
+        description="Maximum number of options to select (null = unlimited)"
+    )
+    orden_tipo: int = Field(description="Display order of this type")
+    opciones: List[ProductoOpcionDetalleSchema] = Field(
         default_factory=list,
-        description="List of all options available for this product"
+        description="List of options in this type"
+    )
+
+
+class ProductoConOpcionesResponse(ProductoResponse):
+    """
+    Schema for producto with all its opciones grouped by type.
+    
+    Modified to include description, price, and options grouped by type.
+    """
+    
+    model_config: ClassVar[ConfigDict] = ConfigDict(from_attributes=True)
+    
+    tipos_opciones: List[TipoOpcionConOpcionesSchema] = Field(
+        default_factory=list,
+        description="List of option types with their grouped options"
     )
 
 
@@ -114,7 +161,7 @@ class CategoriaInfo(BaseModel):
     
     model_config: ClassVar[ConfigDict] = ConfigDict(from_attributes=True)
     
-    id: UUID = Field(description="Category ID")
+    id: str = Field(description="Category ID")
     nombre: str = Field(description="Category name")
     imagen_path: Optional[str] = Field(default=None, description="Category image path")
 
@@ -124,7 +171,7 @@ class ProductoCard(BaseModel):
     
     model_config: ClassVar[ConfigDict] = ConfigDict(from_attributes=True)
     
-    id: UUID = Field(description="Product ID")
+    id: str = Field(description="Product ID")
     nombre: str = Field(description="Product name")
     imagen_path: Optional[str] = Field(default=None, description="Product image path")
     precio_base: Decimal = Field(description="Base price")

@@ -68,7 +68,7 @@ async def create_alergeno(
     description="Obtiene los detalles de un alérgeno específico por su ID.",
 )
 async def get_alergeno(
-    alergeno_id: UUID, session: AsyncSession = Depends(get_database_session)
+    alergeno_id: str, session: AsyncSession = Depends(get_database_session)
 ) -> AlergenoResponse:
     """
     Obtiene un alérgeno específico por su ID.
@@ -147,7 +147,7 @@ async def list_alergenos(
     description="Actualiza los datos de un alérgeno existente.",
 )
 async def update_alergeno(
-    alergeno_id: UUID,
+    alergeno_id: str,
     alergeno_data: AlergenoUpdate,
     session: AsyncSession = Depends(get_database_session),
 ) -> AlergenoResponse:
@@ -189,7 +189,7 @@ async def update_alergeno(
     description="Elimina un alérgeno existente del sistema.",
 )
 async def delete_alergeno(
-    alergeno_id: UUID, session: AsyncSession = Depends(get_database_session)
+    alergeno_id: str, session: AsyncSession = Depends(get_database_session)
 ) -> None:
     """
     Elimina un alérgeno existente.

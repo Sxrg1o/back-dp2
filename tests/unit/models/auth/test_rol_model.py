@@ -1,4 +1,4 @@
-from uuid import UUID, uuid4
+from ulid import ULID
 from src.models.auth.rol_model import RolModel
 
 
@@ -15,7 +15,7 @@ def test_rol_model_creation():
     POSTCONDICIONES:
         - La instancia debe tener los valores exactos proporcionados durante.
     """
-    rol_id: UUID = uuid4()
+    rol_id: str = str(ULID())
     rol_nombre = "admin"
     rol_descripcion = "Administrador del sistema"
 
@@ -46,7 +46,7 @@ def test_rol_to_dict():
         - El diccionario debe contener todas las claves esperadas.
         - Los valores deben coincidir con los de la instancia original.
     """
-    rol_id: UUID = uuid4()
+    rol_id: str = str(ULID())
     rol_nombre = "admin"
     rol_descripcion = "Administrador del sistema"
     rol = RolModel(id=rol_id, nombre=rol_nombre, descripcion=rol_descripcion)

@@ -1,74 +1,41 @@
-name: Backend CD
+name: Build and Push to ECR
 
 on:
   push:
-    branches:
-      - main
-    paths-ignore:
-      - '**/*.md'
-      - '**/*.txt'
-      - '.github/**'
+    branches: [ main, dev ]
+  pull_request:
+    branches: [ main, dev ]
   workflow_dispatch:
-    inputs:
-      environment:
-        description: 'Environment to deploy to'
-        required: true
-        default: 'production'
-        type: choice
-        options:
-          - production
-          - staging
+
 
 jobs:
-  test:
-    name: Run Tests
-    uses: ./.github/workflows/test_backend.yml
-
-  deploy:
-    name: Deploy to Server
-    needs: test
+  build-and-push:
     runs-on: ubuntu-latest
-    environment: ${{ github.event.inputs.environment || 'production' }}
-
+    
     steps:
-      - name: Code Checkout
-        uses: actions/checkout@v4
+    - name: Checkout code
+      uses: actions/checkout@v3
 
-      - name: Connect and Deploy on EC2
-        uses: appleboy/ssh-action@master
-        with:
-          host: ${{ secrets.SERVER_HOST }}
-          username: ${{ secrets.SERVER_USERNAME }}
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
-          port: 22
-          script: |
-            cd /back-dp2
-            
-            echo "Pulling latest changes..."
-            git pull origin main
-            
-            echo "Stopping current containers..."
-            docker compose down || true
-            
-            echo "Building and starting new containers..."
-            docker compose up -d --build
-            
-            echo "Cleaning up unused resources..."
-            docker image prune -f
-            
-            echo "Checking container status..."
-            docker compose ps
-            
-            echo "Checking application health..."
-            for i in {1..10}; do
-              if curl -s http://localhost:8000/health | grep -q "healthy"; then
-                echo "Application is healthy!"
-                exit 0
-              else
-                echo "Waiting for application to become healthy... ($i/10)"
-                sleep 5
-              fi
-            done
-            
-            echo "WARNING: Application health check timed out"
-            docker compose logs --tail=50
+    # 1. Configura las credenciales de AWS
+    - name: Configure AWS Credentials
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: us-east-2
+
+    # 2. Inicia sesión en ECR
+    - name: Login to Amazon ECR
+      id: login-ecr
+      uses: aws-actions/amazon-ecr-login@v2
+
+    # 3. Construye y haz push (ejemplo para el fastapi-core)
+    - name: Build, tag, and push image to Amazon ECR
+      env:
+        # Usa el URI de ECR (puedes guardarlo como secreto o ponerlo aquí si no es sensible)
+        ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+        ECR_REPOSITORY: dp2-eder/core-service
+        IMAGE_TAG: latest
+      run: |
+        docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
+        docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG

@@ -21,7 +21,7 @@ POSTCONDICIONES:
 """
 
 import pytest
-from uuid import uuid4
+from ulid import ULID
 from unittest.mock import AsyncMock, MagicMock
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.exc import SQLAlchemyError
@@ -53,11 +53,11 @@ async def test_get_by_id():
     mock_session = AsyncMock(spec=AsyncSession)
     mock_result = MagicMock()
     mock_result.scalars.return_value.first.return_value = CategoriaModel(
-        id=uuid4(), nombre="Entradas", descripcion="Platos de entrada"
+        id=str(ULID()), nombre="Entradas", descripcion="Platos de entrada"
     )
     mock_session.execute.return_value = mock_result
 
-    categoria_id = uuid4()
+    categoria_id = str(ULID())
     repository = CategoriaRepository(mock_session)
 
     # Act
@@ -97,7 +97,7 @@ async def test_get_by_nombre():
     mock_session = AsyncMock(spec=AsyncSession)
     mock_result = MagicMock()
     mock_result.scalars.return_value.first.return_value = CategoriaModel(
-        id=uuid4(), nombre="Bebidas", descripcion="Bebidas y refrescos"
+        id=str(ULID()), nombre="Bebidas", descripcion="Bebidas y refrescos"
     )
     mock_session.execute.return_value = mock_result
 
@@ -191,7 +191,7 @@ async def test_delete_categoria():
     mock_result.rowcount = 1  # Simula que se eliminó una fila
     mock_session.execute.return_value = mock_result
 
-    categoria_id = uuid4()
+    categoria_id = str(ULID())
     repository = CategoriaRepository(mock_session)
 
     # Act
@@ -248,12 +248,12 @@ async def test_update_categoria():
     mock_session = AsyncMock(spec=AsyncSession)
     mock_result = MagicMock()
     updated_categoria = CategoriaModel(
-        id=uuid4(), nombre="Actualizado", descripcion="Nueva descripción"
+        id=str(ULID()), nombre="Actualizado", descripcion="Nueva descripción"
     )
     mock_result.scalars.return_value.first.return_value = updated_categoria
     mock_session.execute.return_value = mock_result
 
-    categoria_id = uuid4()
+    categoria_id = str(ULID())
     repository = CategoriaRepository(mock_session)
 
     # Act
@@ -312,8 +312,8 @@ async def test_get_all():
     mock_count_result = MagicMock()
     
     categorias = [
-        CategoriaModel(id=uuid4(), nombre="Categoria1"),
-        CategoriaModel(id=uuid4(), nombre="Categoria2")
+        CategoriaModel(id=str(ULID()), nombre="Categoria1"),
+        CategoriaModel(id=str(ULID()), nombre="Categoria2")
     ]
     mock_result.scalars.return_value.all.return_value = categorias
     mock_count_result.scalar.return_value = 2
