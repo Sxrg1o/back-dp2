@@ -141,7 +141,8 @@ def register_routers(app: FastAPI) -> None:
         ("src.api.controllers.sync_controller", "Sincronización"),
         # ("src.api.controllers.usuarios_controller", "Usuarios"),
         ("src.api.controllers.mesa_controller", "Mesas"),
-        # ("src.api.controllers.pedidos_controller", "Pedidos"),
+        ("src.api.controllers.pedido_controller", "Pedidos"),
+        ("src.api.controllers.pedido_producto_controller", "Pedido Productos"),
         # ("src.api.controllers.pagos_controller", "Pagos"),
     ]
 
