@@ -2,16 +2,6 @@
 --  ESQUEMA COMPLETO - Sistema de Gestión de Restaurante
 --  IDs: ULID (26 chars, timestamp-ordered) con compatibilidad UUID v4 (36 chars)
 --  Requiere MySQL 8.0+ (para CHECKs funcionales)
---
---  HISTORIAL DE VERSIONES:
---  -------------------------------------------------------------------------
---  v1.0.0 - 2025-10-23 - Versión inicial sincronizada con backend
---    - Tablas implementadas en backend: rol, categoria, alergeno, mesas,
---      producto, tipo_opcion, producto_opcion, producto_alergeno
---    - Tablas pendientes de implementación en backend: usuario, pedido,
---      pedido_producto, division_cuenta, division_cuenta_detalle,
---      pedido_opcion, pago
---    - CAMBIO en mesas: agregado campo 'nota' según modelo del backend
 -- ============================================================================
 
 -- Asegura un charset/collation consistente si hace falta:
@@ -19,7 +9,6 @@
 
 -- --------------------------------------------------------------------------
 -- ROL
--- v1.0.0 - Implementado en backend ✓
 -- --------------------------------------------------------------------------
 CREATE TABLE rol (
     id                 CHAR(36) NOT NULL PRIMARY KEY COMMENT 'ULID/UUID - Identificador único',
@@ -38,7 +27,6 @@ CREATE INDEX idx_rol_modificado_por ON rol (modificado_por);
 
 -- --------------------------------------------------------------------------
 -- USUARIO (autorreferencia para auditoría)
--- v1.0.0 - Pendiente de implementación en backend
 -- --------------------------------------------------------------------------
 CREATE TABLE usuario (
     id                 CHAR(36)  NOT NULL PRIMARY KEY COMMENT 'ULID/UUID - Identificador único',
@@ -66,7 +54,6 @@ CREATE INDEX idx_usuario_modificado_por ON usuario (modificado_por);
 
 -- --------------------------------------------------------------------------
 -- CATEGORIA
--- v1.0.0 - Implementado en backend ✓
 -- --------------------------------------------------------------------------
 CREATE TABLE categoria (
     id                 CHAR(36)                               NOT NULL PRIMARY KEY COMMENT 'ULID/UUID - Identificador único',
@@ -86,7 +73,6 @@ CREATE INDEX idx_categoria_modificado_por ON categoria (modificado_por);
 
 -- --------------------------------------------------------------------------
 -- ALERGENO
--- v1.0.0 - Implementado en backend ✓
 -- --------------------------------------------------------------------------
 CREATE TABLE alergeno (
     id                 CHAR(36)                               NOT NULL PRIMARY KEY COMMENT 'ULID/UUID - Identificador único',
@@ -108,32 +94,33 @@ CREATE INDEX idx_alergeno_modificado_por  ON alergeno (modificado_por);
 
 -- --------------------------------------------------------------------------
 -- MESAS
--- v1.0.0 - Actualizado: agregado campo 'nota' según backend
 -- --------------------------------------------------------------------------
 CREATE TABLE mesas (
     id                 CHAR(36)                               NOT NULL PRIMARY KEY COMMENT 'ULID/UUID - Identificador único',
     numero             VARCHAR(20)                            NOT NULL,
-    capacidad          INT UNSIGNED                           NULL COMMENT 'Capacidad de personas',
+    capacidad          INT UNSIGNED                           NOT NULL,
     zona               VARCHAR(50)                            NULL COMMENT 'interior, terraza, vip, etc.',
-    nota               VARCHAR(255)                           NULL COMMENT 'Notas o comentarios adicionales sobre la mesa',
+    qr_code            VARCHAR(255)                           NOT NULL,
     estado             ENUM ('libre','disponible','ocupada','reservada','mantenimiento','fuera_servicio') DEFAULT 'disponible' NULL,
     activo             TINYINT(1)                             DEFAULT 1 NULL,
     fecha_creacion     TIMESTAMP                              DEFAULT CURRENT_TIMESTAMP NULL,
     fecha_modificacion TIMESTAMP                              DEFAULT CURRENT_TIMESTAMP NULL ON UPDATE CURRENT_TIMESTAMP,
     creado_por         CHAR(36)                               NULL COMMENT 'ID del usuario que creó el registro (sin FK)',
     modificado_por     CHAR(36)                               NULL COMMENT 'ID del usuario que modificó el registro (sin FK)',
-    CONSTRAINT uq_mesa_numero UNIQUE (numero)
+    CONSTRAINT uq_mesa_numero UNIQUE (numero),
+    CONSTRAINT uq_mesa_qr UNIQUE (qr_code),
+    CONSTRAINT chk_mesa_capacidad CHECK (capacidad > 0)
 ) COMMENT='Mesas físicas del restaurante';
 
 CREATE INDEX idx_mesa_activo          ON mesas (activo);
 CREATE INDEX idx_mesa_estado          ON mesas (estado);
+CREATE INDEX idx_mesa_qr              ON mesas (qr_code);
 CREATE INDEX idx_mesa_zona            ON mesas (zona);
 CREATE INDEX idx_mesa_creado_por      ON mesas (creado_por);
 CREATE INDEX idx_mesa_modificado_por  ON mesas (modificado_por);
 
 -- --------------------------------------------------------------------------
 -- PRODUCTO
--- v1.0.0 - Implementado en backend ✓
 -- --------------------------------------------------------------------------
 CREATE TABLE producto (
     id                 CHAR(36)                               NOT NULL PRIMARY KEY COMMENT 'ULID/UUID - Identificador único',
@@ -166,7 +153,6 @@ CREATE INDEX idx_producto_modificado_por      ON producto (modificado_por);
 
 -- --------------------------------------------------------------------------
 -- TIPO_OPCION
--- v1.0.0 - Implementado en backend ✓
 -- --------------------------------------------------------------------------
 CREATE TABLE tipo_opcion (
     id                 CHAR(36)                               NOT NULL PRIMARY KEY COMMENT 'ULID/UUID - Identificador único',
@@ -190,7 +176,6 @@ CREATE INDEX idx_tipoop_modificado_por    ON tipo_opcion (modificado_por);
 
 -- --------------------------------------------------------------------------
 -- PRODUCTO_OPCION
--- v1.0.0 - Implementado en backend ✓
 -- --------------------------------------------------------------------------
 CREATE TABLE producto_opcion (
     id                 CHAR(36)                               NOT NULL PRIMARY KEY COMMENT 'ULID/UUID - Identificador único',
@@ -218,7 +203,6 @@ CREATE INDEX idx_prodop_modificado_por ON producto_opcion (modificado_por);
 
 -- --------------------------------------------------------------------------
 -- PEDIDO
--- v1.0.0 - Pendiente de implementación en backend
 -- --------------------------------------------------------------------------
 CREATE TABLE pedido (
     id                   CHAR(36)                               NOT NULL PRIMARY KEY COMMENT 'ULID/UUID - Identificador único',
@@ -255,7 +239,6 @@ CREATE INDEX idx_pedido_modif_por     ON pedido (modificado_por);
 
 -- --------------------------------------------------------------------------
 -- PRODUCTO_ALERGENO (N:M)
--- v1.0.0 - Implementado en backend ✓
 -- --------------------------------------------------------------------------
 CREATE TABLE producto_alergeno (
     id_producto        CHAR(36)                               NOT NULL,
@@ -282,7 +265,6 @@ CREATE INDEX idx_prod_alerg_modificado_por ON producto_alergeno (modificado_por)
 
 -- --------------------------------------------------------------------------
 -- PEDIDO_PRODUCTO
--- v1.0.0 - Pendiente de implementación en backend
 -- --------------------------------------------------------------------------
 CREATE TABLE pedido_producto (
     id                   CHAR(36)                               NOT NULL PRIMARY KEY COMMENT 'ULID/UUID - Identificador único',
@@ -310,7 +292,6 @@ CREATE INDEX idx_pedprod_modificado_por  ON pedido_producto (modificado_por);
 
 -- --------------------------------------------------------------------------
 -- DIVISION_CUENTA
--- v1.0.0 - Pendiente de implementación en backend
 -- --------------------------------------------------------------------------
 CREATE TABLE division_cuenta (
     id                  CHAR(36)                               NOT NULL PRIMARY KEY COMMENT 'ULID/UUID - Identificador único',
@@ -333,7 +314,6 @@ CREATE INDEX idx_divcta_modificado_por  ON division_cuenta (modificado_por);
 
 -- --------------------------------------------------------------------------
 -- DIVISION_CUENTA_DETALLE
--- v1.0.0 - Pendiente de implementación en backend
 -- --------------------------------------------------------------------------
 CREATE TABLE division_cuenta_detalle (
     id                  CHAR(36)                               NOT NULL PRIMARY KEY COMMENT 'ULID/UUID - Identificador único',
@@ -359,7 +339,6 @@ CREATE INDEX idx_divdet_modificado_por ON division_cuenta_detalle (modificado_po
 
 -- --------------------------------------------------------------------------
 -- PEDIDO_OPCION
--- v1.0.0 - Pendiente de implementación en backend
 -- --------------------------------------------------------------------------
 CREATE TABLE pedido_opcion (
     id                 CHAR(36)                               NOT NULL PRIMARY KEY COMMENT 'ULID/UUID - Identificador único',
@@ -382,7 +361,6 @@ CREATE INDEX idx_pedopc_modificado_por ON pedido_opcion (modificado_por);
 
 -- --------------------------------------------------------------------------
 -- PAGO
--- v1.0.0 - Pendiente de implementación en backend
 -- --------------------------------------------------------------------------
 CREATE TABLE pago (
     id                 CHAR(36)                               NOT NULL PRIMARY KEY COMMENT 'ULID/UUID - Identificador único',
