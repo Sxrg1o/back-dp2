@@ -23,7 +23,7 @@ from src.business_logic.exceptions.categoria_exceptions import (
     CategoriaNotFoundError,
     CategoriaConflictError,
 )
-from src.core.utils.text_utils import normalize_category_name
+from src.core.utils.text_utils import normalize_category_name, normalize_product_name
 
 
 class CategoriaService:
@@ -386,11 +386,11 @@ class CategoriaService:
             # Normalizar el nombre de la categoría
             categoria_nombre_normalizado = normalize_category_name(categoria.nombre)
             
-            # Construir lista de productos minimal
+            # Construir lista de productos minimal (con nombres normalizados)
             productos_minimal = [
                 ProductoCardMinimal(
                     id=producto.id,
-                    nombre=producto.nombre,
+                    nombre=normalize_product_name(producto.nombre),
                     imagen_path=producto.imagen_path
                 )
                 for producto in categoria.productos

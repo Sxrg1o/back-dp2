@@ -56,3 +56,35 @@ def normalize_category_name(category_name: str) -> str:
         return category_name
     
     return normalize_to_title_case(category_name)
+
+
+def normalize_product_name(product_name: str) -> str:
+    """
+    Normaliza específicamente el nombre de un producto/plato.
+    
+    Aplica la normalización de Title Case y cualquier regla específica
+    que se requiera para los nombres de productos.
+    
+    Parameters
+    ----------
+    product_name : str
+        El nombre del producto a normalizar.
+        
+    Returns
+    -------
+    str
+        El nombre del producto normalizado.
+        
+    Examples
+    --------
+    >>> normalize_product_name("CEVICHE MIXTO")
+    'Ceviche Mixto'
+    >>> normalize_product_name("leche de tigre")
+    'Leche De Tigre'
+    >>> normalize_product_name("ArRoZ cOn MaRiScOs")
+    'Arroz Con Mariscos'
+    """
+    if not product_name or not isinstance(product_name, str):
+        return product_name
+    
+    return normalize_to_title_case(product_name)
