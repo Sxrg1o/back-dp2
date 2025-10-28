@@ -94,9 +94,9 @@ class ProductoRepository:
         producto = result.scalars().first()
 
         if producto:
-            # Cargar alérgenos en una propiedad temporal
+            # Cargar alérgenos en una propiedad temporal usando setattr para evitar warning de tipo
             alergenos_result = await self.session.execute(alergenos_subquery)
-            producto._alergenos = list(alergenos_result.scalars().all())
+            setattr(producto, '_alergenos', list(alergenos_result.scalars().all()))
 
         return producto
 
