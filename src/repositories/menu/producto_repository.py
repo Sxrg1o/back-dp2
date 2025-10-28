@@ -11,6 +11,8 @@ from sqlalchemy.orm import selectinload
 
 from src.models.menu.producto_model import ProductoModel
 from src.models.pedidos.producto_opcion_model import ProductoOpcionModel
+from src.models.menu.producto_alergeno_model import ProductoAlergenoModel
+from src.models.menu.alergeno_model import AlergenoModel
 
 
 class ProductoRepository:
@@ -67,7 +69,7 @@ class ProductoRepository:
 
     async def get_by_id(self, producto_id: str) -> Optional[ProductoModel]:
         """
-        Obtiene un producto por su identificador único.
+        Obtiene un producto por su identificador único con sus alérgenos.
 
         Parameters
         ----------
@@ -77,11 +79,26 @@ class ProductoRepository:
         Returns
         -------
         Optional[ProductoModel]
-            El producto encontrado o None si no existe.
+            El producto encontrado con sus alérgenos o None si no existe.
         """
+        # Subquery para obtener alérgenos del producto
+        alergenos_subquery = (
+            select(AlergenoModel)
+            .join(ProductoAlergenoModel, ProductoAlergenoModel.id_alergeno == AlergenoModel.id)
+            .where(ProductoAlergenoModel.id_producto == producto_id)
+        )
+
+        # Query principal del producto
         query = select(ProductoModel).where(ProductoModel.id == producto_id)
         result = await self.session.execute(query)
-        return result.scalars().first()
+        producto = result.scalars().first()
+
+        if producto:
+            # Cargar alérgenos en una propiedad temporal
+            alergenos_result = await self.session.execute(alergenos_subquery)
+            producto._alergenos = list(alergenos_result.scalars().all())
+
+        return producto
 
     async def get_by_id_with_opciones(self, producto_id: str) -> Optional[ProductoModel]:
         """
