@@ -7,6 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.exc import IntegrityError
 
 from src.repositories.mesas.mesa_repository import MesaRepository
+from src.repositories.zona_repository import ZonaRepository
 from src.models.mesas.mesa_model import MesaModel
 from src.api.schemas.mesa_schema import (
     MesaCreate,
@@ -37,11 +38,21 @@ class MesaService:
         list[MesaResponse]
             Lista de esquemas de respuesta con los datos de las mesas creadas.
         """
+        # Validar todas las zonas primero
+        for mesa_data in mesas_data:
+            if mesa_data.id_zona:
+                zona = await self.zona_repository.get_by_id(mesa_data.id_zona)
+                if not zona:
+                    raise MesaValidationError(
+                        f"No se encontró la zona con ID {mesa_data.id_zona}"
+                    )
+
         mesas_models = [
             MesaModel(
                 numero=mesa.numero,
                 capacidad=mesa.capacidad,
-                zona=mesa.zona,
+                id_zona=mesa.id_zona,
+                nota=mesa.nota,
                 estado=mesa.estado
             )
             for mesa in mesas_data
@@ -86,6 +97,7 @@ class MesaService:
             Sesión asíncrona de SQLAlchemy para realizar operaciones en la base de datos.
         """
         self.repository = MesaRepository(session)
+        self.zona_repository = ZonaRepository(session)
 
     async def create_mesa(self, mesa_data: MesaCreate) -> MesaResponse:
         """
@@ -104,14 +116,25 @@ class MesaService:
         Raises
         ------
         MesaConflictError
-            Si ya existe una mesa con el mismo nombre.
+            Si ya existe una mesa con el mismo número.
+        MesaValidationError
+            Si el id_zona proporcionado no existe.
         """
+        # Validar que id_zona existe si se proporciona
+        if mesa_data.id_zona:
+            zona = await self.zona_repository.get_by_id(mesa_data.id_zona)
+            if not zona:
+                raise MesaValidationError(
+                    f"No se encontró la zona con ID {mesa_data.id_zona}"
+                )
+
         try:
             # Crear modelo de mesa desde los datos
             mesa = MesaModel(
                 numero=mesa_data.numero,
                 capacidad=mesa_data.capacidad,
-                zona=mesa_data.zona,
+                id_zona=mesa_data.id_zona,
+                nota=mesa_data.nota,
                 estado=mesa_data.estado
             )
 
@@ -121,7 +144,7 @@ class MesaService:
             # Convertir y retornar como esquema de respuesta
             return MesaResponse.model_validate(created_mesa)
         except IntegrityError:
-            # Capturar errores de integridad (nombre duplicado)
+            # Capturar errores de integridad (número duplicado)
             raise MesaConflictError(
                 f"Ya existe una mesa con el número '{mesa_data.numero}'"
             )
@@ -237,7 +260,9 @@ class MesaService:
         MesaNotFoundError
             Si no se encuentra una mesa con el ID proporcionado.
         MesaConflictError
-            Si ya existe otra mesa con el mismo nombre.
+            Si ya existe otra mesa con el mismo número.
+        MesaValidationError
+            Si el id_zona proporcionado no existe.
         """
         # Convertir el esquema de actualización a un diccionario,
         # excluyendo valores None (campos no proporcionados para actualizar)
@@ -246,6 +271,14 @@ class MesaService:
         if not update_data:
             # Si no hay datos para actualizar, simplemente retornar la mesa actual
             return await self.get_mesa_by_id(mesa_id)
+
+        # Validar que id_zona existe si se está actualizando
+        if "id_zona" in update_data and update_data["id_zona"]:
+            zona = await self.zona_repository.get_by_id(update_data["id_zona"])
+            if not zona:
+                raise MesaValidationError(
+                    f"No se encontró la zona con ID {update_data['id_zona']}"
+                )
 
         try:
             # Actualizar la mesa
@@ -258,10 +291,10 @@ class MesaService:
             # Convertir y retornar como esquema de respuesta
             return MesaResponse.model_validate(updated_mesa)
         except IntegrityError:
-            # Capturar errores de integridad (nombre duplicado)
-            if "nombre" in update_data:
+            # Capturar errores de integridad (número duplicado)
+            if "numero" in update_data:
                 raise MesaConflictError(
-                    f"Ya existe una mesa con el nombre '{update_data['nombre']}'"
+                    f"Ya existe una mesa con el número '{update_data['numero']}'"
                 )
-            # Si no es por nombre, reenviar la excepción original
+            # Si no es por número, reenviar la excepción original
             raise
