@@ -210,6 +210,8 @@ async def create_tables():
     from src.models.menu.producto_alergeno_model import ProductoAlergenoModel  # noqa: F401
     from src.models.pedidos.tipo_opciones_model import TipoOpcionModel  # noqa: F401
     from src.models.pedidos.producto_opcion_model import ProductoOpcionModel  # noqa: F401
+    from src.models.pagos.division_cuenta_model import DivisionCuentaModel  # noqa: F401
+    from src.models.pagos.division_cuenta_detalle_model import DivisionCuentaDetalleModel  # noqa: F401
 
     async with db.engine.begin() as conn:
         await conn.run_sync(BaseModel.metadata.create_all)

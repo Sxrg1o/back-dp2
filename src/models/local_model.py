@@ -15,6 +15,7 @@ from src.core.enums.local_enums import TipoLocal
 
 if TYPE_CHECKING:
     from src.models.zona_model import ZonaModel
+    from src.models.sesion_model import SesionModel
 
 # Definimos un TypeVar para el tipado genérico
 T = TypeVar("T", bound="LocalModel")
@@ -81,6 +82,13 @@ class LocalModel(BaseModel, AuditMixin):
     # Relaciones
     zonas: Mapped[List["ZonaModel"]] = relationship(
         "ZonaModel",
+        back_populates="local",
+        cascade="all, delete-orphan",
+        lazy="select"
+    )
+
+    sesiones: Mapped[List["SesionModel"]] = relationship(
+        "SesionModel",
         back_populates="local",
         cascade="all, delete-orphan",
         lazy="select"
