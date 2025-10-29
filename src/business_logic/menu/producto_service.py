@@ -112,18 +112,19 @@ class ProductoService:
         ProductoNotFoundError
             Si no se encuentra un producto con el ID proporcionado.
         """
-        # Buscar el producto por su ID
+        # Buscar el producto por su ID (ahora incluye alérgenos)
         producto = await self.repository.get_by_id(producto_id)
 
         # Verificar si existe
         if not producto:
             raise ProductoNotFoundError(f"No se encontró el producto con ID {producto_id}")
 
-        # Normalizar el nombre antes de retornar
-        producto.nombre = normalize_product_name(producto.nombre)
-        
+        # Convertir a dict y agregar alérgenos
+        producto_dict = producto.to_dict()
+        producto_dict['alergenos'] = getattr(producto, '_alergenos', [])
+
         # Convertir y retornar como esquema de respuesta
-        return ProductoResponse.model_validate(producto)
+        return ProductoResponse.model_validate(producto_dict)
 
     async def get_producto_con_opciones(self, producto_id: str) -> "ProductoConOpcionesResponse":
         """
