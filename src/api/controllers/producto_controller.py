@@ -200,41 +200,7 @@ async def get_producto(
     response_model=ProductoConOpcionesResponse,
     status_code=status.HTTP_200_OK,
     summary="Obtener producto con opciones agrupadas por tipo",
-    description="""
-    Obtiene los detalles completos de un producto con todas sus opciones 
-    **agrupadas por tipo de opción**.
-    
-    **Cambios recientes:**
-    - ✅ Ahora incluye `descripcion` y `precio_base` del producto
-    - ✅ Opciones agrupadas en `tipos_opciones[]` por tipo
-    - ✅ Cada tipo incluye metadata (obligatorio, múltiple selección, orden)
-    
-    **Estructura de respuesta:**
-    ```json
-    {
-      "id": "01K7ZCT8PNJA2J8EB83NHA1MK4",
-      "nombre": "Ceviche Clásico",
-      "descripcion": "Pescado fresco del día marinado...",
-      "precio_base": "25.00",
-      "tipos_opciones": [
-        {
-          "id_tipo_opcion": "01K7...",
-          "nombre_tipo": "Nivel de picante",
-          "obligatorio": true,
-          "multiple_seleccion": false,
-          "opciones": [
-            {"nombre": "Sin ají", "precio_adicional": "0.00"},
-            {"nombre": "Ají suave", "precio_adicional": "0.00"}
-          ]
-        }
-      ]
-    }
-    ```
-    
-    **Errores posibles:**
-    - 404: Si no se encuentra un producto con el ID proporcionado
-    - 500: Si ocurre un error interno del servidor
-    """,
+    description="Obtiene los detalles completos de un producto con todas sus opciones agrupadas por tipo de opción.",
 )
 async def get_producto_con_opciones(
     producto_id: str, session: AsyncSession = Depends(get_database_session)
