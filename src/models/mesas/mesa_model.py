@@ -7,7 +7,7 @@ from src.models.base_model import BaseModel
 from src.core.enums.mesa_enums import EstadoMesa
 
 if TYPE_CHECKING:
-    from src.models.zona_model import ZonaModel
+    from ..zona_model import ZonaModel
 
 # Definimos un TypeVar para el tipado genérico
 T = TypeVar("T", bound="MesaModel")

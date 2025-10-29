@@ -104,14 +104,17 @@ class PedidosFlowTester:
             
             for idx, producto in enumerate(productos_a_agregar, 1):
                 print(f"\n   Producto {idx}: {producto.nombre}")
-                print(f"   - Precio: S/. {producto.precio}")
+                precio = getattr(producto, 'precio_base', None) or getattr(producto, 'precio', Decimal('0.00'))
+                print(f"   - Precio: S/. {precio}")
                 
                 # Crear item de pedido
+                # Usar el atributo de precio correcto (precio_base o precio)
+                precio = getattr(producto, 'precio_base', None) or getattr(producto, 'precio', Decimal('0.00'))
                 pedido_producto = await self.create_pedido_producto(
                     pedido.id,
                     producto.id,
                     cantidad=1,
-                    precio_unitario=producto.precio
+                    precio_unitario=precio
                 )
                 print(f"   - Item creado (ID: {pedido_producto.id})")
                 
@@ -122,23 +125,24 @@ class PedidosFlowTester:
                 # Filtrar opciones disponibles para este producto
                 opciones_del_producto = [
                     op for op in opciones_disponibles 
-                    if op.id_producto == producto.id
+                    if hasattr(op, 'id_producto') and op.id_producto == producto.id
                 ]
                 
                 if opciones_del_producto:
                     # Seleccionar hasta 2 opciones
                     for opcion in opciones_del_producto[:2]:
-                        print(f"     - Opción: {opcion.nombre} (S/. {opcion.precio_adicional})")
+                        precio_adicional = getattr(opcion, 'precio_adicional', Decimal('0.00'))
+                        print(f"     - Opción: {opcion.nombre} (S/. {precio_adicional})")
                         
                         # Crear registro de opción en el pedido
                         pedido_opcion = await self.create_pedido_opcion(
                             pedido_producto.id,
                             opcion.id,
-                            opcion.precio_adicional
+                            precio_adicional
                         )
                         
                         opciones_seleccionadas.append(pedido_opcion)
-                        precio_opciones += opcion.precio_adicional
+                        precio_opciones += precio_adicional
                 
                 # Actualizar precio de opciones en el item
                 await self.update_pedido_producto_opciones(
@@ -211,8 +215,10 @@ class PedidosFlowTester:
     
     async def create_pedido(self, id_mesa: str) -> PedidoModel:
         """Crea un nuevo pedido."""
-        # Generar número de pedido único
-        numero_pedido = f"{datetime.now().strftime('%Y%m%d')}-M1-001"
+        # Generar número de pedido único con timestamp
+        import time
+        timestamp = str(int(time.time()))[-6:]  # Últimos 6 dígitos del timestamp
+        numero_pedido = f"{datetime.now().strftime('%Y%m%d')}-M1-{timestamp}"
         
         pedido = PedidoModel(
             id_mesa=id_mesa,
@@ -231,24 +237,48 @@ class PedidosFlowTester:
     
     async def get_productos(self) -> list:
         """Obtiene todos los productos disponibles."""
-        result = await self.session.execute(
-            select(ProductoModel).where(ProductoModel.activo == True).limit(5)
-        )
-        return result.scalars().all()
+        try:
+            # Usar disponible si existe, sino obtener todos
+            if hasattr(ProductoModel, 'disponible'):
+                result = await self.session.execute(
+                    select(ProductoModel).where(ProductoModel.disponible == True).limit(5)
+                )
+            else:
+                result = await self.session.execute(
+                    select(ProductoModel).limit(5)
+                )
+            return result.scalars().all()
+        except Exception as e:
+            print(f"   ⚠️  Error al obtener productos: {e}")
+            return []
     
     async def get_tipos_opciones(self) -> list:
         """Obtiene todos los tipos de opciones disponibles."""
-        result = await self.session.execute(
-            select(TipoOpcionModel).where(TipoOpcionModel.activo == True)
-        )
-        return result.scalars().all()
+        try:
+            # Usar activo si existe, sino obtener todos
+            if hasattr(TipoOpcionModel, 'activo'):
+                result = await self.session.execute(
+                    select(TipoOpcionModel).where(TipoOpcionModel.activo == True)
+                )
+            else:
+                result = await self.session.execute(
+                    select(TipoOpcionModel)
+                )
+            return result.scalars().all()
+        except Exception as e:
+            print(f"   ⚠️  Error al obtener tipos de opciones: {e}")
+            return []
     
     async def get_opciones_disponibles(self) -> list:
         """Obtiene todas las opciones de productos disponibles."""
-        result = await self.session.execute(
-            select(ProductoOpcionModel).limit(10)
-        )
-        return result.scalars().all()
+        try:
+            result = await self.session.execute(
+                select(ProductoOpcionModel).limit(10)
+            )
+            return result.scalars().all()
+        except Exception as e:
+            print(f"   ⚠️  Error al obtener opciones disponibles: {e}")
+            return []
     
     async def create_pedido_producto(
         self,

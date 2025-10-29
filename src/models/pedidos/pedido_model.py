@@ -15,7 +15,7 @@ from src.models.mixins.audit_mixin import AuditMixin
 from src.core.enums.pedido_enums import EstadoPedido
 
 if TYPE_CHECKING:
-    pass
+    from src.models.pagos.division_cuenta_model import DivisionCuentaModel
 
 # Definimos un TypeVar para el tipado genérico
 T = TypeVar("T", bound="PedidoModel")
