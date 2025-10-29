@@ -23,6 +23,7 @@ from src.business_logic.exceptions.producto_exceptions import (
     ProductoNotFoundError,
     ProductoConflictError,
 )
+from src.core.utils.text_utils import normalize_product_name, normalize_category_name
 
 
 class ProductoService:
@@ -81,6 +82,9 @@ class ProductoService:
             # Persistir en la base de datos
             created_producto = await self.repository.create(producto)
 
+            # Normalizar el nombre antes de retornar
+            created_producto.nombre = normalize_product_name(created_producto.nombre)
+            
             # Convertir y retornar como esquema de respuesta
             return ProductoResponse.model_validate(created_producto)
         except IntegrityError:
@@ -220,7 +224,7 @@ class ProductoService:
         return ProductoConOpcionesResponse(
             # Info del producto (includes descripcion and precio_base)
             id=producto.id,
-            nombre=producto.nombre,
+            nombre=normalize_product_name(producto.nombre),
             descripcion=producto.descripcion,
             precio_base=producto.precio_base,
             imagen_path=producto.imagen_path,
@@ -294,7 +298,9 @@ class ProductoService:
         # Obtener productos desde el repositorio
         productos, total = await self.repository.get_all(skip, limit, id_categoria)
 
-        # Convertir modelos a esquemas de resumen
+        # Normalizar nombres y convertir modelos a esquemas de resumen
+        for producto in productos:
+            producto.nombre = normalize_product_name(producto.nombre)
         producto_summaries = [ProductoSummary.model_validate(producto) for producto in productos]
 
         # Retornar esquema de lista
@@ -339,6 +345,9 @@ class ProductoService:
             if not updated_producto:
                 raise ProductoNotFoundError(f"No se encontró el producto con ID {producto_id}")
 
+            # Normalizar el nombre antes de retornar
+            updated_producto.nombre = normalize_product_name(updated_producto.nombre)
+            
             # Convertir y retornar como esquema de respuesta
             return ProductoResponse.model_validate(updated_producto)
         except IntegrityError:
@@ -391,7 +400,9 @@ class ProductoService:
             # Persistir en la base de datos usando batch insert
             created_productos = await self.repository.batch_insert(producto_models)
 
-            # Convertir y retornar como esquemas de respuesta
+            # Normalizar nombres y convertir a esquemas de respuesta
+            for producto in created_productos:
+                producto.nombre = normalize_product_name(producto.nombre)
             return [
                 ProductoResponse.model_validate(producto)
                 for producto in created_productos
@@ -453,7 +464,9 @@ class ProductoService:
                         f"No se encontraron los productos con IDs: {missing_ids}"
                     )
 
-            # Convertir y retornar como esquemas de respuesta
+            # Normalizar nombres y convertir a esquemas de respuesta
+            for producto in updated_productos:
+                producto.nombre = normalize_product_name(producto.nombre)
             return [
                 ProductoResponse.model_validate(producto)
                 for producto in updated_productos
@@ -507,15 +520,15 @@ class ProductoService:
         # Necesitamos incluir la información de la categoría para cada producto
         producto_cards = []
         for producto in productos:
-            # Construir el objeto ProductoCard con información de categoría
+            # Construir el objeto ProductoCard con información de categoría (nombres normalizados)
             card_data = {
                 "id": producto.id,
-                "nombre": producto.nombre,
+                "nombre": normalize_product_name(producto.nombre),
                 "imagen_path": producto.imagen_path,
                 "precio_base": producto.precio_base,
                 "categoria": {
                     "id": producto.categoria.id,
-                    "nombre": producto.categoria.nombre,
+                    "nombre": normalize_category_name(producto.categoria.nombre),
                     "imagen_path": producto.categoria.imagen_path,
                 }
             }

@@ -23,6 +23,7 @@ from src.business_logic.exceptions.categoria_exceptions import (
     CategoriaNotFoundError,
     CategoriaConflictError,
 )
+from src.core.utils.text_utils import normalize_category_name, normalize_product_name
 
 
 class CategoriaService:
@@ -78,6 +79,9 @@ class CategoriaService:
             # Persistir en la base de datos
             created_categoria = await self.repository.create(categoria)
 
+            # Normalizar el nombre antes de retornar
+            created_categoria.nombre = normalize_category_name(created_categoria.nombre)
+            
             # Convertir y retornar como esquema de respuesta
             return CategoriaResponse.model_validate(created_categoria)
         except IntegrityError:
@@ -112,6 +116,9 @@ class CategoriaService:
         if not categoria:
             raise CategoriaNotFoundError(f"No se encontró la categoría con ID {categoria_id}")
 
+        # Normalizar el nombre antes de retornar
+        categoria.nombre = normalize_category_name(categoria.nombre)
+        
         # Convertir y retornar como esquema de respuesta
         return CategoriaResponse.model_validate(categoria)
 
@@ -170,7 +177,9 @@ class CategoriaService:
         # Obtener categorías desde el repositorio
         categorias, total = await self.repository.get_all(skip, limit)
 
-        # Convertir modelos a esquemas de resumen
+        # Normalizar nombres y convertir modelos a esquemas de resumen
+        for categoria in categorias:
+            categoria.nombre = normalize_category_name(categoria.nombre)
         categoria_summaries = [CategoriaSummary.model_validate(categoria) for categoria in categorias]
 
         # Retornar esquema de lista
@@ -215,6 +224,9 @@ class CategoriaService:
             if not updated_categoria:
                 raise CategoriaNotFoundError(f"No se encontró la categoría con ID {categoria_id}")
 
+            # Normalizar el nombre antes de retornar
+            updated_categoria.nombre = normalize_category_name(updated_categoria.nombre)
+            
             # Convertir y retornar como esquema de respuesta
             return CategoriaResponse.model_validate(updated_categoria)
         except IntegrityError:
@@ -264,7 +276,9 @@ class CategoriaService:
             # Persistir en la base de datos usando batch insert
             created_categorias = await self.repository.batch_insert(categoria_models)
 
-            # Convertir y retornar como esquemas de respuesta
+            # Normalizar nombres y convertir a esquemas de respuesta
+            for categoria in created_categorias:
+                categoria.nombre = normalize_category_name(categoria.nombre)
             return [
                 CategoriaResponse.model_validate(categoria)
                 for categoria in created_categorias
@@ -326,7 +340,9 @@ class CategoriaService:
                         f"No se encontraron las categorías con IDs: {missing_ids}"
                     )
 
-            # Convertir y retornar como esquemas de respuesta
+            # Normalizar nombres y convertir a esquemas de respuesta
+            for categoria in updated_categorias:
+                categoria.nombre = normalize_category_name(categoria.nombre)
             return [
                 CategoriaResponse.model_validate(categoria)
                 for categoria in updated_categorias
@@ -367,20 +383,23 @@ class CategoriaService:
         # Construir la lista de categorías con productos
         items = []
         for categoria in categorias:
-            # Construir lista de productos minimal
+            # Normalizar el nombre de la categoría
+            categoria_nombre_normalizado = normalize_category_name(categoria.nombre)
+            
+            # Construir lista de productos minimal (con nombres normalizados)
             productos_minimal = [
                 ProductoCardMinimal(
                     id=producto.id,
-                    nombre=producto.nombre,
+                    nombre=normalize_product_name(producto.nombre),
                     imagen_path=producto.imagen_path
                 )
                 for producto in categoria.productos
             ]
 
-            # Construir categoría con productos
+            # Construir categoría con productos (usando nombre normalizado)
             categoria_card = CategoriaConProductosCard(
                 id=categoria.id,
-                nombre=categoria.nombre,
+                nombre=categoria_nombre_normalizado,
                 imagen_path=categoria.imagen_path,
                 productos=productos_minimal
             )
