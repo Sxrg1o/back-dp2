@@ -5,12 +5,15 @@ Implementa la estructura de datos para los productos incluidos en cada pedido,
 adaptado para coincidir con el esquema existente de MySQL restaurant_dp2.pedido_producto.
 """
 
-from typing import Any, Dict, Optional, Type, TypeVar
+from typing import Any, Dict, Optional, Type, TypeVar, List, TYPE_CHECKING
 from decimal import Decimal
 from datetime import datetime
 from sqlalchemy.orm import Mapped, mapped_column, relationship, declared_attr
 from sqlalchemy import String, Text, Numeric, TIMESTAMP, Integer, ForeignKey, CheckConstraint, inspect, func
 from src.models.base_model import BaseModel
+
+if TYPE_CHECKING:
+    from src.models.pagos.division_cuenta_detalle_model import DivisionCuentaDetalleModel
 
 # Definimos un TypeVar para el tipado genérico
 T = TypeVar("T", bound="PedidoProductoModel")
@@ -106,6 +109,14 @@ class PedidoProductoModel(BaseModel):
             TIMESTAMP, nullable=False, server_default=func.now(), onupdate=func.now()
         )
 
+    # Relaciones
+    divisiones_detalle: Mapped[List["DivisionCuentaDetalleModel"]] = relationship(
+        "DivisionCuentaDetalleModel",
+        back_populates="pedido_producto",
+        cascade="all, delete-orphan",
+        lazy="select"
+    )
+
     # Constraints
     __table_args__ = (
         CheckConstraint("cantidad >= 1", name="chk_cantidad_minima"),
@@ -113,10 +124,6 @@ class PedidoProductoModel(BaseModel):
         CheckConstraint("precio_opciones >= 0", name="chk_precio_opciones_positivo"),
         CheckConstraint("subtotal >= 0", name="chk_subtotal_positivo"),
     )
-
-    # Relaciones (opcional, se pueden agregar después si se necesitan)
-    # pedido = relationship("PedidoModel", back_populates="productos")
-    # producto = relationship("ProductoModel")
 
     # Métodos
     def calcular_subtotal(self) -> Decimal:

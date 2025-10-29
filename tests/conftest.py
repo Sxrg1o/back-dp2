@@ -17,6 +17,11 @@ from src.main import app
 from src.core.database import get_database_session as get_db, DatabaseManager
 from src.models.base_model import BaseModel as Base
 
+# Importar TODOS los modelos al inicio para registrarlos con SQLAlchemy
+# Esto es necesario para que los tests unitarios que instancian modelos directamente funcionen
+from src.models.pagos.division_cuenta_model import DivisionCuentaModel  # noqa: F401
+from src.models.pagos.division_cuenta_detalle_model import DivisionCuentaDetalleModel  # noqa: F401
+
 # Inicializar Faker para español
 fake = Faker('es_ES')
 
@@ -64,6 +69,8 @@ async def test_db_manager():
 
     # Importamos los modelos para registrarlos con Base
     from src.models.auth.rol_model import RolModel  # noqa: F401
+    from src.models.pagos.division_cuenta_model import DivisionCuentaModel  # noqa: F401
+    from src.models.pagos.division_cuenta_detalle_model import DivisionCuentaDetalleModel  # noqa: F401
 
     # Creamos las tablas
     async with test_db.engine.begin() as conn:

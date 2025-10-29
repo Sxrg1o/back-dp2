@@ -30,7 +30,12 @@ from src.models.menu.producto_alergeno_model import ProductoAlergenoModel
 from src.models.pedidos.tipo_opciones_model import TipoOpcionModel
 from src.models.pedidos.producto_opcion_model import ProductoOpcionModel
 from src.models.auth.rol_model import RolModel
+from src.models.local_model import LocalModel
+from src.models.zona_model import ZonaModel
+from src.models.mesas.mesa_model import MesaModel
 from src.core.enums.alergeno_enums import NivelPresencia
+from src.core.enums.local_enums import TipoLocal
+from src.core.enums.mesa_enums import EstadoMesa
 
 
 def get_database_url() -> str:
@@ -60,6 +65,7 @@ class DataEnricher:
         self.categorias_existentes = {}  # {nombre_normalizado: CategoriaModel}
         self.alergenos = {}  # {nombre: AlergenoModel}
         self.tipos_opciones = {}  # {codigo: TipoOpcionModel}
+        self.local = None  # LocalModel (creado en create_local)
     
     @staticmethod
     def normalize_name(nombre: str) -> str:
@@ -76,7 +82,47 @@ class DataEnricher:
         )
         # Maysculas y strip
         return nombre.upper().strip()
-    
+
+    async def create_local(self):
+        """
+        PASO 0.1: Crear el local 'Barra Arena' si no existe.
+        """
+        print("\n" + "="*70)
+        print(" PASO 0.1: CREANDO LOCAL")
+        print("="*70)
+
+        # Buscar si ya existe
+        result = await self.session.execute(
+            select(LocalModel).where(LocalModel.codigo == "BA-001")
+        )
+        existing_local = result.scalars().first()
+
+        if existing_local:
+            print(f"   Local '{existing_local.nombre}' ya existe (ID: {existing_local.id})")
+            self.local = existing_local
+            return
+
+        # Crear nuevo local
+        self.local = LocalModel(
+            codigo="BA-001",
+            nombre="Barra Arena",
+            direccion="CAL. GENERAL BORGONO N 199",
+            distrito="MIRAFLORES",
+            ciudad="LIMA",
+            telefono=None,
+            email=None,
+            tipo_local=TipoLocal.CENTRAL,
+            capacidad_total=None,
+            activo=True,
+            fecha_apertura=None
+        )
+
+        self.session.add(self.local)
+        await self.session.flush()
+        await self.session.refresh(self.local)
+
+        print(f"   Local creado: '{self.local.nombre}' (ID: {self.local.id})")
+
     async def load_existing_data(self):
         """
          SOLO consulta productos y categoras existentes para hacer matching.
@@ -986,13 +1032,17 @@ class DataEnricher:
         print("     NO se crearn productos ni categoras nuevas")
         print("    Solo se agregar informacin complementaria")
         print("="*70)
-        
+
+        # PASO 0: Crear Local (las Zonas y Mesas se crean via POST /sync/mesas)
+        await self.create_local()
+        await self.session.commit()
+
         # Cargar datos existentes (solo consulta, no crea)
         await self.load_existing_data()
-        
+
         # PASO 2: Crear alrgenos
         await self.create_alergenos()
-        
+
         # PASO 3: Crear tipos de opciones
         await self.create_tipos_opciones()
         

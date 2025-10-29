@@ -5,7 +5,7 @@ Implementa la estructura de datos para los pedidos de los clientes,
 adaptado para coincidir con el esquema existente de MySQL restaurant_dp2.pedido.
 """
 
-from typing import Any, Dict, Optional, Type, TypeVar
+from typing import Any, Dict, Optional, Type, TypeVar, List, TYPE_CHECKING
 from decimal import Decimal
 from datetime import datetime
 from sqlalchemy.orm import Mapped, mapped_column, relationship
@@ -13,6 +13,9 @@ from sqlalchemy import String, Text, Numeric, TIMESTAMP, Enum as SQLEnum, Foreig
 from src.models.base_model import BaseModel
 from src.models.mixins.audit_mixin import AuditMixin
 from src.core.enums.pedido_enums import EstadoPedido
+
+if TYPE_CHECKING:
+    pass
 
 # Definimos un TypeVar para el tipado genérico
 T = TypeVar("T", bound="PedidoModel")
@@ -125,14 +128,19 @@ class PedidoModel(BaseModel, AuditMixin):
     fecha_entregado: Mapped[Optional[datetime]] = mapped_column(TIMESTAMP, nullable=True)
     fecha_cancelado: Mapped[Optional[datetime]] = mapped_column(TIMESTAMP, nullable=True)
 
+    # Relaciones
+    divisiones_cuenta: Mapped[List["DivisionCuentaModel"]] = relationship(
+        "DivisionCuentaModel",
+        back_populates="pedido",
+        cascade="all, delete-orphan",
+        lazy="select"
+    )
+
     # Constraints
     __table_args__ = (
         CheckConstraint("subtotal >= 0", name="chk_subtotal_positivo"),
         CheckConstraint("total >= 0", name="chk_total_positivo"),
     )
-
-    # Relaciones (opcional, se pueden agregar después si se necesitan)
-    # mesa = relationship("MesaModel", back_populates="pedidos")
 
     # Métodos comunes para todos los modelos
     def to_dict(self) -> Dict[str, Any]:
