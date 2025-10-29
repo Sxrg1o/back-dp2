@@ -580,7 +580,7 @@ async def test_create_pedido_completo_success(
             id_producto=producto.id,
             cantidad=2,
             precio_unitario=Decimal("25.50"),
-            precio_opciones=Decimal("3.00"),
+            opciones=[],
             notas_personalizacion="Sin cebolla",
         )
     ]
@@ -674,7 +674,7 @@ async def test_create_pedido_completo_mesa_not_found(
             id_producto=str(ULID()),
             cantidad=1,
             precio_unitario=Decimal("25.50"),
-            precio_opciones=Decimal("0.00"),
+            opciones=[],
         )
     ]
 
@@ -722,7 +722,7 @@ async def test_create_pedido_completo_producto_not_found(
             id_producto=str(ULID()),
             cantidad=1,
             precio_unitario=Decimal("25.50"),
-            precio_opciones=Decimal("0.00"),
+            opciones=[],
         )
     ]
 
@@ -777,7 +777,7 @@ async def test_create_pedido_completo_producto_not_available(
             id_producto=producto.id,
             cantidad=1,
             precio_unitario=Decimal("25.50"),
-            precio_opciones=Decimal("0.00"),
+            opciones=[],
         )
     ]
 
