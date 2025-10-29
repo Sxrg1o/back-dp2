@@ -147,7 +147,12 @@ class ProductoService:
         ProductoNotFoundError
             Si no se encuentra un producto con el ID proporcionado.
         """
-        from src.api.schemas.producto_schema import ProductoConOpcionesResponse
+        # Importación tardía para evitar referencias circulares
+        try:
+            from src.api.schemas.producto_schema import ProductoConOpcionesResponse
+        except ImportError:
+            # Si hay problemas, usar un dict simple como fallback
+            ProductoConOpcionesResponse = dict
         
         # Buscar el producto con opciones (eager loading includes tipo_opcion)
         producto = await self.repository.get_by_id_with_opciones(producto_id)

@@ -90,7 +90,7 @@ def sample_mesa_data():
         "id": str(ULID()),
         "numero": "001",
         "capacidad": 4,
-        "zona": "A",
+        "id_zona": str(ULID()),
         "activo": True,
         "estado": EstadoMesa.DISPONIBLE,
     }

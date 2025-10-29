@@ -14,6 +14,7 @@ from src.models.mixins.audit_mixin import AuditMixin
 
 if TYPE_CHECKING:
     from src.models.local_model import LocalModel
+    from src.models.mesas.mesa_model import MesaModel
 
 # Definimos un TypeVar para el tipado genérico
 T = TypeVar("T", bound="ZonaModel")
@@ -72,6 +73,13 @@ class ZonaModel(BaseModel, AuditMixin):
         "LocalModel",
         back_populates="zonas",
         lazy="joined"  # Eager loading para obtener datos del local
+    )
+
+    mesas: Mapped[list["MesaModel"]] = relationship(
+        "MesaModel",
+        back_populates="zona",
+        lazy="selectin",
+        cascade="all, delete-orphan"
     )
 
     # Definición de índices
