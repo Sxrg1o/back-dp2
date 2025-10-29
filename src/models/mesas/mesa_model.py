@@ -108,4 +108,3 @@ class MesaModel(BaseModel, AuditMixin):
 
     def __repr__(self):
         return f"<Mesa(id={self.id}, numero={self.numero}, id_zona={self.id_zona}, capacidad={self.capacidad})>"
-    
