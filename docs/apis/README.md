@@ -84,7 +84,16 @@ curl -X POST "https://back-dp2.onrender.com/api/v1/pedidos/completo" \
         "id_producto": "01J9CEVI123ABCDEFGHIJKLMN",
         "cantidad": 2,
         "precio_unitario": 30.00,
-        "precio_opciones": 4.00,
+        "opciones": [
+          {
+            "id_producto_opcion": "01J9AJI123ABCDEFGHIJKLMN",
+            "precio_adicional": 1.00
+          },
+          {
+            "id_producto_opcion": "01J9CHO456ABCDEFGHIJKLMN",
+            "precio_adicional": 3.00
+          }
+        ],
         "notas_personalizacion": "Sin cebolla, ají picante"
       }
     ],

@@ -40,7 +40,12 @@ Crea un pedido completo con todos sus items en **una sola transacción atómica*
       "id_producto": "string (ULID)",
       "cantidad": "integer (>= 1)",
       "precio_unitario": "number (> 0)",
-      "precio_opciones": "number (>= 0)",
+      "opciones": [
+        {
+          "id_producto_opcion": "string (ULID)",
+          "precio_adicional": "number (>= 0)"
+        }
+      ],
       "notas_personalizacion": "string | null"
     }
   ],
@@ -56,14 +61,16 @@ Crea un pedido completo con todos sus items en **una sola transacción atómica*
 | `id_mesa` | `string` | ID ULID de la mesa (debe existir) |
 | `items` | `array` | Lista de items del pedido (mín. 1 item) |
 | `items[].id_producto` | `string` | ID ULID del producto (debe existir y estar disponible) |
-| `items[].cantidad` | `integer` | Cantidad del producto (≥ 1) |
+| `items[].cantidad` | `integer` | Cantidad del producto (≥ 1, default: 1) |
 | `items[].precio_unitario` | `number` | Precio base del producto (> 0) |
 
 ### Campos Opcionales
 
 | Campo | Tipo | Descripción | Default |
 |-------|------|-------------|---------|
-| `items[].precio_opciones` | `number` | Suma de precios de opciones adicionales | `0.00` |
+| `items[].opciones` | `array` | Lista de opciones seleccionadas para este producto | `[]` |
+| `items[].opciones[].id_producto_opcion` | `string` | ID ULID de la opción del producto | requerido si hay opciones |
+| `items[].opciones[].precio_adicional` | `number` | Precio adicional de la opción al momento del pedido | requerido si hay opciones |
 | `items[].notas_personalizacion` | `string` | Notas específicas del item | `null` |
 | `notas_cliente` | `string` | Notas del cliente | `null` |
 | `notas_cocina` | `string` | Notas para la cocina | `null` |
@@ -78,16 +85,21 @@ Crea un pedido completo con todos sus items en **una sola transacción atómica*
   "numero_pedido": "20251028-M001-001",
   "id_mesa": "01J9ABCDEFGHIJKLMNOPQRSTUV",
   "estado": "PENDIENTE",
-  "total": 110.00,
   "subtotal": 100.00,
-  "impuestos": 10.00,
-  "descuento": 0.00,
+  "impuestos": 0.00,
+  "descuentos": 0.00,
+  "total": 100.00,
   "notas_cliente": "Mesa para evento",
   "notas_cocina": "Urgente",
+  "fecha_confirmado": null,
+  "fecha_en_preparacion": null,
+  "fecha_listo": null,
+  "fecha_entregado": null,
+  "fecha_cancelado": null,
   "fecha_creacion": "2025-10-28T22:30:00Z",
   "fecha_modificacion": "2025-10-28T22:30:00Z",
-  "fecha_estimada_entrega": null,
-  "fecha_entrega_real": null,
+  "creado_por": null,
+  "modificado_por": null,
   "items": [
     {
       "id": "01J9ABCDEFGHIJKLMNOPQRSTUV",
@@ -98,6 +110,24 @@ Crea un pedido completo con todos sus items en **una sola transacción atómica*
       "precio_opciones": 3.00,
       "subtotal": 57.00,
       "notas_personalizacion": "Sin cebolla",
+      "opciones": [
+        {
+          "id": "01J9OPCI123ABCDEFGHIJKLMN",
+          "id_pedido_producto": "01J9ABCDEFGHIJKLMNOPQRSTUV",
+          "id_producto_opcion": "01J9OPC123ABCDEFGHIJKLMN",
+          "precio_adicional": 1.00,
+          "fecha_creacion": "2025-10-28T22:30:00Z",
+          "fecha_modificacion": "2025-10-28T22:30:00Z"
+        },
+        {
+          "id": "01J9OPCI456ABCDEFGHIJKLMN",
+          "id_pedido_producto": "01J9ABCDEFGHIJKLMNOPQRSTUV",
+          "id_producto_opcion": "01J9OPC456ABCDEFGHIJKLMN",
+          "precio_adicional": 2.00,
+          "fecha_creacion": "2025-10-28T22:30:00Z",
+          "fecha_modificacion": "2025-10-28T22:30:00Z"
+        }
+      ],
       "fecha_creacion": "2025-10-28T22:30:00Z",
       "fecha_modificacion": "2025-10-28T22:30:00Z"
     }
@@ -112,10 +142,25 @@ Crea un pedido completo con todos sus items en **una sola transacción atómica*
 | `id` | `string` | ID ULID del pedido generado |
 | `numero_pedido` | `string` | Número único: `YYYYMMDD-M{mesa_num}-{seq}` |
 | `estado` | `string` | Estado inicial: `"PENDIENTE"` |
-| `total` | `number` | Total final (subtotal + impuestos - descuento) |
 | `subtotal` | `number` | Suma de subtotales de todos los items |
+| `impuestos` | `number` | Impuestos aplicados (default: 0.00) |
+| `descuentos` | `number` | Descuentos aplicados (default: 0.00) |
+| `total` | `number` | Total final (subtotal + impuestos - descuentos) |
+| `fecha_confirmado` | `datetime/null` | Timestamp cuando se confirmó (null al crear) |
+| `fecha_en_preparacion` | `datetime/null` | Timestamp cuando entró en preparación (null al crear) |
+| `fecha_listo` | `datetime/null` | Timestamp cuando estuvo listo (null al crear) |
+| `fecha_entregado` | `datetime/null` | Timestamp cuando se entregó (null al crear) |
+| `fecha_cancelado` | `datetime/null` | Timestamp cuando se canceló (null al crear) |
+| `fecha_creacion` | `datetime` | Timestamp de creación del pedido |
+| `fecha_modificacion` | `datetime` | Timestamp de última modificación |
+| `creado_por` | `string/null` | Usuario que creó el pedido (puede ser null) |
+| `modificado_por` | `string/null` | Usuario que modificó por última vez (puede ser null) |
 | `items[]` | `array` | Lista de items creados con sus IDs generados |
+| `items[].precio_opciones` | `number` | Suma de precios de opciones seleccionadas |
 | `items[].subtotal` | `number` | `cantidad * (precio_unitario + precio_opciones)` |
+| `items[].opciones[]` | `array` | Lista de opciones seleccionadas para este item |
+| `items[].opciones[].id_producto_opcion` | `string` | ID de la opción del producto |
+| `items[].opciones[].precio_adicional` | `number` | Precio adicional de la opción al momento del pedido |
 
 ## ERRORES
 
@@ -162,7 +207,7 @@ Crea un pedido completo con todos sus items en **una sola transacción atómica*
 
 ## EJEMPLOS
 
-### Ejemplo 1: Pedido Simple (1 item)
+### Ejemplo 1: Pedido Simple (1 item sin opciones)
 
 **Request:**
 ```bash
@@ -175,7 +220,7 @@ curl -X POST "https://back-dp2.onrender.com/api/v1/pedidos/completo" \
         "id_producto": "01J9PROD123ABCDEFGHIJKLMN",
         "cantidad": 1,
         "precio_unitario": 25.50,
-        "precio_opciones": 0.00,
+        "opciones": [],
         "notas_personalizacion": null
       }
     ],
@@ -191,14 +236,21 @@ curl -X POST "https://back-dp2.onrender.com/api/v1/pedidos/completo" \
   "numero_pedido": "20251028-M003-001",
   "id_mesa": "01J9MESA123ABCDEFGHIJKLMN",
   "estado": "PENDIENTE",
-  "total": 25.50,
   "subtotal": 25.50,
   "impuestos": 0.00,
-  "descuento": 0.00,
+  "descuentos": 0.00,
+  "total": 25.50,
   "notas_cliente": "Primera vez",
   "notas_cocina": null,
+  "fecha_confirmado": null,
+  "fecha_en_preparacion": null,
+  "fecha_listo": null,
+  "fecha_entregado": null,
+  "fecha_cancelado": null,
   "fecha_creacion": "2025-10-28T22:35:15Z",
   "fecha_modificacion": "2025-10-28T22:35:15Z",
+  "creado_por": null,
+  "modificado_por": null,
   "items": [
     {
       "id": "01J9ITEM123ABCDEFGHIJKLMN",
@@ -209,6 +261,7 @@ curl -X POST "https://back-dp2.onrender.com/api/v1/pedidos/completo" \
       "precio_opciones": 0.00,
       "subtotal": 25.50,
       "notas_personalizacion": null,
+      "opciones": [],
       "fecha_creacion": "2025-10-28T22:35:15Z",
       "fecha_modificacion": "2025-10-28T22:35:15Z"
     }
@@ -229,21 +282,40 @@ curl -X POST "https://back-dp2.onrender.com/api/v1/pedidos/completo" \
         "id_producto": "01J9CEVI123ABCDEFGHIJKLMN",
         "cantidad": 2,
         "precio_unitario": 30.00,
-        "precio_opciones": 4.00,
+        "opciones": [
+          {
+            "id_producto_opcion": "01J9AJI123ABCDEFGHIJKLMN",
+            "precio_adicional": 1.00
+          },
+          {
+            "id_producto_opcion": "01J9CHO456ABCDEFGHIJKLMN",
+            "precio_adicional": 3.00
+          }
+        ],
         "notas_personalizacion": "Sin cebolla, ají picante, con choclo"
       },
       {
         "id_producto": "01J9ARRO456ABCDEFGHIJKLMN",
         "cantidad": 1,
         "precio_unitario": 22.00,
-        "precio_opciones": 15.00,
+        "opciones": [
+          {
+            "id_producto_opcion": "01J9TAM789ABCDEFGHIJKLMN",
+            "precio_adicional": 15.00
+          }
+        ],
         "notas_personalizacion": "Para 2 personas"
       },
       {
         "id_producto": "01J9BEBI789ABCDEFGHIJKLMN",
         "cantidad": 3,
         "precio_unitario": 5.00,
-        "precio_opciones": 1.50,
+        "opciones": [
+          {
+            "id_producto_opcion": "01J9TEM123ABCDEFGHIJKLMN",
+            "precio_adicional": 1.50
+          }
+        ],
         "notas_personalizacion": "Heladas"
       }
     ],
@@ -259,38 +331,95 @@ curl -X POST "https://back-dp2.onrender.com/api/v1/pedidos/completo" \
   "numero_pedido": "20251028-M005-002",
   "id_mesa": "01J9MESA456ABCDEFGHIJKLMN",
   "estado": "PENDIENTE",
-  "total": 124.50,
   "subtotal": 124.50,
   "impuestos": 0.00,
-  "descuento": 0.00,
+  "descuentos": 0.00,
+  "total": 124.50,
   "notas_cliente": "Celebración cumpleaños",
   "notas_cocina": "Servir todo junto por favor",
+  "fecha_confirmado": null,
+  "fecha_en_preparacion": null,
+  "fecha_listo": null,
+  "fecha_entregado": null,
+  "fecha_cancelado": null,
   "fecha_creacion": "2025-10-28T22:40:22Z",
   "fecha_modificacion": "2025-10-28T22:40:22Z",
+  "creado_por": null,
+  "modificado_por": null,
   "items": [
     {
       "id": "01J9ITEM456ABCDEFGHIJKLMN",
+      "id_pedido": "01J9PEDI456ABCDEFGHIJKLMN",
+      "id_producto": "01J9CEVI123ABCDEFGHIJKLMN",
       "cantidad": 2,
       "precio_unitario": 30.00,
       "precio_opciones": 4.00,
       "subtotal": 68.00,
-      "notas_personalizacion": "Sin cebolla, ají picante, con choclo"
+      "notas_personalizacion": "Sin cebolla, ají picante, con choclo",
+      "opciones": [
+        {
+          "id": "01J9OPC1456ABCDEFGHIJKLMN",
+          "id_pedido_producto": "01J9ITEM456ABCDEFGHIJKLMN",
+          "id_producto_opcion": "01J9AJI123ABCDEFGHIJKLMN",
+          "precio_adicional": 1.00,
+          "fecha_creacion": "2025-10-28T22:40:22Z",
+          "fecha_modificacion": "2025-10-28T22:40:22Z"
+        },
+        {
+          "id": "01J9OPC2789ABCDEFGHIJKLMN",
+          "id_pedido_producto": "01J9ITEM456ABCDEFGHIJKLMN",
+          "id_producto_opcion": "01J9CHO456ABCDEFGHIJKLMN",
+          "precio_adicional": 3.00,
+          "fecha_creacion": "2025-10-28T22:40:22Z",
+          "fecha_modificacion": "2025-10-28T22:40:22Z"
+        }
+      ],
+      "fecha_creacion": "2025-10-28T22:40:22Z",
+      "fecha_modificacion": "2025-10-28T22:40:22Z"
     },
     {
       "id": "01J9ITEM789ABCDEFGHIJKLMN",
+      "id_pedido": "01J9PEDI456ABCDEFGHIJKLMN",
+      "id_producto": "01J9ARRO456ABCDEFGHIJKLMN",
       "cantidad": 1,
       "precio_unitario": 22.00,
       "precio_opciones": 15.00,
       "subtotal": 37.00,
-      "notas_personalizacion": "Para 2 personas"
+      "notas_personalizacion": "Para 2 personas",
+      "opciones": [
+        {
+          "id": "01J9OPC3123ABCDEFGHIJKLMN",
+          "id_pedido_producto": "01J9ITEM789ABCDEFGHIJKLMN",
+          "id_producto_opcion": "01J9TAM789ABCDEFGHIJKLMN",
+          "precio_adicional": 15.00,
+          "fecha_creacion": "2025-10-28T22:40:22Z",
+          "fecha_modificacion": "2025-10-28T22:40:22Z"
+        }
+      ],
+      "fecha_creacion": "2025-10-28T22:40:22Z",
+      "fecha_modificacion": "2025-10-28T22:40:22Z"
     },
     {
-      "id": "01J9ITEMABC DEFGHIJKLMN",
+      "id": "01J9ITEM123ABCDEFGHIJKLMN",
+      "id_pedido": "01J9PEDI456ABCDEFGHIJKLMN",
+      "id_producto": "01J9BEBI789ABCDEFGHIJKLMN",
       "cantidad": 3,
       "precio_unitario": 5.00,
       "precio_opciones": 1.50,
       "subtotal": 19.50,
-      "notas_personalizacion": "Heladas"
+      "notas_personalizacion": "Heladas",
+      "opciones": [
+        {
+          "id": "01J9OPC4456ABCDEFGHIJKLMN",
+          "id_pedido_producto": "01J9ITEM123ABCDEFGHIJKLMN",
+          "id_producto_opcion": "01J9TEM123ABCDEFGHIJKLMN",
+          "precio_adicional": 1.50,
+          "fecha_creacion": "2025-10-28T22:40:22Z",
+          "fecha_modificacion": "2025-10-28T22:40:22Z"
+        }
+      ],
+      "fecha_creacion": "2025-10-28T22:40:22Z",
+      "fecha_modificacion": "2025-10-28T22:40:22Z"
     }
   ]
 }
@@ -326,6 +455,11 @@ curl -X POST "https://back-dp2.onrender.com/api/v1/pedidos/completo" \
 
 ## CÁLCULOS AUTOMÁTICOS
 
+### Precio de Opciones por Item
+```
+precio_opciones = suma(precio_adicional para cada opción en el item)
+```
+
 ### Subtotal por Item
 ```
 subtotal_item = cantidad * (precio_unitario + precio_opciones)
@@ -334,7 +468,7 @@ subtotal_item = cantidad * (precio_unitario + precio_opciones)
 ### Total del Pedido
 ```
 subtotal_pedido = suma(subtotal_item para cada item)
-total_pedido = subtotal_pedido + impuestos - descuento
+total_pedido = subtotal_pedido + impuestos - descuentos
 ```
 
 ### Número de Pedido
@@ -342,6 +476,17 @@ total_pedido = subtotal_pedido + impuestos - descuento
 formato: YYYYMMDD-M{mesa_numero}-{secuencia}
 ejemplo: 20251028-M003-001
 ```
+
+### Ejemplo de Cálculo Completo
+
+**Item con opciones:**
+- Producto: Ceviche (precio_unitario = $30.00)
+- Opciones: Ají picante ($1.00) + Con choclo ($3.00)
+- Cantidad: 2
+
+**Cálculo:**
+1. `precio_opciones = 1.00 + 3.00 = $4.00`
+2. `subtotal_item = 2 * (30.00 + 4.00) = 2 * 34.00 = $68.00`
 
 ## URLs COMPLETAS
 
