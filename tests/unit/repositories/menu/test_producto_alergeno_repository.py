@@ -21,7 +21,7 @@ POSTCONDICIONES:
 """
 
 import pytest
-from uuid import UUID, uuid4
+from ulid import ULID
 from unittest.mock import AsyncMock, MagicMock, patch
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.exc import SQLAlchemyError
@@ -58,8 +58,8 @@ async def test_get_by_id():
     mock_session = AsyncMock(spec=AsyncSession)
     mock_result = MagicMock()
     
-    id_producto = uuid4()
-    id_alergeno = uuid4()
+    id_producto = str(ULID())
+    id_alergeno = str(ULID())
     
     mock_result.scalars.return_value.first.return_value = ProductoAlergenoModel(
         id_producto=id_producto,
@@ -110,8 +110,8 @@ async def test_create_producto_alergeno():
     # Arrange
     mock_session = AsyncMock(spec=AsyncSession)
     producto_alergeno = ProductoAlergenoModel(
-        id_producto=uuid4(),
-        id_alergeno=uuid4(),
+        id_producto=str(ULID()),
+        id_alergeno=str(ULID()),
         nivel_presencia=NivelPresencia.TRAZAS,
         notas="Contiene trazas por contaminación cruzada"
     )
@@ -164,8 +164,8 @@ async def test_delete_producto_alergeno():
     mock_result.rowcount = 1  # Simula que se eliminó una fila
     mock_session.execute.return_value = mock_result
 
-    id_producto = uuid4()
-    id_alergeno = uuid4()
+    id_producto = str(ULID())
+    id_alergeno = str(ULID())
     repository = ProductoAlergenoRepository(mock_session)
 
     # Act

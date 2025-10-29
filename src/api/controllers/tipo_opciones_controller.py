@@ -68,7 +68,7 @@ async def create_tipo_opcion(
     description="Obtiene los detalles de un tipo de opción específico por su ID.",
 )
 async def get_tipo_opcion(
-    tipo_opcion_id: UUID, session: AsyncSession = Depends(get_database_session)
+    tipo_opcion_id: str, session: AsyncSession = Depends(get_database_session)
 ) -> TipoOpcionResponse:
     """
     Obtiene un tipo de opción específico por su ID.
@@ -147,7 +147,7 @@ async def list_tipos_opciones(
     description="Actualiza los datos de un tipo de opción existente.",
 )
 async def update_tipo_opcion(
-    tipo_opcion_id: UUID,
+    tipo_opcion_id: str,
     tipo_opcion_data: TipoOpcionUpdate,
     session: AsyncSession = Depends(get_database_session),
 ) -> TipoOpcionResponse:
@@ -189,7 +189,7 @@ async def update_tipo_opcion(
     description="Elimina un tipo de opción existente del sistema.",
 )
 async def delete_tipo_opcion(
-    tipo_opcion_id: UUID, session: AsyncSession = Depends(get_database_session)
+    tipo_opcion_id: str, session: AsyncSession = Depends(get_database_session)
 ) -> None:
     """
     Elimina un tipo de opción existente.

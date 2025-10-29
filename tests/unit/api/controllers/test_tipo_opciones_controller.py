@@ -4,7 +4,7 @@ Pruebas unitarias para los endpoints de tipos de opciones.
 
 import pytest
 from unittest.mock import AsyncMock, patch
-import uuid
+from ulid import ULID
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
 
@@ -84,7 +84,7 @@ def sample_tipo_opcion_id():
     POSTCONDICIONES:
         - Devuelve un string con formato UUID válido para usar como ID de tipo de opción
     """
-    return str(uuid.uuid4())
+    return str(str(ULID()))
 
 
 @pytest.fixture
@@ -104,7 +104,7 @@ def sample_tipo_opcion_data():
         - Los datos pueden ser usados para construir objetos TipoOpcionModel o TipoOpcionResponse
     """
     return {
-        "id": str(uuid.uuid4()),
+        "id": str(str(ULID())),
         "codigo": "nivel_aji",
         "nombre": "Nivel de Ají",
         "descripcion": "Nivel de picante del plato",
@@ -490,7 +490,7 @@ def test_delete_tipo_opcion_success(
     # Assert
     assert response.status_code == 204
     assert response.content == b""  # No content
-    mock_tipo_opcion_service.delete_tipo_opcion.assert_awaited_once_with(uuid.UUID(sample_tipo_opcion_id))
+    mock_tipo_opcion_service.delete_tipo_opcion.assert_awaited_once_with(sample_tipo_opcion_id)
 
 
 def test_delete_tipo_opcion_not_found(

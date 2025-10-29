@@ -3,7 +3,7 @@ Pydantic schemas for Rol (Role) entities.
 """
 
 from typing import Optional, ClassVar, List
-from uuid import UUID
+# UUID removed - using str for ULID compatibility
 from datetime import datetime
 from pydantic import BaseModel, Field, ConfigDict
 
@@ -39,7 +39,7 @@ class RolResponse(RolBase):
 
     model_config: ClassVar[ConfigDict] = ConfigDict(from_attributes=True)
 
-    id: UUID = Field(description="Role ID")
+    id: str = Field(description="Role ID")
     activo: bool = Field(description="Indicates if the role is active")
     fecha_creacion: Optional[datetime] = Field(
         default=None, description="Creation timestamp"
@@ -54,7 +54,7 @@ class RolSummary(BaseModel):
     
     model_config: ClassVar[ConfigDict] = ConfigDict(from_attributes=True)
     
-    id: UUID = Field(description="Role ID")
+    id: str = Field(description="Role ID")
     nombre: str = Field(description="Role name")
     activo: bool = Field(description="Indicates if the role is active")
 

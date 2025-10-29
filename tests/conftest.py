@@ -5,7 +5,7 @@ Global fixtures for all tests.
 import pytest
 import asyncio
 import httpx
-from uuid import uuid4
+from ulid import ULID
 from decimal import Decimal
 from datetime import datetime
 from faker import Faker
@@ -16,6 +16,11 @@ from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, Asyn
 from src.main import app
 from src.core.database import get_database_session as get_db, DatabaseManager
 from src.models.base_model import BaseModel as Base
+
+# Importar TODOS los modelos al inicio para registrarlos con SQLAlchemy
+# Esto es necesario para que los tests unitarios que instancian modelos directamente funcionen
+from src.models.pagos.division_cuenta_model import DivisionCuentaModel  # noqa: F401
+from src.models.pagos.division_cuenta_detalle_model import DivisionCuentaDetalleModel  # noqa: F401
 
 # Inicializar Faker para español
 fake = Faker('es_ES')
@@ -64,6 +69,8 @@ async def test_db_manager():
 
     # Importamos los modelos para registrarlos con Base
     from src.models.auth.rol_model import RolModel  # noqa: F401
+    from src.models.pagos.division_cuenta_model import DivisionCuentaModel  # noqa: F401
+    from src.models.pagos.division_cuenta_detalle_model import DivisionCuentaDetalleModel  # noqa: F401
 
     # Creamos las tablas
     async with test_db.engine.begin() as conn:
@@ -154,7 +161,7 @@ def fake_rol_data():
             rol = RolModel(**fake_rol_data)
     """
     return {
-        "id": uuid4(),
+        "id": str(ULID()),
         "nombre": fake.job()[:50],  # Máximo 50 caracteres
         "descripcion": fake.text(max_nb_chars=200),
         "activo": True,
@@ -174,7 +181,7 @@ def fake_usuario_data(fake_rol_data):
             usuario = UsuarioModel(**fake_usuario_data)
     """
     return {
-        "id": uuid4(),
+        "id": str(ULID()),
         "id_rol": fake_rol_data["id"],
         "email": fake.email(),
         "password_hash": fake.sha256(),
@@ -194,7 +201,7 @@ def fake_categoria_data():
         dict: Datos de categoría con valores fake realistas
     """
     return {
-        "id": uuid4(),
+        "id": str(ULID()),
         "nombre": fake.word().capitalize()[:50],
         "descripcion": fake.sentence(),
         "imagen_path": f"/images/{fake.file_name(extension='jpg')}",
@@ -211,7 +218,7 @@ def fake_producto_data(fake_categoria_data):
         dict: Datos de producto con valores fake realistas
     """
     return {
-        "id": uuid4(),
+        "id": str(ULID()),
         "id_categoria": fake_categoria_data["id"],
         "nombre": f"{fake.word().capitalize()} {fake.word()}",
         "descripcion": fake.text(max_nb_chars=200),
@@ -239,7 +246,7 @@ def fake_alergeno_data():
         "Sésamo", "Sulfitos", "Altramuces", "Moluscos"
     ]
     return {
-        "id": uuid4(),
+        "id": str(ULID()),
         "nombre": fake.random_element(elements=alergenos),
         "descripcion": fake.sentence(),
         "icono_path": f"/icons/{fake.file_name(extension='svg')}",
@@ -285,7 +292,7 @@ def create_fake_rol():
     """
     def _create_fake_rol(**kwargs):
         data = {
-            "id": uuid4(),
+            "id": str(ULID()),
             "nombre": fake.job()[:50],
             "descripcion": fake.text(max_nb_chars=200),
             "activo": True,
@@ -311,8 +318,8 @@ def create_fake_usuario():
     """
     def _create_fake_usuario(**kwargs):
         data = {
-            "id": uuid4(),
-            "id_rol": uuid4(),
+            "id": str(ULID()),
+            "id_rol": str(ULID()),
             "email": fake.email(),
             "password_hash": fake.sha256(),
             "nombre": fake.name(),
@@ -341,8 +348,8 @@ def create_fake_producto():
     """
     def _create_fake_producto(**kwargs):
         data = {
-            "id": uuid4(),
-            "id_categoria": uuid4(),
+            "id": str(ULID()),
+            "id_categoria": str(ULID()),
             "nombre": f"{fake.word().capitalize()} {fake.word()}",
             "descripcion": fake.text(max_nb_chars=200),
             "precio_base": Decimal(fake.pyfloat(left_digits=2, right_digits=2, positive=True, min_value=5, max_value=100)),
@@ -374,8 +381,8 @@ def create_fake_producto_alergeno():
     
     def _create_fake_producto_alergeno(**kwargs):
         data = {
-            "id_producto": uuid4(),
-            "id_alergeno": uuid4(),
+            "id_producto": str(ULID()),
+            "id_alergeno": str(ULID()),
             "nivel_presencia": fake.random_element(elements=[
                 NivelPresencia.CONTIENE,
                 NivelPresencia.PUEDE_CONTENER,

@@ -216,7 +216,9 @@ async def delete_producto_alergeno(
     """
     try:
         producto_alergeno_service = ProductoAlergenoService(session)
-        await producto_alergeno_service.delete_producto_alergeno(id_producto, id_alergeno)
+        result = await producto_alergeno_service.delete_producto_alergeno(id_producto, id_alergeno)
+        # No es necesario verificar el resultado aquí ya que delete_producto_alergeno
+        # lanza ProductoAlergenoNotFoundError si no encuentra la relación
     except ProductoAlergenoNotFoundError as e:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
     except Exception as e:

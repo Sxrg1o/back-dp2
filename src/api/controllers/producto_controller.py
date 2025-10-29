@@ -2,6 +2,7 @@
 Endpoints para gestión de productos.
 """
 
+from typing import List
 from uuid import UUID
 from fastapi import APIRouter, Depends, HTTPException, status, Query
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -21,6 +22,7 @@ from src.business_logic.exceptions.producto_exceptions import (
     ProductoNotFoundError,
     ProductoConflictError,
 )
+from src.business_logic.menu.producto_alergeno_service import ProductoAlergenoService
 
 router = APIRouter(prefix="/productos", tags=["Productos"])
 
@@ -116,7 +118,7 @@ async def list_all_productos_cards(
     description="Obtiene una lista paginada de productos de una categoría específica en formato card con información completa.",
 )
 async def list_productos_cards_by_categoria(
-    categoria_id: UUID,
+    categoria_id: str,
     skip: int = Query(0, ge=0, description="Número de registros a omitir (paginación)"),
     limit: int = Query(
         100, gt=0, le=500, description="Número máximo de registros a retornar"
@@ -164,7 +166,7 @@ async def list_productos_cards_by_categoria(
     description="Obtiene los detalles de un producto específico por su ID.",
 )
 async def get_producto(
-    producto_id: UUID, session: AsyncSession = Depends(get_database_session)
+    producto_id: str, session: AsyncSession = Depends(get_database_session)
 ) -> ProductoResponse:
     """
     Obtiene un producto específico por su ID.
@@ -197,21 +199,21 @@ async def get_producto(
     "/{producto_id}/opciones",
     response_model=ProductoConOpcionesResponse,
     status_code=status.HTTP_200_OK,
-    summary="Obtener un producto con todas sus opciones",
-    description="Obtiene los detalles completos de un producto con todas sus opciones disponibles.",
+    summary="Obtener producto con opciones agrupadas por tipo",
+    description="Obtiene los detalles completos de un producto con todas sus opciones agrupadas por tipo de opción.",
 )
 async def get_producto_con_opciones(
-    producto_id: UUID, session: AsyncSession = Depends(get_database_session)
+    producto_id: str, session: AsyncSession = Depends(get_database_session)
 ):
     """
-    Obtiene un producto específico por su ID con todas sus opciones.
+    Obtiene un producto específico por su ID con opciones agrupadas por tipo.
     
     Args:
-        producto_id: ID del producto a buscar.
+        producto_id: ID del producto a buscar (ULID).
         session: Sesión de base de datos.
         
     Returns:
-        El producto encontrado con todos sus datos y todas sus opciones.
+        El producto con descripción, precio y opciones agrupadas por tipo.
         
     Raises:
         HTTPException:
@@ -231,6 +233,40 @@ async def get_producto_con_opciones(
 
 
 @router.get(
+    "/{producto_id}/alergenos",
+    status_code=status.HTTP_200_OK,
+    summary="Obtener alérgenos de un producto",
+    description="Obtiene todos los alérgenos asociados a un producto específico.",
+)
+async def get_alergenos_by_producto(
+    producto_id: str, session: AsyncSession = Depends(get_database_session)
+):
+    """
+    Obtiene todos los alérgenos asociados a un producto específico.
+
+    Args:
+        producto_id: ID del producto a buscar (ULID).
+        session: Sesión de base de datos.
+
+    Returns:
+        Lista de alérgenos asociados al producto.
+
+    Raises:
+        HTTPException:
+            - 404: Si no se encuentra el producto o no tiene alérgenos.
+            - 500: Si ocurre un error interno del servidor.
+    """
+    try:
+        producto_alergeno_service = ProductoAlergenoService(session)
+        return await producto_alergeno_service.get_alergenos_by_producto(producto_id)
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error interno del servidor: {str(e)}",
+        )
+
+
+@router.get(
     "",
     response_model=ProductoList,
     status_code=status.HTTP_200_OK,
@@ -242,7 +278,7 @@ async def list_productos(
     limit: int = Query(
         100, gt=0, le=500, description="Número máximo de registros a retornar"
     ),
-    id_categoria: UUID = Query(None, description="Filtrar productos por ID de categoría"),
+    id_categoria: str = Query(None, description="Filtrar productos por ID de categoría"),
     session: AsyncSession = Depends(get_database_session),
 ) -> ProductoList:
     """
@@ -282,7 +318,7 @@ async def list_productos(
     description="Actualiza los datos de un producto existente.",
 )
 async def update_producto(
-    producto_id: UUID,
+    producto_id: str,
     producto_data: ProductoUpdate,
     session: AsyncSession = Depends(get_database_session),
 ) -> ProductoResponse:
@@ -324,7 +360,7 @@ async def update_producto(
     description="Elimina un producto existente del sistema.",
 )
 async def delete_producto(
-    producto_id: UUID, session: AsyncSession = Depends(get_database_session)
+    producto_id: str, session: AsyncSession = Depends(get_database_session)
 ) -> None:
     """
     Elimina un producto existente.

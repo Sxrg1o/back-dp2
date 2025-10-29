@@ -10,7 +10,7 @@ from fastapi import FastAPI, APIRouter
 from fastapi.middleware.cors import CORSMiddleware
 
 from src.core.database import create_tables, close_database
-from src.core.config import get_settings, Settings
+from src.core.config import get_settings
 from src.core.logging import configure_logging
 from src.core.dependencies import ErrorHandlerMiddleware
 
@@ -42,8 +42,8 @@ async def auto_seed_database():
             result = await session.execute(query)
             count = result.scalar()
             
-            logger.info(f"📊 Categorías encontradas: {count}")
-            logger.info(f"📊 DATABASE_URL: {os.getenv('DATABASE_URL', 'No configurada')}")
+            logger.info(f"Categorías encontradas: {count}")
+            logger.info(f"DATABASE_URL: {os.getenv('DATABASE_URL', 'No configurada')}")
             
             if count == 0:
                 logger.info("🌱 Base de datos vacía detectada. Ejecutando seed automático...")
@@ -103,7 +103,7 @@ async def lifespan(app: FastAPI):
     await asyncio.sleep(0.5)
 
     # Ejecutar seed automáticamente si la BD está vacía
-    await auto_seed_database()
+    # await auto_seed_database()
 
     logger.info("Restaurant Backend API iniciada correctamente")
 
@@ -133,6 +133,9 @@ def register_routers(app: FastAPI) -> None:
     # Estructura de controladores a cargar: (módulo, tag)
     controllers = [
         ("src.api.controllers.rol_controller", "Roles"),
+        ("src.api.controllers.local_controller", "Locales"),
+        ("src.api.controllers.zona_controller", "Zonas"),
+        ("src.api.controllers.sesion_controller", "Sesiones"),
         ("src.api.controllers.categoria_controller", "Categorías"),
         ("src.api.controllers.alergeno_controller", "Alérgenos"),
         ("src.api.controllers.producto_controller", "Productos"),
@@ -140,8 +143,12 @@ def register_routers(app: FastAPI) -> None:
         ("src.api.controllers.producto_opcion_controller", "Producto Opciones"),
         ("src.api.controllers.sync_controller", "Sincronización"),
         # ("src.api.controllers.usuarios_controller", "Usuarios"),
-        # ("src.api.controllers.mesas_controller", "Mesas"),
-        # ("src.api.controllers.pedidos_controller", "Pedidos"),
+        ("src.api.controllers.mesa_controller", "Mesas"),
+        ("src.api.controllers.pedido_controller", "Pedidos"),
+        ("src.api.controllers.pedido_producto_controller", "Pedidos Productos"),
+        ("src.api.controllers.pedido_opcion_controller", "Pedido Opciones"),
+        # ("src.api.controllers.division_cuenta_controller", "Divisiones de Cuenta"),
+        # ("src.api.controllers.division_cuenta_detalle_controller", "Detalles de División"),
         # ("src.api.controllers.pagos_controller", "Pagos"),
     ]
 
@@ -176,7 +183,7 @@ def create_app() -> FastAPI:
     FastAPI
         Instancia configurada de la aplicación FastAPI
     """
-    settings: Settings = get_settings()
+    settings = get_settings()
 
     # Crear la instancia de FastAPI
     app = FastAPI(
@@ -265,3 +272,4 @@ if __name__ == "__main__":
         reload=settings.debug,
         log_level=settings.log_level.lower(),
     )
+

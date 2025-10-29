@@ -68,7 +68,7 @@ async def create_rol(
     description="Obtiene los detalles de un rol específico por su ID.",
 )
 async def get_rol(
-    rol_id: UUID, session: AsyncSession = Depends(get_database_session)
+    rol_id: str, session: AsyncSession = Depends(get_database_session)
 ) -> RolResponse:
     """
     Obtiene un rol específico por su ID.
@@ -147,7 +147,7 @@ async def list_roles(
     description="Actualiza los datos de un rol existente.",
 )
 async def update_rol(
-    rol_id: UUID,
+    rol_id: str,
     rol_data: RolUpdate,
     session: AsyncSession = Depends(get_database_session),
 ) -> RolResponse:
@@ -189,7 +189,7 @@ async def update_rol(
     description="Elimina un rol existente del sistema.",
 )
 async def delete_rol(
-    rol_id: UUID, session: AsyncSession = Depends(get_database_session)
+    rol_id: str, session: AsyncSession = Depends(get_database_session)
 ) -> None:
     """
     Elimina un rol existente.

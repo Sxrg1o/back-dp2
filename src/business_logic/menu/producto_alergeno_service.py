@@ -2,7 +2,7 @@
 Servicio para la gestión de relaciones producto-alérgeno en el sistema.
 """
 
-from uuid import UUID
+from typing import List
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.exc import IntegrityError
 
@@ -90,17 +90,17 @@ class ProductoAlergenoService:
             )
 
     async def get_producto_alergeno_by_id(
-        self, id_producto: UUID, id_alergeno: UUID
+        self, id_producto: str, id_alergeno: str
     ) -> ProductoAlergenoResponse:
         """
         Obtiene una relación producto-alérgeno por su clave primaria compuesta.
 
         Parameters
         ----------
-        id_producto : UUID
-            Identificador único del producto.
-        id_alergeno : UUID
-            Identificador único del alérgeno.
+        id_producto : str
+            Identificador único del producto (ULID).
+        id_alergeno : str
+            Identificador único del alérgeno (ULID).
 
         Returns
         -------
@@ -126,17 +126,17 @@ class ProductoAlergenoService:
         return ProductoAlergenoResponse.model_validate(producto_alergeno)
 
     async def delete_producto_alergeno(
-        self, id_producto: UUID, id_alergeno: UUID
+        self, id_producto: str, id_alergeno: str
     ) -> bool:
         """
         Elimina una relación producto-alérgeno por su clave primaria compuesta.
         
         Parameters
         ----------
-        id_producto : UUID
-            Identificador único del producto.
-        id_alergeno : UUID
-            Identificador único del alérgeno.
+        id_producto : str
+            Identificador único del producto (ULID).
+        id_alergeno : str
+            Identificador único del alérgeno (ULID).
 
         Returns
         -------
@@ -199,10 +199,46 @@ class ProductoAlergenoService:
         # Retornar esquema de lista
         return ProductoAlergenoList(items=producto_alergeno_summaries, total=total)
 
+    async def get_alergenos_by_producto(self, id_producto: str) -> List:
+        """
+        Obtiene todos los alérgenos asociados a un producto específico.
+
+        Parameters
+        ----------
+        id_producto : str
+            Identificador único del producto (ULID).
+
+        Returns
+        -------
+        List[AlergenoResponse]
+            Lista de alérgenos asociados al producto.
+
+        Raises
+        ------
+        ProductoAlergenoValidationError
+            Si los parámetros de entrada no son válidos.
+        """
+        if not id_producto:
+            raise ProductoAlergenoValidationError(
+                "El ID del producto es requerido"
+            )
+
+        # Obtener alérgenos desde el repositorio
+        alergenos = await self.repository.get_alergenos_by_producto(id_producto)
+
+        # Convertir modelos a esquemas de respuesta
+        # Importación tardía para evitar referencias circulares
+        try:
+            from src.api.schemas.alergeno_schema import AlergenoResponse
+            return [AlergenoResponse.model_validate(alergeno) for alergeno in alergenos]
+        except ImportError as e:
+            # Si hay problema con el schema, devolver diccionarios simples
+            return [alergeno.to_dict() for alergeno in alergenos]
+
     async def update_producto_alergeno(
         self,
-        id_producto: UUID,
-        id_alergeno: UUID,
+        id_producto: str,
+        id_alergeno: str,
         producto_alergeno_data: ProductoAlergenoUpdate,
     ) -> ProductoAlergenoResponse:
         """
@@ -210,10 +246,10 @@ class ProductoAlergenoService:
 
         Parameters
         ----------
-        id_producto : UUID
-            Identificador único del producto.
-        id_alergeno : UUID
-            Identificador único del alérgeno.
+        id_producto : str
+            Identificador único del producto (ULID).
+        id_alergeno : str
+            Identificador único del alérgeno (ULID).
         producto_alergeno_data : ProductoAlergenoUpdate
             Datos para actualizar la relación.
 
