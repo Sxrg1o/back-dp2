@@ -793,3 +793,4 @@ async def test_create_pedido_completo_producto_not_available(
         await pedido_service_completo.create_pedido_completo(pedido_completo_data)
 
     assert "no está disponible" in str(excinfo.value)
+
