@@ -199,7 +199,7 @@ class ProductoAlergenoService:
         # Retornar esquema de lista
         return ProductoAlergenoList(items=producto_alergeno_summaries, total=total)
 
-    async def get_alergenos_by_producto(self, id_producto: str) -> List[AlergenoResponse]:
+    async def get_alergenos_by_producto(self, id_producto: str) -> List:
         """
         Obtiene todos los alérgenos asociados a un producto específico.
 
@@ -227,8 +227,13 @@ class ProductoAlergenoService:
         alergenos = await self.repository.get_alergenos_by_producto(id_producto)
 
         # Convertir modelos a esquemas de respuesta
-        from src.api.schemas.alergeno_schema import AlergenoResponse
-        return [AlergenoResponse.model_validate(alergeno) for alergeno in alergenos]
+        # Importación tardía para evitar referencias circulares
+        try:
+            from src.api.schemas.alergeno_schema import AlergenoResponse
+            return [AlergenoResponse.model_validate(alergeno) for alergeno in alergenos]
+        except ImportError as e:
+            # Si hay problema con el schema, devolver diccionarios simples
+            return [alergeno.to_dict() for alergeno in alergenos]
 
     async def update_producto_alergeno(
         self,

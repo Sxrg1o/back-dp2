@@ -23,7 +23,6 @@ from src.business_logic.exceptions.producto_exceptions import (
     ProductoConflictError,
 )
 from src.business_logic.menu.producto_alergeno_service import ProductoAlergenoService
-from src.api.schemas.alergeno_schema import AlergenoResponse
 
 router = APIRouter(prefix="/productos", tags=["Productos"])
 
@@ -269,14 +268,13 @@ async def get_producto_con_opciones(
 
 @router.get(
     "/{producto_id}/alergenos",
-    response_model=List[AlergenoResponse],
     status_code=status.HTTP_200_OK,
     summary="Obtener alérgenos de un producto",
     description="Obtiene todos los alérgenos asociados a un producto específico.",
 )
 async def get_alergenos_by_producto(
     producto_id: str, session: AsyncSession = Depends(get_database_session)
-) -> List[AlergenoResponse]:
+):
     """
     Obtiene todos los alérgenos asociados a un producto específico.
 
