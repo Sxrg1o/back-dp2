@@ -794,3 +794,4 @@ async def test_create_pedido_completo_producto_not_available(
 
     assert "no está disponible" in str(excinfo.value)
 
+
