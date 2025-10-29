@@ -2,6 +2,7 @@
 Endpoints para gestión de productos.
 """
 
+from typing import List
 from uuid import UUID
 from fastapi import APIRouter, Depends, HTTPException, status, Query
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -21,6 +22,8 @@ from src.business_logic.exceptions.producto_exceptions import (
     ProductoNotFoundError,
     ProductoConflictError,
 )
+from src.business_logic.menu.producto_alergeno_service import ProductoAlergenoService
+from src.api.schemas.alergeno_schema import AlergenoResponse
 
 router = APIRouter(prefix="/productos", tags=["Productos"])
 
@@ -257,6 +260,41 @@ async def get_producto_con_opciones(
         return await producto_service.get_producto_con_opciones(producto_id)
     except ProductoNotFoundError as e:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error interno del servidor: {str(e)}",
+        )
+
+
+@router.get(
+    "/{producto_id}/alergenos",
+    response_model=List[AlergenoResponse],
+    status_code=status.HTTP_200_OK,
+    summary="Obtener alérgenos de un producto",
+    description="Obtiene todos los alérgenos asociados a un producto específico.",
+)
+async def get_alergenos_by_producto(
+    producto_id: str, session: AsyncSession = Depends(get_database_session)
+) -> List[AlergenoResponse]:
+    """
+    Obtiene todos los alérgenos asociados a un producto específico.
+
+    Args:
+        producto_id: ID del producto a buscar (ULID).
+        session: Sesión de base de datos.
+
+    Returns:
+        Lista de alérgenos asociados al producto.
+
+    Raises:
+        HTTPException:
+            - 404: Si no se encuentra el producto o no tiene alérgenos.
+            - 500: Si ocurre un error interno del servidor.
+    """
+    try:
+        producto_alergeno_service = ProductoAlergenoService(session)
+        return await producto_alergeno_service.get_alergenos_by_producto(producto_id)
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,

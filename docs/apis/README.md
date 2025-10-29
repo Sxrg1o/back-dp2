@@ -105,6 +105,51 @@ curl -X POST "https://back-dp2.onrender.com/api/v1/pedidos/completo" \
 
 📖 **Documentación completa:** [POST /pedidos/completo](modulos/pedidos/endpoints/POST_pedidos_completo.md)
 
+## ⭐ Endpoints Clave para Productos
+
+### Información Completa de Productos
+
+```http
+# 1. Información básica del producto
+GET /api/v1/productos/{producto_id}
+
+# 2. Opciones de personalización disponibles  
+GET /api/v1/productos/{producto_id}/opciones
+
+# 3. Alérgenos del producto
+GET /api/v1/productos/{producto_id}/alergenos
+```
+
+**¿Por qué usar estos endpoints?**
+- ✅ **Opciones:** Esencial para crear formularios de personalización
+- ✅ **Alérgenos:** Crítico para seguridad alimentaria y advertencias
+- ✅ **Integración:** Se conectan directamente con el flujo de pedidos
+
+### Ejemplo de Integración Completa
+
+```bash
+# Obtener opciones para personalización
+curl "https://back-dp2.onrender.com/api/v1/productos/01J9CEVI123.../opciones"
+
+# Obtener alérgenos para advertencias  
+curl "https://back-dp2.onrender.com/api/v1/productos/01J9CEVI123.../alergenos"
+
+# Crear pedido con opciones seleccionadas
+curl -X POST "https://back-dp2.onrender.com/api/v1/pedidos/completo" \
+  -d '{
+    "items": [{
+      "id_producto": "01J9CEVI123...",
+      "opciones": [
+        {"id_producto_opcion": "01J9OPC789...", "precio_adicional": 1.00}
+      ]
+    }]
+  }'
+```
+
+📖 **Documentación detallada:**
+- [GET /productos/{id}/opciones](modulos/productos/endpoints/GET_productos_producto_id_opciones.md)
+- [GET /productos/{id}/alergenos](modulos/productos/endpoints/GET_productos_producto_id_alergenos.md)
+
 ## 📖 Formato de Documentación
 
 Cada endpoint está documentado con:
@@ -125,7 +170,7 @@ Cada endpoint está documentado con:
 | Roles | `/roles` | CRUD de roles del sistema |
 | Categorías | `/categorias` | CRUD de categorías + vista con productos |
 | Alérgenos | `/alergenos` | CRUD de alérgenos |
-| Productos | `/productos` | CRUD de productos + vistas especiales (cards, opciones) |
+| Productos | `/productos` | CRUD de productos + vistas especiales (cards, **opciones**, **alérgenos**) |
 | Tipos Opciones | `/tipos-opciones` | CRUD de tipos de opciones |
 | Producto Opciones | `/producto-opciones` | CRUD de opciones de productos |
 | Sincronización | `/sync` | Sincronización con Domótica (platos, mesas, enrich) |
