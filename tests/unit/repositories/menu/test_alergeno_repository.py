@@ -21,7 +21,7 @@ POSTCONDICIONES:
 """
 
 import pytest
-from uuid import UUID, uuid4
+from ulid import ULID
 from unittest.mock import AsyncMock, MagicMock, patch
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.exc import SQLAlchemyError
@@ -54,14 +54,14 @@ async def test_get_by_id():
     mock_session = AsyncMock(spec=AsyncSession)
     mock_result = MagicMock()
     mock_result.scalars.return_value.first.return_value = AlergenoModel(
-        id=uuid4(), 
+        id=str(ULID()), 
         nombre="Gluten", 
         descripcion="Proteína presente en cereales",
         nivel_riesgo=NivelRiesgo.ALTO
     )
     mock_session.execute.return_value = mock_result
 
-    alergeno_id = uuid4()
+    alergeno_id = str(ULID())
     repository = AlergenoRepository(mock_session)
 
     # Act
@@ -154,7 +154,7 @@ async def test_delete_alergeno():
     mock_result.rowcount = 1  # Simula que se eliminó una fila
     mock_session.execute.return_value = mock_result
 
-    alergeno_id = uuid4()
+    alergeno_id = str(ULID())
     repository = AlergenoRepository(mock_session)
 
     # Act
@@ -211,7 +211,7 @@ async def test_get_by_nombre():
     mock_session = AsyncMock(spec=AsyncSession)
     mock_result = MagicMock()
     mock_result.scalars.return_value.first.return_value = AlergenoModel(
-        id=uuid4(), 
+        id=str(ULID()), 
         nombre="Mariscos", 
         descripcion="Crustáceos y moluscos",
         nivel_riesgo=NivelRiesgo.CRITICO
@@ -256,8 +256,8 @@ async def test_get_activos():
     mock_session = AsyncMock(spec=AsyncSession)
     mock_result = MagicMock()
     mock_alergenos = [
-        AlergenoModel(id=uuid4(), nombre="Gluten", activo=True),
-        AlergenoModel(id=uuid4(), nombre="Lactosa", activo=True),
+        AlergenoModel(id=str(ULID()), nombre="Gluten", activo=True),
+        AlergenoModel(id=str(ULID()), nombre="Lactosa", activo=True),
     ]
     mock_result.scalars.return_value.all.return_value = mock_alergenos
     mock_session.execute.return_value = mock_result
@@ -298,8 +298,8 @@ async def test_get_all():
     # Mock para la consulta de alérgenos
     mock_result = MagicMock()
     mock_alergenos = [
-        AlergenoModel(id=uuid4(), nombre="Gluten"),
-        AlergenoModel(id=uuid4(), nombre="Lactosa"),
+        AlergenoModel(id=str(ULID()), nombre="Gluten"),
+        AlergenoModel(id=str(ULID()), nombre="Lactosa"),
     ]
     mock_result.scalars.return_value.all.return_value = mock_alergenos
     

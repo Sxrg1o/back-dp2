@@ -6,7 +6,7 @@ representar los tipos de opciones en la API.
 """
 
 from typing import Optional, ClassVar, List
-from uuid import UUID
+# UUID removed - using str for ULID compatibility
 from datetime import datetime
 from pydantic import BaseModel, Field, ConfigDict
 
@@ -50,6 +50,14 @@ class TipoOpcionBase(BaseModel):
     orden: Optional[int] = Field(
         default=None,
         description="Orden de visualización o prioridad."
+    )
+    seleccion_minima: Optional[int] = Field(
+        default=0,
+        description="Cantidad mínima de opciones a seleccionar (0 = opcional)"
+    )
+    seleccion_maxima: Optional[int] = Field(
+        default=None,
+        description="Cantidad máxima de opciones (None = sin límite)"
     )
 
 
@@ -95,6 +103,14 @@ class TipoOpcionUpdate(BaseModel):
         default=None,
         description="Nuevo orden de visualización."
     )
+    seleccion_minima: Optional[int] = Field(
+        default=None,
+        description="Nueva cantidad mínima de opciones a seleccionar."
+    )
+    seleccion_maxima: Optional[int] = Field(
+        default=None,
+        description="Nueva cantidad máxima de opciones."
+    )
 
 
 class TipoOpcionResponse(TipoOpcionBase):
@@ -106,7 +122,7 @@ class TipoOpcionResponse(TipoOpcionBase):
     """
     model_config: ClassVar[ConfigDict] = ConfigDict(from_attributes=True)
 
-    id: UUID = Field(description="Identificador único del tipo de opción (UUID).")
+    id: str = Field(description="Identificador único del tipo de opción (UUID).")
     fecha_creacion: Optional[datetime] = Field(
         default=None, description="Fecha y hora de creación del registro."
     )
@@ -123,11 +139,13 @@ class TipoOpcionSummary(BaseModel):
     """
     model_config: ClassVar[ConfigDict] = ConfigDict(from_attributes=True)
 
-    id: UUID = Field(description="Identificador único del tipo de opción.")
+    id: str = Field(description="Identificador único del tipo de opción.")
     codigo: str = Field(description="Código del tipo de opción.")
     nombre: str = Field(description="Nombre del tipo de opción.")
     activo: bool = Field(description="Indica si el tipo de opción está activo.")
     orden: Optional[int] = Field(description="Orden de visualización.")
+    seleccion_minima: Optional[int] = Field(default=0, description="Cantidad mínima de opciones a seleccionar (0 = opcional)")
+    seleccion_maxima: Optional[int] = Field(default=None, description="Cantidad máxima de opciones (None = sin límite)")
 
 
 class TipoOpcionList(BaseModel):
