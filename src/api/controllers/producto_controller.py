@@ -3,7 +3,6 @@ Endpoints para gestión de productos.
 """
 
 from typing import List
-from uuid import UUID
 from fastapi import APIRouter, Depends, HTTPException, status, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -62,7 +61,49 @@ async def create_producto(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Error interno del servidor: {str(e)}",
         )
+    
+@router.get(
+    "/con-alergenos",
+    status_code=status.HTTP_200_OK,
+    summary="Listar todos los productos con sus alérgenos",
+    description="Obtiene una lista de todos los productos, cada uno con su lista de alérgenos asociados.",
+)
+async def list_productos_con_alergenos(
+    skip: int = Query(0, ge=0, description="Número de registros a omitir (paginación)"),
+    limit: int = Query(100, gt=0, le=500, description="Número máximo de registros a retornar"),
+    session: AsyncSession = Depends(get_database_session),
+):
+    """
+    Lista todos los productos con sus alérgenos asociados.
 
+    Args:
+        skip: Número de registros a omitir (offset), por defecto 0.
+        limit: Número máximo de registros a retornar, por defecto 100.
+        session: Sesión de base de datos.
+
+    Returns:
+        Lista de productos, cada uno con su lista de alérgenos.
+    """
+    try:
+        producto_service = ProductoService(session)
+        producto_alergeno_service = ProductoAlergenoService(session)
+        productos = await producto_service.get_productos(skip, limit)
+        productos_con_alergenos = []
+        for producto in productos.items:
+            alergenos = await producto_alergeno_service.get_alergenos_by_producto(producto.id)
+            productos_con_alergenos.append({
+                "producto": producto,
+                "alergenos": alergenos
+            })
+        return {
+            "items": productos_con_alergenos,
+            "total": productos.total
+        }
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error interno del servidor: {str(e)}",
+        )
 
 @router.get(
     "/cards",
@@ -386,3 +427,4 @@ async def delete_producto(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Error interno del servidor: {str(e)}",
         )
+

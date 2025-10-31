@@ -69,7 +69,7 @@ class PedidoModel(BaseModel, AuditMixin):
         Usuario que realizó la última modificación (heredado de AuditMixin).
     """
 
-    __tablename__ = "pedido"
+    __tablename__ = "pedidos"
 
     # Foreign Keys
     id_mesa: Mapped[str] = mapped_column(

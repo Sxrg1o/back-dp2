@@ -45,11 +45,11 @@ class DivisionCuentaModel(BaseModel):
         Fecha y hora de última modificación.
     """
 
-    __tablename__ = "division_cuenta"
+    __tablename__ = "divisiones_cuentas"
 
     # Columnas específicas del modelo DivisionCuenta
     id_pedido: Mapped[str] = mapped_column(
-        String(36), ForeignKey("pedido.id", ondelete="CASCADE"), nullable=False, index=True
+        String(36), ForeignKey("pedidos.id", ondelete="CASCADE"), nullable=False, index=True
     )
     tipo_division: Mapped[TipoDivision] = mapped_column(
         SQLEnum(TipoDivision), nullable=False

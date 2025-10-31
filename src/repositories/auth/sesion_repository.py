@@ -8,7 +8,7 @@ from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, delete, update, func
 
-from src.models.sesion_model import SesionModel
+from src.models.auth.sesion_model import SesionModel
 from src.core.enums.sesion_enums import EstadoSesion
 
 

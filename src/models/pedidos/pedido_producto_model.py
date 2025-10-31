@@ -49,19 +49,19 @@ class PedidoProductoModel(BaseModel):
         Fecha y hora de última modificación.
     """
 
-    __tablename__ = "pedido_producto"
+    __tablename__ = "pedidos_productos"
 
     # Foreign Keys
     id_pedido: Mapped[str] = mapped_column(
         String(36),
-        ForeignKey("pedido.id", ondelete="CASCADE"),
+        ForeignKey("pedidos.id", ondelete="CASCADE"),
         nullable=False,
         index=True
     )
 
     id_producto: Mapped[str] = mapped_column(
         String(36),
-        ForeignKey("producto.id", ondelete="RESTRICT"),
+        ForeignKey("productos.id", ondelete="RESTRICT"),
         nullable=False,
         index=True
     )

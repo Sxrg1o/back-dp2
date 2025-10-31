@@ -3,7 +3,6 @@ Pydantic schemas for Producto (Product) entities.
 """
 
 from typing import Optional, ClassVar, List, TYPE_CHECKING
-# UUID removed - using str for ULID compatibility
 from datetime import datetime
 from decimal import Decimal
 from pydantic import BaseModel, Field, ConfigDict

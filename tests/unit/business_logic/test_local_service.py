@@ -7,8 +7,8 @@ from unittest.mock import AsyncMock
 from ulid import ULID
 from datetime import datetime, date
 
-from src.business_logic.local_service import LocalService
-from src.models.local_model import LocalModel
+from src.business_logic.mesas.local_service import LocalService
+from src.models.mesas.local_model import LocalModel
 from src.core.enums.local_enums import TipoLocal
 from src.api.schemas.local_schema import LocalCreate, LocalUpdate
 from src.business_logic.exceptions.local_exceptions import (

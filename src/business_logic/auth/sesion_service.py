@@ -5,9 +5,9 @@ Servicio para la gestión de sesiones en el sistema.
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.exc import IntegrityError
 
-from src.repositories.sesion_repository import SesionRepository
-from src.repositories.local_repository import LocalRepository
-from src.models.sesion_model import SesionModel
+from src.repositories.auth.sesion_repository import SesionRepository
+from src.repositories.mesas.local_repository import LocalRepository
+from src.models.auth.sesion_model import SesionModel
 from src.core.enums.sesion_enums import EstadoSesion
 from src.api.schemas.sesion_schema import (
     SesionCreate,

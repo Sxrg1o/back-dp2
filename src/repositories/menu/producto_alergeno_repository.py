@@ -70,9 +70,9 @@ class ProductoAlergenoRepository:
 
         Parameters
         ----------
-        id_producto : UUID
+        id_producto : str
             Identificador único del producto.
-        id_alergeno : UUID
+        id_alergeno : str
             Identificador único del alérgeno.
 
         Returns
@@ -93,9 +93,9 @@ class ProductoAlergenoRepository:
 
         Parameters
         ----------
-        id_producto : UUID
+        id_producto : str
             Identificador único del producto.
-        id_alergeno : UUID
+        id_alergeno : str
             Identificador único del alérgeno.
 
         Returns
@@ -128,9 +128,9 @@ class ProductoAlergenoRepository:
 
         Parameters
         ----------
-        id_producto : UUID
+        id_producto : str
             Identificador único del producto.
-        id_alergeno : UUID
+        id_alergeno : str
             Identificador único del alérgeno.
         **kwargs
             Campos y valores a actualizar.
@@ -231,7 +231,7 @@ class ProductoAlergenoRepository:
 
         Parameters
         ----------
-        id_producto : UUID
+        id_producto : str
             Identificador único del producto.
 
         Returns
@@ -275,7 +275,7 @@ class ProductoAlergenoRepository:
 
         Parameters
         ----------
-        id_alergeno : UUID
+        id_alergeno : str
             Identificador único del alérgeno.
 
         Returns

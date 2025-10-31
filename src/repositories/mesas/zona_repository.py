@@ -9,7 +9,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, delete, update, func
 from sqlalchemy.orm import joinedload
 
-from src.models.zona_model import ZonaModel
+from src.models.mesas.zona_model import ZonaModel
 
 
 class ZonaRepository:

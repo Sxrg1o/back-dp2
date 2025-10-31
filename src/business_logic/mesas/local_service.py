@@ -5,8 +5,8 @@ Servicio para la gestión de locales en el sistema.
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.exc import IntegrityError
 
-from src.repositories.local_repository import LocalRepository
-from src.models.local_model import LocalModel
+from src.repositories.mesas.local_repository import LocalRepository
+from src.models.mesas.local_model import LocalModel
 from src.api.schemas.local_schema import (
     LocalCreate,
     LocalUpdate,

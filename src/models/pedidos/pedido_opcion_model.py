@@ -39,18 +39,18 @@ class PedidoOpcionModel(BaseModel):
         Usuario que realizó la última modificación (ULID).
     """
 
-    __tablename__ = "pedido_opcion"
+    __tablename__ = "pedidos_opciones"
 
     # Foreign Keys
     id_pedido_producto: Mapped[str] = mapped_column(
         String(36),
-        ForeignKey("pedido_producto.id", ondelete="CASCADE"),
+        ForeignKey("pedidos_productos.id", ondelete="CASCADE"),
         nullable=False,
         index=True
     )
     id_producto_opcion: Mapped[str] = mapped_column(
         String(36),
-        ForeignKey("producto_opcion.id"),
+        ForeignKey("productos_opciones.id"),
         nullable=False,
         index=True
     )

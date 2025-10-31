@@ -27,8 +27,8 @@ from unittest.mock import AsyncMock, MagicMock
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.exc import SQLAlchemyError
 
-from src.repositories.local_repository import LocalRepository
-from src.models.local_model import LocalModel
+from src.repositories.mesas.local_repository import LocalRepository
+from src.models.mesas.local_model import LocalModel
 from src.core.enums.local_enums import TipoLocal
 
 
@@ -248,20 +248,6 @@ async def test_delete_local():
 async def test_update_local():
     """
     Verifica que el método update actualiza correctamente un local.
-
-    PRECONDICIONES:
-        - Se debe tener una instancia mock de AsyncSession.
-        - Se debe tener un ULID válido y datos para actualizar.
-
-    PROCESO:
-        - Configurar los mocks para simular el comportamiento de la base de datos.
-        - Llamar al método update con un ID y campos a actualizar.
-        - Verificar que se ejecute la sentencia correcta y se retorne el resultado esperado.
-
-    POSTCONDICIONES:
-        - El método debe retornar el LocalModel actualizado cuando existe.
-        - El método debe retornar None cuando no existe el local.
-        - En caso de error, debe hacer rollback y propagar la excepción.
     """
     # Arrange - Caso exitoso
     mock_session = AsyncMock(spec=AsyncSession)
@@ -279,8 +265,8 @@ async def test_update_local():
     )
 
     # Mock para get_by_id que se llama después del update
-    async def mock_get_by_id(lid):
-        return updated_local if lid == local_id else None
+    async def mock_get_by_id(local_id):
+        return updated_local if local_id == updated_local.id else None
 
     repository = LocalRepository(mock_session)
     repository.get_by_id = mock_get_by_id

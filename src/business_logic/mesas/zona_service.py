@@ -5,9 +5,9 @@ Servicio para la gestión de zonas en el sistema.
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.exc import IntegrityError
 
-from src.repositories.zona_repository import ZonaRepository
-from src.repositories.local_repository import LocalRepository
-from src.models.zona_model import ZonaModel
+from src.repositories.mesas.zona_repository import ZonaRepository
+from src.repositories.mesas.local_repository import LocalRepository
+from src.models.mesas.zona_model import ZonaModel
 from src.api.schemas.zona_schema import (
     ZonaCreate,
     ZonaUpdate,

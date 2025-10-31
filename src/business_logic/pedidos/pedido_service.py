@@ -395,7 +395,8 @@ class PedidoService:
             )
 
         # Preparar los datos de actualización
-        update_fields = {"estado": nuevo_estado}
+        update_fields = {}
+        update_fields["estado"] = nuevo_estado
 
         # Actualizar el timestamp correspondiente al nuevo estado
         now = datetime.now()

@@ -13,7 +13,7 @@ from src.models.base_model import BaseModel
 from src.core.enums.sesion_enums import EstadoSesion
 
 if TYPE_CHECKING:
-    from src.models.local_model import LocalModel
+    from src.models.mesas.local_model import LocalModel
 
 # Definimos un TypeVar para el tipado genérico
 T = TypeVar("T", bound="SesionModel")
@@ -46,14 +46,14 @@ class SesionModel(BaseModel, AuditMixin):
         Usuario que realizó la última modificación (heredado de AuditMixin).
     """
 
-    __tablename__ = "sesion"
+    __tablename__ = "sesiones"
 
     # Columnas específicas del modelo Sesion
     id_domotica: Mapped[str] = mapped_column(
         String(36), nullable=False, index=False, comment="Identificador del sistema Domotica asociado a la sesión"
     )
     id_local: Mapped[str] = mapped_column(
-        String(36), ForeignKey("local.id", ondelete="CASCADE"), nullable=False, index=True, comment="Identificador del local donde se registró la sesión"
+        String(36), ForeignKey("locales.id", ondelete="CASCADE"), nullable=False, index=True, comment="Identificador del local donde se registró la sesión"
     )
     estado: Mapped[EstadoSesion] = mapped_column(
         SQLEnum(EstadoSesion), nullable=False, default=EstadoSesion.ACTIVO, index=True, comment="Estado actual de la sesión"

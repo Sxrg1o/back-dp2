@@ -1,6 +1,6 @@
 from ulid import ULID
 from datetime import date
-from src.models.local_model import LocalModel
+from src.models.mesas.local_model import LocalModel
 from src.core.enums.local_enums import TipoLocal
 
 
