@@ -112,7 +112,7 @@ PAYLOAD_ACTIVO='{"estado": "ACTIVO"}'
 run_test "Cambiar estado a ACTIVO" "200" \
     curl -s -w "\n%{http_code}" -X PATCH "$API_URL/api/v1/sesiones/$SESION_ID" \
     -H "Content-Type: application/json" \
-    -d "$PAYLOAD_ACTIVO" > /dev/null
+    -d "$PAYLOAD_ACTIVO"
 
 echo ""
 echo "=== Tests de Cerrar Sesión ==="
@@ -161,15 +161,15 @@ echo ""
 run_test "PATCH sesión inexistente debe retornar 404" "404" \
     curl -s -w "\n%{http_code}" -X PATCH "$API_URL/api/v1/sesiones/01INVALID000000000000000000" \
     -H "Content-Type: application/json" \
-    -d "$PAYLOAD_ACTIVO" > /dev/null
+    -d "$PAYLOAD_ACTIVO"
 
 # TC-008: GET sesión inexistente
 run_test "GET sesión inexistente debe retornar 404" "404" \
-    curl -s -w "\n%{http_code}" "$API_URL/api/v1/sesiones/01INVALID000000000000000000" > /dev/null
+    curl -s -w "\n%{http_code}" "$API_URL/api/v1/sesiones/01INVALID000000000000000000"
 
 # TC-009: DELETE sesión inexistente
 run_test "DELETE sesión inexistente debe retornar 404" "404" \
-    curl -s -w "\n%{http_code}" -X DELETE "$API_URL/api/v1/sesiones/01INVALID000000000000000000" > /dev/null
+    curl -s -w "\n%{http_code}" -X DELETE "$API_URL/api/v1/sesiones/01INVALID000000000000000000"
 
 echo ""
 echo "=== Test de Eliminación de Sesión ==="
@@ -188,13 +188,13 @@ echo ""
 
 # TC-010: Eliminar sesión
 run_test "Eliminar sesión (DELETE /sesiones/{id})" "204" \
-    curl -s -w "\n%{http_code}" -X DELETE "$API_URL/api/v1/sesiones/$SESION_DEL_ID" > /dev/null
+    curl -s -w "\n%{http_code}" -X DELETE "$API_URL/api/v1/sesiones/$SESION_DEL_ID"
 
 echo ""
 
 # TC-011: Verificar que la sesión eliminada no existe
 run_test "Verificar que sesión eliminada retorna 404" "404" \
-    curl -s -w "\n%{http_code}" "$API_URL/api/v1/sesiones/$SESION_DEL_ID" > /dev/null
+    curl -s -w "\n%{http_code}" "$API_URL/api/v1/sesiones/$SESION_DEL_ID"
 
 echo ""
 echo "=========================================="

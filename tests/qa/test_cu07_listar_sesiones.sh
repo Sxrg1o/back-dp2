@@ -75,7 +75,7 @@ fi
 
 # TC-003: Listar sesiones con paginación (skip y limit)
 run_test "Listar sesiones con paginación (skip=0, limit=5)" "200" \
-    curl -s -w "\n%{http_code}" "$API_URL/api/v1/sesiones/?skip=0&limit=5" > /dev/null
+    curl -s -w "\n%{http_code}" "$API_URL/api/v1/sesiones/?skip=0&limit=5"
 
 echo ""
 
@@ -99,15 +99,15 @@ echo ""
 
 # TC-005: Filtrar sesiones por estado ACTIVO
 run_test "Filtrar por estado ACTIVO" "200" \
-    curl -s -w "\n%{http_code}" "$API_URL/api/v1/sesiones/estado/ACTIVO" > /dev/null
+    curl -s -w "\n%{http_code}" "$API_URL/api/v1/sesiones/estado/ACTIVO"
 
 # TC-006: Filtrar sesiones por estado INACTIVO
 run_test "Filtrar por estado INACTIVO" "200" \
-    curl -s -w "\n%{http_code}" "$API_URL/api/v1/sesiones/estado/INACTIVO" > /dev/null
+    curl -s -w "\n%{http_code}" "$API_URL/api/v1/sesiones/estado/INACTIVO"
 
 # TC-007: Filtrar sesiones por estado CERRADO
 run_test "Filtrar por estado CERRADO" "200" \
-    curl -s -w "\n%{http_code}" "$API_URL/api/v1/sesiones/estado/CERRADO" > /dev/null
+    curl -s -w "\n%{http_code}" "$API_URL/api/v1/sesiones/estado/CERRADO"
 
 echo ""
 echo "=== Tests de Filtros por Local ==="
@@ -122,7 +122,7 @@ if [ -n "$LOCAL_ID" ]; then
 
     # TC-009: Filtrar sesiones por local
     run_test "Filtrar por ID de local" "200" \
-        curl -s -w "\n%{http_code}" "$API_URL/api/v1/sesiones/local/$LOCAL_ID" > /dev/null
+        curl -s -w "\n%{http_code}" "$API_URL/api/v1/sesiones/local/$LOCAL_ID"
 else
     echo -e "${YELLOW}⚠ SKIP${NC} - No hay locales disponibles"
     TOTAL_TESTS=$((TOTAL_TESTS + 1))

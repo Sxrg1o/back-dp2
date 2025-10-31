@@ -160,7 +160,7 @@ echo ""
 if [ -n "$SESION_ID" ]; then
     # TC-007: Obtener sesión por ID
     run_test "Obtener sesión por ID (GET /sesiones/{id})" "200" \
-        curl -s -w "\n%{http_code}" "$API_URL/api/v1/sesiones/$SESION_ID" > /dev/null
+        curl -s -w "\n%{http_code}" "$API_URL/api/v1/sesiones/$SESION_ID"
 else
     echo -e "${YELLOW}⚠ SKIP${NC} - No se pudo crear sesión"
 fi
@@ -181,7 +181,7 @@ EOF
 run_test "Crear sesión con local inexistente debe retornar 400" "400" \
     curl -s -w "\n%{http_code}" -X POST "$API_URL/api/v1/sesiones/" \
     -H "Content-Type: application/json" \
-    -d "$PAYLOAD_LOCAL_INVALIDO" > /dev/null
+    -d "$PAYLOAD_LOCAL_INVALIDO"
 
 # TC-009: Crear sesión con estado inválido
 PAYLOAD_ESTADO_INVALIDO=$(cat <<EOF
@@ -195,7 +195,7 @@ EOF
 run_test "Crear sesión con estado inválido debe retornar 400 o 422" "422" \
     curl -s -w "\n%{http_code}" -X POST "$API_URL/api/v1/sesiones/" \
     -H "Content-Type: application/json" \
-    -d "$PAYLOAD_ESTADO_INVALIDO" > /dev/null
+    -d "$PAYLOAD_ESTADO_INVALIDO"
 
 echo ""
 echo "=========================================="

@@ -223,7 +223,7 @@ if [ -n "$PEDIDO_ID" ]; then
     # TC-010: Obtener pedido por número
     if [ -n "$NUMERO_PEDIDO" ]; then
         run_test "Obtener pedido por número (GET /pedidos/numero/{numero})" "200" \
-            curl -s -w "\n%{http_code}" "$API_URL/api/v1/pedidos/numero/$NUMERO_PEDIDO" > /dev/null
+            curl -s -w "\n%{http_code}" "$API_URL/api/v1/pedidos/numero/$NUMERO_PEDIDO"
     fi
 else
     echo -e "${YELLOW}⚠ SKIP${NC} - No se pudo crear pedido, tests de consulta omitidos"

@@ -73,7 +73,7 @@ EOF
 run_test "Mesa inexistente debe retornar 400" "400" \
     curl -s -w "\n%{http_code}" -X POST "$API_URL/api/v1/pedidos/completo" \
     -H "Content-Type: application/json" \
-    -d "$PAYLOAD_MESA_INVALIDA" > /dev/null
+    -d "$PAYLOAD_MESA_INVALIDA"
 
 # TC-002: Crear pedido con mesa vacía
 PAYLOAD_MESA_VACIA=$(cat <<EOF
@@ -94,7 +94,7 @@ EOF
 run_test "Mesa vacía debe retornar 400 o 422" "422" \
     curl -s -w "\n%{http_code}" -X POST "$API_URL/api/v1/pedidos/completo" \
     -H "Content-Type: application/json" \
-    -d "$PAYLOAD_MESA_VACIA" > /dev/null
+    -d "$PAYLOAD_MESA_VACIA"
 
 echo ""
 echo "=== Tests de Validación de Productos ==="
@@ -122,7 +122,7 @@ EOF
 run_test "Producto inexistente debe retornar 400" "400" \
     curl -s -w "\n%{http_code}" -X POST "$API_URL/api/v1/pedidos/completo" \
     -H "Content-Type: application/json" \
-    -d "$PAYLOAD_PRODUCTO_INVALIDO" > /dev/null
+    -d "$PAYLOAD_PRODUCTO_INVALIDO"
 
 # Obtener producto válido
 PRODUCTO_ID=$(curl -s "$API_URL/api/v1/productos/cards?limit=1" | python3 -c "import sys, json; data = json.load(sys.stdin); print(data['items'][0]['id'] if data.get('items') else '')" 2>/dev/null)
@@ -150,7 +150,7 @@ EOF
 run_test "Cantidad = 0 debe retornar 400 o 422" "422" \
     curl -s -w "\n%{http_code}" -X POST "$API_URL/api/v1/pedidos/completo" \
     -H "Content-Type: application/json" \
-    -d "$PAYLOAD_CANTIDAD_CERO" > /dev/null
+    -d "$PAYLOAD_CANTIDAD_CERO"
 
 # TC-005: Cantidad negativa debe fallar
 PAYLOAD_CANTIDAD_NEGATIVA=$(cat <<EOF
@@ -171,7 +171,7 @@ EOF
 run_test "Cantidad negativa debe retornar 400 o 422" "422" \
     curl -s -w "\n%{http_code}" -X POST "$API_URL/api/v1/pedidos/completo" \
     -H "Content-Type: application/json" \
-    -d "$PAYLOAD_CANTIDAD_NEGATIVA" > /dev/null
+    -d "$PAYLOAD_CANTIDAD_NEGATIVA"
 
 echo ""
 echo "=== Tests de Validación de Precio ==="
@@ -196,7 +196,7 @@ EOF
 run_test "Precio = 0 debe retornar 400 o 422" "422" \
     curl -s -w "\n%{http_code}" -X POST "$API_URL/api/v1/pedidos/completo" \
     -H "Content-Type: application/json" \
-    -d "$PAYLOAD_PRECIO_CERO" > /dev/null
+    -d "$PAYLOAD_PRECIO_CERO"
 
 # TC-007: Precio negativo debe fallar
 PAYLOAD_PRECIO_NEGATIVO=$(cat <<EOF
@@ -217,7 +217,7 @@ EOF
 run_test "Precio negativo debe retornar 400 o 422" "422" \
     curl -s -w "\n%{http_code}" -X POST "$API_URL/api/v1/pedidos/completo" \
     -H "Content-Type: application/json" \
-    -d "$PAYLOAD_PRECIO_NEGATIVO" > /dev/null
+    -d "$PAYLOAD_PRECIO_NEGATIVO"
 
 echo ""
 echo "=== Tests de Validación de Items Vacíos ==="
@@ -235,7 +235,7 @@ EOF
 run_test "Items vacío debe retornar 400 o 422" "422" \
     curl -s -w "\n%{http_code}" -X POST "$API_URL/api/v1/pedidos/completo" \
     -H "Content-Type: application/json" \
-    -d "$PAYLOAD_ITEMS_VACIO" > /dev/null
+    -d "$PAYLOAD_ITEMS_VACIO"
 
 echo ""
 echo "=== Tests de Validación de Pedido Inexistente ==="
@@ -243,17 +243,17 @@ echo ""
 
 # TC-009: GET pedido inexistente
 run_test "GET pedido inexistente debe retornar 404" "404" \
-    curl -s -w "\n%{http_code}" "$API_URL/api/v1/pedidos/01INVALID000000000000000000" > /dev/null
+    curl -s -w "\n%{http_code}" "$API_URL/api/v1/pedidos/01INVALID000000000000000000"
 
 # TC-010: PATCH pedido inexistente
 run_test "PATCH estado de pedido inexistente debe retornar 404" "404" \
     curl -s -w "\n%{http_code}" -X PATCH "$API_URL/api/v1/pedidos/01INVALID000000000000000000/estado" \
     -H "Content-Type: application/json" \
-    -d '{"estado": "CONFIRMADO"}' > /dev/null
+    -d '{"estado": "CONFIRMADO"}'
 
 # TC-011: DELETE pedido inexistente
 run_test "DELETE pedido inexistente debe retornar 404" "404" \
-    curl -s -w "\n%{http_code}" -X DELETE "$API_URL/api/v1/pedidos/01INVALID000000000000000000" > /dev/null
+    curl -s -w "\n%{http_code}" -X DELETE "$API_URL/api/v1/pedidos/01INVALID000000000000000000"
 
 echo ""
 echo "=========================================="

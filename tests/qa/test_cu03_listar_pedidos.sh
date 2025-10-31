@@ -75,7 +75,7 @@ fi
 
 # TC-003: Listar pedidos con paginación (skip y limit)
 run_test "Listar pedidos con paginación (skip=0, limit=5)" "200" \
-    curl -s -w "\n%{http_code}" "$API_URL/api/v1/pedidos?skip=0&limit=5" > /dev/null
+    curl -s -w "\n%{http_code}" "$API_URL/api/v1/pedidos?skip=0&limit=5"
 
 echo ""
 
@@ -99,15 +99,15 @@ echo ""
 
 # TC-005: Filtrar pedidos por estado PENDIENTE
 run_test "Filtrar por estado PENDIENTE" "200" \
-    curl -s -w "\n%{http_code}" "$API_URL/api/v1/pedidos?estado=PENDIENTE" > /dev/null
+    curl -s -w "\n%{http_code}" "$API_URL/api/v1/pedidos?estado=PENDIENTE"
 
 # TC-006: Filtrar pedidos por estado CONFIRMADO
 run_test "Filtrar por estado CONFIRMADO" "200" \
-    curl -s -w "\n%{http_code}" "$API_URL/api/v1/pedidos?estado=CONFIRMADO" > /dev/null
+    curl -s -w "\n%{http_code}" "$API_URL/api/v1/pedidos?estado=CONFIRMADO"
 
 # TC-007: Filtrar pedidos por estado EN_PREPARACION
 run_test "Filtrar por estado EN_PREPARACION" "200" \
-    curl -s -w "\n%{http_code}" "$API_URL/api/v1/pedidos?estado=EN_PREPARACION" > /dev/null
+    curl -s -w "\n%{http_code}" "$API_URL/api/v1/pedidos?estado=EN_PREPARACION"
 
 echo ""
 
@@ -120,7 +120,7 @@ if [ -n "$MESA_ID" ]; then
 
     # TC-009: Filtrar pedidos por mesa
     run_test "Filtrar por ID de mesa" "200" \
-        curl -s -w "\n%{http_code}" "$API_URL/api/v1/pedidos?id_mesa=$MESA_ID" > /dev/null
+        curl -s -w "\n%{http_code}" "$API_URL/api/v1/pedidos?id_mesa=$MESA_ID"
 else
     echo -e "${YELLOW}⚠ SKIP${NC} - No hay mesas disponibles"
     TOTAL_TESTS=$((TOTAL_TESTS + 1))
