@@ -1,0 +1,34 @@
+==========================================
+  CU-03: Listar Pedidos
+==========================================
+
+API Base URL: https://back-dp2.onrender.com
+
+=== Tests de Listado de Pedidos ===
+
+
+TC-1: Validar estructura de respuesta paginada... [0;32m✓ PASS[0m (Campos: items, total presentes)
+
+TC-3: Validar que limit=5 retorna máximo 5 items... [0;32m✓ PASS[0m (Items retornados: 5 <= 5)
+
+=== Tests de Filtros de Pedidos ===
+
+
+TC-4: Validar que filtro estado=pendiente retorna solo pendientes... [0;32m✓ PASS[0m (Todos los pedidos tienen estado=pendiente)
+
+Obteniendo ID de mesa para filtro... [0;32m✓[0m Mesa ID: 01K8S06QXAFXTDHKMWQ8A15C8P
+
+TC-7: Validar que filtro id_mesa retorna solo pedidos de esa mesa... [0;32m✓ PASS[0m (Todos los pedidos son de la mesa 01K8S06QXAFXTDHKMWQ8A15C8P)
+
+=== Tests de Validación de Datos ===
+
+TC-8: Validar campos requeridos en pedidos... [0;32m✓ PASS[0m (Campos: id, numero_pedido, estado, total)
+
+==========================================
+  Resumen de Tests
+==========================================
+Total:  8
+Pasados: [0;32m8[0m
+Fallidos: [0;31m0[0m
+
+[0;32m✓ Todos los tests pasaron[0m

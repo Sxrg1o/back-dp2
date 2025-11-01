@@ -1,0 +1,9 @@
+==========================================
+  CU-01: Crear Pedido Completo Simple
+==========================================
+
+API Base URL: http://localhost:8000
+
+=== Preparación: Obtener IDs necesarios ===
+
+Obteniendo ID de mesa... [0;31m✗ No se encontraron mesas[0m

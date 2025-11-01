@@ -36,6 +36,10 @@ class SesionBase(BaseModel):
         min_length=1,
         max_length=36
     )
+    orden: int = Field(
+        default=1,
+        description="Jerarquía de la sesión, 1 es la más alta."
+    )    
     estado: EstadoSesion = Field(
         default=EstadoSesion.ACTIVO,
         description="Estado actual de la sesión (ACTIVO, INACTIVO, CERRADO)."
@@ -72,6 +76,10 @@ class SesionUpdate(BaseModel):
         min_length=1,
         max_length=36
     )
+    orden: Optional[int] = Field(
+        default=None,
+        description="Nuevo valor de jerarquía de la sesión."
+    )
     estado: Optional[EstadoSesion] = Field(
         default=None,
         description="Nuevo estado de la sesión (ACTIVO, INACTIVO, CERRADO)."
@@ -107,6 +115,7 @@ class SesionSummary(BaseModel):
     id: str = Field(description="Identificador único de la sesión (ULID).")
     id_domotica: str = Field(description="Identificador del sistema Domotica.")
     id_local: str = Field(description="Identificador del local.")
+    orden: int = Field(description="Jerarquía de la sesión.")
     estado: EstadoSesion = Field(description="Estado actual de la sesión.")
     fecha_creacion: Optional[datetime] = Field(description="Fecha de creación.")
 

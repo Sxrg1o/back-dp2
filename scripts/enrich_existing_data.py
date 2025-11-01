@@ -23,6 +23,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sessionmaker
 from sqlalchemy import select, func
+from src.models.auth.sesion_model import SesionModel
 from src.models.menu.categoria_model import CategoriaModel
 from src.models.menu.alergeno_model import AlergenoModel
 from src.models.menu.producto_model import ProductoModel
@@ -36,7 +37,7 @@ from src.models.mesas.mesa_model import MesaModel
 from src.core.enums.alergeno_enums import NivelPresencia
 from src.core.enums.local_enums import TipoLocal
 from src.core.enums.mesa_enums import EstadoMesa
-
+from src.core.enums.sesion_enums import EstadoSesion
 
 def get_database_url() -> str:
     """Obtiene la URL de la base de datos."""
@@ -122,6 +123,11 @@ class DataEnricher:
         await self.session.refresh(self.local)
 
         print(f"   Local creado: '{self.local.nombre}' (ID: {self.local.id})")
+        sesion = SesionModel(id_domotica="DOM-001", id_local=self.local.id, estado=EstadoSesion.ACTIVO, orden=1)
+        self.session.add_all([sesion])
+        await self.session.commit()
+        print(f"Locales y sesiones de prueba creadas exitosamente.")
+
 
     async def load_existing_data(self):
         """

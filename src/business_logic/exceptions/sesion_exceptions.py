@@ -6,46 +6,21 @@ relacionadas con sesiones.
 """
 
 
-class SesionValidationError(Exception):
-    """
-    Excepción lanzada cuando falla la validación de datos de una sesión.
+from src.business_logic.exceptions.base_exceptions import (
+    ValidationError, NotFoundError, ConflictError
+)
 
-    Se utiliza cuando los datos proporcionados para crear o actualizar una sesión
-    no cumplen con las reglas de validación del negocio.
+class SesionValidationError(ValidationError):
+    """Excepción lanzada cuando la validación de una sesión falla."""
+    def __init__(self, message: str, error_code: str = "SESION_VALIDATION_ERROR"):
+        super().__init__(message, error_code)
 
-    Examples
-    --------
-    >>> raise SesionValidationError("El id_domotica no puede estar vacío")
-    """
+class SesionNotFoundError(NotFoundError):
+    """Excepción lanzada cuando no se encuentra una sesión."""
+    def __init__(self, message: str = "Sesión no encontrada", error_code: str = "SESION_NOT_FOUND"):
+        super().__init__(message, error_code)
 
-    pass
-
-
-class SesionNotFoundError(Exception):
-    """
-    Excepción lanzada cuando no se encuentra una sesión.
-
-    Se utiliza cuando se intenta acceder, actualizar o eliminar una sesión
-    que no existe en la base de datos.
-
-    Examples
-    --------
-    >>> raise SesionNotFoundError("No se encontró la sesión con ID 123")
-    """
-
-    pass
-
-
-class SesionConflictError(Exception):
-    """
-    Excepción lanzada cuando hay un conflicto al crear o actualizar una sesión.
-
-    Se utiliza cuando se intenta crear una sesión que ya existe o cuando
-    hay conflictos de integridad referencial.
-
-    Examples
-    --------
-    >>> raise SesionConflictError("Ya existe una sesión activa para este local")
-    """
-
-    pass
+class SesionConflictError(ConflictError):
+    """Excepción lanzada cuando hay un conflicto con una sesión."""
+    def __init__(self, message: str, error_code: str = "SESION_CONFLICT"):
+        super().__init__(message, error_code)
