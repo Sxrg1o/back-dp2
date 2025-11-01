@@ -1,8 +1,12 @@
-from typing import Any, Dict, Optional, Type, TypeVar
-from sqlalchemy.orm import Mapped, mapped_column
-from sqlalchemy import String, Boolean, Index
+from typing import Any, Dict, Optional, Type, TypeVar, TYPE_CHECKING
+from sqlalchemy.orm import Mapped, mapped_column, relationship
+from sqlalchemy import String, Boolean, Index, TIMESTAMP, ForeignKey
+from datetime import datetime
 from src.models.base_model import BaseModel
 from src.models.mixins.audit_mixin import AuditMixin
+
+if TYPE_CHECKING:
+    from src.models.auth.rol_model import RolModel
 
 T = TypeVar("T", bound="UsuarioModel")
 
@@ -17,10 +21,7 @@ class UsuarioModel(BaseModel, AuditMixin):
         Index("idx_email", "email"),
         Index("idx_rol", "id_rol"),
         Index("idx_activo", "activo"),
-        {
-            'schema': 'restaurant_dp2',
-            'comment': 'Usuarios del sistema (staff y clientes registrados)'
-        }
+        {'comment': 'Usuarios del sistema (staff y clientes registrados)'}
     )
 
     # Campos específicos del usuario
@@ -29,7 +30,19 @@ class UsuarioModel(BaseModel, AuditMixin):
     nombre: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
     telefono: Mapped[Optional[str]] = mapped_column(String(20), nullable=True)
     activo: Mapped[bool] = mapped_column(Boolean, default=True, nullable=True)
-    id_rol: Mapped[str] = mapped_column(String(36), nullable=False)  # ULID de rol
+    id_rol: Mapped[str] = mapped_column(String(36), ForeignKey("roles.id", ondelete="RESTRICT"), nullable=False, index=True)
+    ultimo_acceso: Mapped[Optional[datetime]] = mapped_column(
+        TIMESTAMP, 
+        nullable=True, 
+        default=None,
+        comment="Última vez que el usuario accedió al sistema"
+    )
+    
+    # Relación con Rol
+    rol: Mapped["RolModel"] = relationship(
+        "RolModel",
+        lazy="selectin"
+    )
 
     # Métodos comunes heredados de BaseModel y AuditMixin
     # Si necesitas métodos personalizados, agrégalos aquí

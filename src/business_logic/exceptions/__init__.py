@@ -20,6 +20,13 @@ from src.business_logic.exceptions.producto_opcion_exceptions import (
     ProductoOpcionNotFoundError,
     ProductoOpcionConflictError,
 )
+from src.business_logic.exceptions.usuario_exceptions import (
+    UsuarioValidationError,
+    UsuarioNotFoundError,
+    UsuarioConflictError,
+    InvalidCredentialsError,
+    InactiveUserError,
+)
 
 __all__ = [
     "ValidationError",
@@ -31,6 +38,11 @@ __all__ = [
     "RolValidationError",
     "RolNotFoundError",
     "RolConflictError",
+    "UsuarioValidationError",
+    "UsuarioNotFoundError",
+    "UsuarioConflictError",
+    "InvalidCredentialsError",
+    "InactiveUserError",
     "ProductoOpcionValidationError",
     "ProductoOpcionNotFoundError",
     "ProductoOpcionConflictError",
