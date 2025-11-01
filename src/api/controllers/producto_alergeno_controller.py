@@ -2,7 +2,6 @@
 Endpoints para gestión de relaciones producto-alérgeno.
 """
 
-from uuid import UUID
 from fastapi import APIRouter, Depends, HTTPException, status, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -69,8 +68,8 @@ async def create_producto_alergeno(
     description="Obtiene los detalles de una relación producto-alérgeno específica por sus IDs.",
 )
 async def get_producto_alergeno(
-    id_producto: UUID,
-    id_alergeno: UUID,
+    id_producto: str,
+    id_alergeno: str,
     session: AsyncSession = Depends(get_database_session)
 ) -> ProductoAlergenoResponse:
     """
@@ -151,10 +150,10 @@ async def list_producto_alergenos(
     description="Actualiza los datos de una relación producto-alérgeno existente.",
 )
 async def update_producto_alergeno(
-    id_producto: UUID,
-    id_alergeno: UUID,
+    id_producto: str,
+    id_alergeno: str,
     producto_alergeno_data: ProductoAlergenoUpdate,
-    session: AsyncSession = Depends(get_database_session),
+    session: AsyncSession = Depends(get_database_session)
 ) -> ProductoAlergenoResponse:
     """
     Actualiza una relación producto-alérgeno existente.
@@ -197,8 +196,8 @@ async def update_producto_alergeno(
     description="Elimina una relación producto-alérgeno existente del sistema.",
 )
 async def delete_producto_alergeno(
-    id_producto: UUID,
-    id_alergeno: UUID,
+    id_producto: str,
+    id_alergeno: str,
     session: AsyncSession = Depends(get_database_session)
 ) -> None:
     """

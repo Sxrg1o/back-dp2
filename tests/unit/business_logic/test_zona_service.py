@@ -7,9 +7,9 @@ from unittest.mock import AsyncMock
 from ulid import ULID
 from datetime import datetime
 
-from src.business_logic.zona_service import ZonaService
-from src.models.zona_model import ZonaModel
-from src.models.local_model import LocalModel
+from src.business_logic.mesas.zona_service import ZonaService
+from src.models.mesas.zona_model import ZonaModel
+from src.models.mesas.local_model import LocalModel
 from src.api.schemas.zona_schema import ZonaCreate, ZonaUpdate
 from src.business_logic.exceptions.zona_exceptions import (
     ZonaValidationError,

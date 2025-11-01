@@ -13,7 +13,7 @@ from src.models.base_model import BaseModel
 from src.models.mixins.audit_mixin import AuditMixin
 
 if TYPE_CHECKING:
-    from src.models.local_model import LocalModel
+    from src.models.mesas.local_model import LocalModel
     from src.models.mesas.mesa_model import MesaModel
 
 # Definimos un TypeVar para el tipado genérico
@@ -52,12 +52,12 @@ class ZonaModel(BaseModel, AuditMixin):
         Usuario que realizó la última modificación (heredado de AuditMixin).
     """
 
-    __tablename__ = "zona"
+    __tablename__ = "zonas"
 
     # Foreign Key hacia Local
     id_local: Mapped[str] = mapped_column(
         String(36),
-        ForeignKey("local.id", ondelete="CASCADE"),
+        ForeignKey("locales.id", ondelete="CASCADE"),
         nullable=False
     )
 

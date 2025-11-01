@@ -10,7 +10,7 @@ from fastapi import FastAPI
 from fastapi.testclient import TestClient
 
 from src.api.controllers.local_controller import router, get_database_session
-from src.business_logic.local_service import LocalService
+from src.business_logic.mesas.local_service import LocalService
 from src.business_logic.exceptions.local_exceptions import (
     LocalNotFoundError,
     LocalConflictError,

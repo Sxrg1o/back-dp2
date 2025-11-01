@@ -7,7 +7,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.core.database import get_database_session
-from src.business_logic.division_cuenta_service import DivisionCuentaService
+from src.business_logic.pagos.division_cuenta_service import DivisionCuentaService
 from src.api.schemas.division_cuenta_schema import (
     DivisionCuentaCreate,
     DivisionCuentaUpdate,

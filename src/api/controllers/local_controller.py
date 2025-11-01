@@ -6,7 +6,7 @@ from fastapi import APIRouter, Depends, HTTPException, status, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.core.database import get_database_session
-from src.business_logic.local_service import LocalService
+from src.business_logic.mesas.local_service import LocalService
 from src.api.schemas.local_schema import (
     LocalCreate,
     LocalResponse,

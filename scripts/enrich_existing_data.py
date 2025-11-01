@@ -30,8 +30,8 @@ from src.models.menu.producto_alergeno_model import ProductoAlergenoModel
 from src.models.pedidos.tipo_opciones_model import TipoOpcionModel
 from src.models.pedidos.producto_opcion_model import ProductoOpcionModel
 from src.models.auth.rol_model import RolModel
-from src.models.local_model import LocalModel
-from src.models.zona_model import ZonaModel
+from src.models.mesas.local_model import LocalModel
+from src.models.mesas.zona_model import ZonaModel
 from src.models.mesas.mesa_model import MesaModel
 from src.core.enums.alergeno_enums import NivelPresencia
 from src.core.enums.local_enums import TipoLocal

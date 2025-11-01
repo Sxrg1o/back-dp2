@@ -267,11 +267,11 @@ async def sync_mesas(
     """
     try:
         from src.business_logic.mesas.mesa_service import MesaService
-        from src.business_logic.local_service import LocalService
-        from src.business_logic.zona_service import ZonaService
+        from src.business_logic.mesas.local_service import LocalService
+        from src.business_logic.mesas.zona_service import ZonaService
         from src.api.schemas.mesa_schema import MesaCreate, EstadoMesa
         from src.api.schemas.zona_schema import ZonaCreate
-        from src.models.zona_model import ZonaModel
+        from src.models.mesas.zona_model import ZonaModel
         from sqlalchemy import select
 
         # Contadores para reporte

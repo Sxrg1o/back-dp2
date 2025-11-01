@@ -73,7 +73,7 @@ class ProductoRepository:
 
         Parameters
         ----------
-        producto_id : UUID
+        producto_id : str
             Identificador único del producto a buscar.
 
         Returns
@@ -133,7 +133,7 @@ class ProductoRepository:
 
         Parameters
         ----------
-        producto_id : UUID
+        producto_id : str
             Identificador único del producto a eliminar.
 
         Returns
@@ -161,7 +161,7 @@ class ProductoRepository:
 
         Parameters
         ----------
-        producto_id : UUID
+        producto_id : str
             Identificador único del producto a actualizar.
         **kwargs
             Campos y valores a actualizar.
@@ -227,7 +227,7 @@ class ProductoRepository:
             Número de registros a omitir (offset), por defecto 0.
         limit : int, optional
             Número máximo de registros a retornar, por defecto 100.
-        id_categoria : UUID | None, optional
+        id_categoria : str | None, optional
             ID de categoría para filtrar (opcional)
 
         Returns

@@ -6,9 +6,9 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.exc import IntegrityError
 from typing import List
 
-from src.repositories.division_cuenta_detalle_repository import DivisionCuentaDetalleRepository
-from src.repositories.division_cuenta_repository import DivisionCuentaRepository
-from src.repositories.pedido_producto_repository import PedidoProductoRepository
+from src.repositories.pagos.division_cuenta_detalle_repository import DivisionCuentaDetalleRepository
+from src.repositories.pagos.division_cuenta_repository import DivisionCuentaRepository
+from src.repositories.pedidos.pedido_producto_repository import PedidoProductoRepository
 from src.models.pagos.division_cuenta_detalle_model import DivisionCuentaDetalleModel
 from src.api.schemas.division_cuenta_detalle_schema import (
     DivisionCuentaDetalleCreate,

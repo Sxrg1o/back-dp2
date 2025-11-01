@@ -42,14 +42,14 @@ class DivisionCuentaDetalleModel(BaseModel):
         Fecha y hora de creación del registro.
     """
 
-    __tablename__ = "division_cuenta_detalle"
+    __tablename__ = "divisiones_cuentas_detalles"
 
     # Columnas específicas del modelo DivisionCuentaDetalle
     id_division_cuenta: Mapped[str] = mapped_column(
-        String(36), ForeignKey("division_cuenta.id", ondelete="CASCADE"), nullable=False, index=True
+        String(36), ForeignKey("divisiones_cuentas.id", ondelete="CASCADE"), nullable=False, index=True
     )
     id_pedido_producto: Mapped[str] = mapped_column(
-        String(36), ForeignKey("pedido_producto.id", ondelete="CASCADE"), nullable=False, index=True
+        String(36), ForeignKey("pedidos_productos.id", ondelete="CASCADE"), nullable=False, index=True
     )
     persona_numero: Mapped[int] = mapped_column(
         Integer, nullable=False, comment="Identificador de persona (1, 2, 3, etc)"

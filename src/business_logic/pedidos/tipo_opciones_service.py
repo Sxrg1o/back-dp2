@@ -2,7 +2,6 @@
 Servicio para la gestión de tipos de opciones en el sistema.
 """
 
-from uuid import UUID
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.exc import IntegrityError
 
@@ -85,13 +84,13 @@ class TipoOpcionService:
                 f"Ya existe un tipo de opción con el código '{tipo_opcion_data.codigo}'"
             )
 
-    async def get_tipo_opcion_by_id(self, tipo_opcion_id: UUID) -> TipoOpcionResponse:
+    async def get_tipo_opcion_by_id(self, tipo_opcion_id: str) -> TipoOpcionResponse:
         """
         Obtiene un tipo de opción por su ID.
 
         Parameters
         ----------
-        tipo_opcion_id : UUID
+        tipo_opcion_id : str
             Identificador único del tipo de opción a buscar.
 
         Returns
@@ -114,13 +113,13 @@ class TipoOpcionService:
         # Convertir y retornar como esquema de respuesta
         return TipoOpcionResponse.model_validate(tipo_opcion)
 
-    async def delete_tipo_opcion(self, tipo_opcion_id: UUID) -> bool:
+    async def delete_tipo_opcion(self, tipo_opcion_id: str) -> bool:
         """
         Elimina un tipo de opción por su ID.
 
         Parameters
         ----------
-        tipo_opcion_id : UUID
+        tipo_opcion_id : str
             Identificador único del tipo de opción a eliminar.
 
         Returns
@@ -175,13 +174,13 @@ class TipoOpcionService:
         # Retornar esquema de lista
         return TipoOpcionList(items=tipo_opcion_summaries, total=total)
 
-    async def update_tipo_opcion(self, tipo_opcion_id: UUID, tipo_opcion_data: TipoOpcionUpdate) -> TipoOpcionResponse:
+    async def update_tipo_opcion(self, tipo_opcion_id: str, tipo_opcion_data: TipoOpcionUpdate) -> TipoOpcionResponse:
         """
         Actualiza un tipo de opción existente.
 
         Parameters
         ----------
-        tipo_opcion_id : UUID
+        tipo_opcion_id : str
             Identificador único del tipo de opción a actualizar.
         tipo_opcion_data : TipoOpcionUpdate
             Datos para actualizar el tipo de opción.

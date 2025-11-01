@@ -8,7 +8,7 @@ from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, delete, update, func
 
-from src.models.local_model import LocalModel
+from src.models.mesas.local_model import LocalModel
 
 
 class LocalRepository:
