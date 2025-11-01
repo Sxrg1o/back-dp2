@@ -1,12 +1,12 @@
 """
 Script para enriquecer datos existentes de productos con:
-- Alérgenos (crear 8)
+- Alrgenos (crear 8)
 - Tipos de opciones (crear 4)
-- Relaciones producto-alérgeno (asociar inteligentemente)
+- Relaciones producto-alrgeno (asociar inteligentemente)
 - Opciones de productos (crear y asociar)
 
-⚠️ NO crea productos ni categorías nuevas.
-Solo agrega información complementaria a los 274 productos existentes.
+ NO crea productos ni categoras nuevas.
+Solo agrega informacin complementaria a los 274 productos existentes.
 
 Ejecutar con:
     python -m scripts.enrich_existing_data
@@ -18,7 +18,7 @@ from pathlib import Path
 from decimal import Decimal
 import unicodedata
 
-# Agregar el directorio raíz al path
+# Agregar el directorio raz al path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sessionmaker
@@ -30,7 +30,12 @@ from src.models.menu.producto_alergeno_model import ProductoAlergenoModel
 from src.models.pedidos.tipo_opciones_model import TipoOpcionModel
 from src.models.pedidos.producto_opcion_model import ProductoOpcionModel
 from src.models.auth.rol_model import RolModel
+from src.models.mesas.local_model import LocalModel
+from src.models.mesas.zona_model import ZonaModel
+from src.models.mesas.mesa_model import MesaModel
 from src.core.enums.alergeno_enums import NivelPresencia
+from src.core.enums.local_enums import TipoLocal
+from src.core.enums.mesa_enums import EstadoMesa
 
 
 def get_database_url() -> str:
@@ -60,44 +65,85 @@ class DataEnricher:
         self.categorias_existentes = {}  # {nombre_normalizado: CategoriaModel}
         self.alergenos = {}  # {nombre: AlergenoModel}
         self.tipos_opciones = {}  # {codigo: TipoOpcionModel}
+        self.local = None  # LocalModel (creado en create_local)
     
     @staticmethod
     def normalize_name(nombre: str) -> str:
         """
-        Normaliza nombres para matching (mayúsculas, sin tildes, sin espacios extra).
+        Normaliza nombres para matching (maysculas, sin tildes, sin espacios extra).
         
         Ejemplo:
-            "Ceviche Limeño" → "CEVICHE LIMENO"
+            "Ceviche Limeo"  "CEVICHE LIMENO"
         """
         # Remover tildes
         nombre = ''.join(
             c for c in unicodedata.normalize('NFD', nombre)
             if unicodedata.category(c) != 'Mn'
         )
-        # Mayúsculas y strip
+        # Maysculas y strip
         return nombre.upper().strip()
-    
+
+    async def create_local(self):
+        """
+        PASO 0.1: Crear el local 'Barra Arena' si no existe.
+        """
+        print("\n" + "="*70)
+        print(" PASO 0.1: CREANDO LOCAL")
+        print("="*70)
+
+        # Buscar si ya existe
+        result = await self.session.execute(
+            select(LocalModel).where(LocalModel.codigo == "BA-001")
+        )
+        existing_local = result.scalars().first()
+
+        if existing_local:
+            print(f"   Local '{existing_local.nombre}' ya existe (ID: {existing_local.id})")
+            self.local = existing_local
+            return
+
+        # Crear nuevo local
+        self.local = LocalModel(
+            codigo="BA-001",
+            nombre="Barra Arena",
+            direccion="CAL. GENERAL BORGONO N 199",
+            distrito="MIRAFLORES",
+            ciudad="LIMA",
+            telefono=None,
+            email=None,
+            tipo_local=TipoLocal.CENTRAL,
+            capacidad_total=None,
+            activo=True,
+            fecha_apertura=None
+        )
+
+        self.session.add(self.local)
+        await self.session.flush()
+        await self.session.refresh(self.local)
+
+        print(f"   Local creado: '{self.local.nombre}' (ID: {self.local.id})")
+
     async def load_existing_data(self):
         """
-        🔍 SOLO consulta productos y categorías existentes para hacer matching.
+         SOLO consulta productos y categoras existentes para hacer matching.
         NO crea nada nuevo.
         """
         print("\n" + "="*70)
-        print("📂 CARGANDO DATOS EXISTENTES DE LA BASE DE DATOS")
+        print(" CARGANDO DATOS EXISTENTES DE LA BASE DE DATOS")
         print("="*70)
         
         # Contar productos
         result = await self.session.execute(select(func.count(ProductoModel.id)))
         count_productos = result.scalar()
-        print(f"📦 Productos encontrados: {count_productos}")
+        print(f" Productos encontrados: {count_productos}")
         
-        # Contar categorías
+        # Contar categoras
         result = await self.session.execute(select(func.count(CategoriaModel.id)))
         count_categorias = result.scalar()
-        print(f"📁 Categorías encontradas: {count_categorias}")
+        print(f" Categoras encontradas: {count_categorias}")
         
         if count_productos == 0:
-            print("\n❌ ERROR: No hay productos en la BD.")
+            print("\n ERROR: No hay productos en la BD.")
             print("   Ejecuta primero el scrapper para cargar productos.")
             sys.exit(1)
         
@@ -109,9 +155,9 @@ class DataEnricher:
             nombre_key = self.normalize_name(producto.nombre)
             self.productos_existentes[nombre_key] = producto
         
-        print(f"   ✓ {len(self.productos_existentes)} productos mapeados por nombre")
+        print(f"    {len(self.productos_existentes)} productos mapeados por nombre")
         
-        # Cargar categorías (23)
+        # Cargar categoras (23)
         result = await self.session.execute(select(CategoriaModel))
         categorias = result.scalars().all()
         
@@ -119,32 +165,32 @@ class DataEnricher:
             nombre_key = self.normalize_name(categoria.nombre)
             self.categorias_existentes[nombre_key] = categoria
         
-        print(f"   ✓ {len(self.categorias_existentes)} categorías mapeadas por nombre")
+        print(f"    {len(self.categorias_existentes)} categoras mapeadas por nombre")
         print("="*70 + "\n")
     
     async def create_alergenos(self):
         """
-        ⚠️  PASO 2: Crear los 8 alérgenos comunes en cevicherías.
+          PASO 2: Crear los 8 alrgenos comunes en cevicheras.
         """
         print("\n" + "="*70)
-        print("⚠️  CREANDO ALÉRGENOS")
+        print("  CREANDO ALRGENOS")
         print("="*70)
         
-        # Verificar si ya existen alérgenos
+        # Verificar si ya existen alrgenos
         result = await self.session.execute(select(func.count(AlergenoModel.id)))
         count_alergenos = result.scalar()
         
         if count_alergenos and count_alergenos > 0:
-            print(f"   ℹ️  Ya existen {count_alergenos} alérgenos en la BD.")
-            print("   Cargando alérgenos existentes...")
+            print(f"     Ya existen {count_alergenos} alrgenos en la BD.")
+            print("   Cargando alrgenos existentes...")
             
-            # Cargar alérgenos existentes
+            # Cargar alrgenos existentes
             result = await self.session.execute(select(AlergenoModel))
             alergenos_existentes = result.scalars().all()
             
             for alergeno in alergenos_existentes:
                 self.alergenos[alergeno.nombre] = alergeno
-                print(f"   ✓ {alergeno.nombre:<20} (ya existía)")
+                print(f"    {alergeno.nombre:<20} (ya exista)")
             
             print("="*70 + "\n")
             return
@@ -157,7 +203,7 @@ class DataEnricher:
             },
             {
                 "nombre": "Pescado",
-                "descripcion": "Lenguado, corvina, mero, bonito, atún",
+                "descripcion": "Lenguado, corvina, mero, bonito, atn",
                 "activo": True
             },
             {
@@ -171,13 +217,13 @@ class DataEnricher:
                 "activo": True
             },
             {
-                "nombre": "Lácteos",
+                "nombre": "Lcteos",
                 "descripcion": "Leche, queso, crema de leche",
                 "activo": True
             },
             {
-                "nombre": "Ají",
-                "descripcion": "Rocoto, ají amarillo, ají limo",
+                "nombre": "Aj",
+                "descripcion": "Rocoto, aj amarillo, aj limo",
                 "activo": True
             },
             {
@@ -187,7 +233,7 @@ class DataEnricher:
             },
             {
                 "nombre": "Frutos Secos",
-                "descripcion": "Maní, nueces, almendras",
+                "descripcion": "Man, nueces, almendras",
                 "activo": True
             }
         ]
@@ -196,7 +242,7 @@ class DataEnricher:
             alergeno = AlergenoModel(**data)
             self.session.add(alergeno)
             self.alergenos[data["nombre"]] = alergeno
-            print(f"   ✓ {data['nombre']:<20} - {data['descripcion']}")
+            print(f"    {data['nombre']:<20} - {data['descripcion']}")
         
         await self.session.commit()
         
@@ -204,15 +250,15 @@ class DataEnricher:
         for alergeno in self.alergenos.values():
             await self.session.refresh(alergeno)
         
-        print(f"\n   → {len(alergenos_data)} alérgenos creados exitosamente")
+        print(f"\n    {len(alergenos_data)} alrgenos creados exitosamente")
         print("="*70 + "\n")
     
     async def create_tipos_opciones(self):
         """
-        ⚙️  PASO 3: Crear 4 tipos de opciones (con seleccion_minima/maxima).
+          PASO 3: Crear 4 tipos de opciones (con seleccion_minima/maxima).
         """
         print("\n" + "="*70)
-        print("⚙️  CREANDO TIPOS DE OPCIONES")
+        print("  CREANDO TIPOS DE OPCIONES")
         print("="*70)
         
         # Verificar si ya existen tipos de opciones
@@ -220,7 +266,7 @@ class DataEnricher:
         count_tipos = result.scalar()
         
         if count_tipos and count_tipos > 0:
-            print(f"   ℹ️  Ya existen {count_tipos} tipos de opciones en la BD.")
+            print(f"     Ya existen {count_tipos} tipos de opciones en la BD.")
             print("   Cargando tipos existentes...")
             
             # Cargar tipos existentes
@@ -229,8 +275,8 @@ class DataEnricher:
             
             for tipo in tipos_existentes:
                 self.tipos_opciones[tipo.codigo] = tipo
-                max_str = str(tipo.seleccion_maxima) if tipo.seleccion_maxima is not None else "∞"
-                print(f"   ✓ {tipo.nombre:<20} (ya existía, min:{tipo.seleccion_minima}, max:{max_str})")
+                max_str = str(tipo.seleccion_maxima) if tipo.seleccion_maxima is not None else ""
+                print(f"    {tipo.nombre:<20} (ya exista, min:{tipo.seleccion_minima}, max:{max_str})")
             
             print("="*70 + "\n")
             return
@@ -238,19 +284,19 @@ class DataEnricher:
         tipos_data = [
             {
                 "codigo": "nivel_aji",
-                "nombre": "Nivel de Ají",
+                "nombre": "Nivel de Aj",
                 "descripcion": "Intensidad del picante en el plato",
                 "seleccion_minima": 0,  # Opcional
-                "seleccion_maxima": 1,  # Máximo 1
+                "seleccion_maxima": 1,  # Mximo 1
                 "activo": True,
                 "orden": 1
             },
             {
                 "codigo": "acompanamiento",
-                "nombre": "Acompañamiento",
+                "nombre": "Acompaamiento",
                 "descripcion": "Extras que complementan tu plato",
                 "seleccion_minima": 0,  # Opcional
-                "seleccion_maxima": None,  # Sin límite (ilimitado)
+                "seleccion_maxima": None,  # Sin lmite (ilimitado)
                 "activo": True,
                 "orden": 2
             },
@@ -265,8 +311,8 @@ class DataEnricher:
             },
             {
                 "codigo": "tamano",
-                "nombre": "Tamaño",
-                "descripcion": "Tamaño de la porción",
+                "nombre": "Tamao",
+                "descripcion": "Tamao de la porcin",
                 "seleccion_minima": 1,  # Obligatorio
                 "seleccion_maxima": 1,  # Exactamente 1
                 "activo": True,
@@ -279,8 +325,8 @@ class DataEnricher:
             self.session.add(tipo)
             self.tipos_opciones[data["codigo"]] = tipo
             
-            max_str = str(data["seleccion_maxima"]) if data["seleccion_maxima"] is not None else "∞"
-            print(f"   ✓ {data['nombre']:<20} (min:{data['seleccion_minima']}, max:{max_str})")
+            max_str = str(data["seleccion_maxima"]) if data["seleccion_maxima"] is not None else ""
+            print(f"    {data['nombre']:<20} (min:{data['seleccion_minima']}, max:{max_str})")
         
         await self.session.commit()
         
@@ -288,202 +334,213 @@ class DataEnricher:
         for tipo in self.tipos_opciones.values():
             await self.session.refresh(tipo)
         
-        print(f"\n   → {len(tipos_data)} tipos de opciones creados exitosamente")
+        print(f"\n    {len(tipos_data)} tipos de opciones creados exitosamente")
         print("="*70 + "\n")
     
     async def associate_alergenos_to_productos(self):
         """
-        🔗 PASO 4: Asociar alérgenos a productos usando reglas inteligentes.
+         PASO 4: Asociar alrgenos a productos usando reglas inteligentes.
         """
         print("\n" + "="*70)
-        print("🔗 ASOCIANDO ALÉRGENOS A PRODUCTOS (Reglas inteligentes)")
+        print(" ASOCIANDO ALRGENOS A PRODUCTOS (Reglas inteligentes)")
         print("="*70)
         
         count = 0
         
         # ==================== REGLA 1: CEVICHES ====================
-        print("\n📋 Regla 1: CEVICHES → Pescado + Ají")
+        print("\n Regla 1: CEVICHES  Pescado + Aj")
         for nombre_key, producto in self.productos_existentes.items():
             if 'CEVICHE' in nombre_key:
-                # Todos los ceviches tienen Pescado + Ají
-                self._add_alergeno_relation(producto, "Pescado", NivelPresencia.CONTIENE)
-                self._add_alergeno_relation(producto, "Ají", NivelPresencia.CONTIENE)
+                # Todos los ceviches tienen Pescado + Aj
+                await self._add_alergeno_relation(producto, "Pescado", NivelPresencia.CONTIENE)
+                await self._add_alergeno_relation(producto, "Aj", NivelPresencia.CONTIENE)
                 count += 2
-                
-                # Si es MIXTO → agregar Mariscos + Moluscos
+
+                # Si es MIXTO  agregar Mariscos + Moluscos
                 if 'MIXTO' in nombre_key:
-                    self._add_alergeno_relation(producto, "Mariscos", NivelPresencia.CONTIENE)
-                    self._add_alergeno_relation(producto, "Moluscos", NivelPresencia.CONTIENE)
+                    await self._add_alergeno_relation(producto, "Mariscos", NivelPresencia.CONTIENE)
+                    await self._add_alergeno_relation(producto, "Moluscos", NivelPresencia.CONTIENE)
                     count += 2
-                
-                # Si tiene CONCHAS → agregar Moluscos
+
+                # Si tiene CONCHAS  agregar Moluscos
                 if 'CONCHAS' in nombre_key:
-                    self._add_alergeno_relation(producto, "Moluscos", NivelPresencia.CONTIENE)
+                    await self._add_alergeno_relation(producto, "Moluscos", NivelPresencia.CONTIENE)
                     count += 1
         
-        print(f"   ✓ Procesados {sum(1 for k in self.productos_existentes if 'CEVICHE' in k)} ceviches")
+        print(f"    Procesados {sum(1 for k in self.productos_existentes if 'CEVICHE' in k)} ceviches")
         
         # ==================== REGLA 2: TIRADITOS ====================
-        print("\n📋 Regla 2: TIRADITOS → Pescado + Ají")
+        print("\n Regla 2: TIRADITOS  Pescado + Aj")
         for nombre_key, producto in self.productos_existentes.items():
             if 'TIRADITO' in nombre_key:
-                self._add_alergeno_relation(producto, "Pescado", NivelPresencia.CONTIENE)
-                self._add_alergeno_relation(producto, "Ají", NivelPresencia.CONTIENE)
+                await self._add_alergeno_relation(producto, "Pescado", NivelPresencia.CONTIENE)
+                await self._add_alergeno_relation(producto, "Aj", NivelPresencia.CONTIENE)
                 count += 2
                 
-                # Si es NIKKEI → Soja (sillao)
+                # Si es NIKKEI  Soja (sillao)
                 if 'NIKKEI' in nombre_key:
-                    self._add_alergeno_relation(producto, "Soja", NivelPresencia.CONTIENE, "Salsa sillao")
+                    await self._add_alergeno_relation(producto, "Soja", NivelPresencia.CONTIENE, "Salsa sillao")
                     count += 1
         
-        print(f"   ✓ Procesados {sum(1 for k in self.productos_existentes if 'TIRADITO' in k)} tiraditos")
+        print(f"    Procesados {sum(1 for k in self.productos_existentes if 'TIRADITO' in k)} tiraditos")
         
         # ==================== REGLA 3: CHICHARRONES ====================
-        print("\n📋 Regla 3: CHICHARRONES → Gluten (empanizado)")
+        print("\n Regla 3: CHICHARRONES  Gluten (empanizado)")
         for nombre_key, producto in self.productos_existentes.items():
             if 'CHICHARRON' in nombre_key:
-                self._add_alergeno_relation(producto, "Gluten", NivelPresencia.CONTIENE, "Empanizado")
+                await self._add_alergeno_relation(producto, "Gluten", NivelPresencia.CONTIENE, "Empanizado")
                 count += 1
                 
                 if 'PESCADO' in nombre_key:
-                    self._add_alergeno_relation(producto, "Pescado", NivelPresencia.CONTIENE)
+                    await self._add_alergeno_relation(producto, "Pescado", NivelPresencia.CONTIENE)
                     count += 1
                 elif 'MIXTO' in nombre_key:
-                    self._add_alergeno_relation(producto, "Pescado", NivelPresencia.CONTIENE)
-                    self._add_alergeno_relation(producto, "Mariscos", NivelPresencia.CONTIENE)
-                    self._add_alergeno_relation(producto, "Moluscos", NivelPresencia.CONTIENE)
+                    await self._add_alergeno_relation(producto, "Pescado", NivelPresencia.CONTIENE)
+                    await self._add_alergeno_relation(producto, "Mariscos", NivelPresencia.CONTIENE)
+                    await self._add_alergeno_relation(producto, "Moluscos", NivelPresencia.CONTIENE)
                     count += 3
                 elif 'CALAMAR' in nombre_key or 'POTA' in nombre_key:
-                    self._add_alergeno_relation(producto, "Moluscos", NivelPresencia.CONTIENE)
+                    await self._add_alergeno_relation(producto, "Moluscos", NivelPresencia.CONTIENE)
                     count += 1
         
-        print(f"   ✓ Procesados {sum(1 for k in self.productos_existentes if 'CHICHARRON' in k)} chicharrones")
+        print(f"    Procesados {sum(1 for k in self.productos_existentes if 'CHICHARRON' in k)} chicharrones")
         
         # ==================== REGLA 4: ARROCES CON MARISCOS ====================
-        print("\n📋 Regla 4: ARROCES CON MARISCOS")
+        print("\n Regla 4: ARROCES CON MARISCOS")
         for nombre_key, producto in self.productos_existentes.items():
             if 'ARROZ' in nombre_key and any(word in nombre_key for word in ['MARISCOS', 'CONCHAS', 'LANGOSTINOS']):
-                self._add_alergeno_relation(producto, "Mariscos", NivelPresencia.CONTIENE)
-                self._add_alergeno_relation(producto, "Moluscos", NivelPresencia.PUEDE_CONTENER)
-                self._add_alergeno_relation(producto, "Ají", NivelPresencia.CONTIENE)
+                await self._add_alergeno_relation(producto, "Mariscos", NivelPresencia.CONTIENE)
+                await self._add_alergeno_relation(producto, "Moluscos", NivelPresencia.PUEDE_CONTENER)
+                await self._add_alergeno_relation(producto, "Aj", NivelPresencia.CONTIENE)
                 count += 3
                 
                 if 'CHAUFA' in nombre_key:
-                    self._add_alergeno_relation(producto, "Soja", NivelPresencia.CONTIENE, "Salsa sillao")
+                    await self._add_alergeno_relation(producto, "Soja", NivelPresencia.CONTIENE, "Salsa sillao")
                     count += 1
         
-        print(f"   ✓ Procesados arroces con mariscos")
+        print(f"    Procesados arroces con mariscos")
         
         # ==================== REGLA 5: CAUSAS ====================
-        print("\n📋 Regla 5: CAUSAS → Ají + Lácteos")
+        print("\n Regla 5: CAUSAS  Aj + Lcteos")
         for nombre_key, producto in self.productos_existentes.items():
             if 'CAUSA' in nombre_key:
-                self._add_alergeno_relation(producto, "Ají", NivelPresencia.CONTIENE, "Ají amarillo en masa")
-                self._add_alergeno_relation(producto, "Lácteos", NivelPresencia.TRAZAS, "Mayonesa")
+                await self._add_alergeno_relation(producto, "Aj", NivelPresencia.CONTIENE, "Aj amarillo en masa")
+                await self._add_alergeno_relation(producto, "Lcteos", NivelPresencia.TRAZAS, "Mayonesa")
                 count += 2
                 
                 if 'LANGOSTINOS' in nombre_key or 'CANGREJO' in nombre_key:
-                    self._add_alergeno_relation(producto, "Mariscos", NivelPresencia.CONTIENE)
+                    await self._add_alergeno_relation(producto, "Mariscos", NivelPresencia.CONTIENE)
                     count += 1
                 elif 'PULPO' in nombre_key:
-                    self._add_alergeno_relation(producto, "Moluscos", NivelPresencia.CONTIENE)
+                    await self._add_alergeno_relation(producto, "Moluscos", NivelPresencia.CONTIENE)
                     count += 1
         
-        print(f"   ✓ Procesadas {sum(1 for k in self.productos_existentes if 'CAUSA' in k)} causas")
+        print(f"    Procesadas {sum(1 for k in self.productos_existentes if 'CAUSA' in k)} causas")
         
         # ==================== REGLA 6: SOPAS ====================
-        print("\n📋 Regla 6: SOPAS (Parihuela, Chupe, Sudado, etc.)")
+        print("\n Regla 6: SOPAS (Parihuela, Chupe, Sudado, etc.)")
         for nombre_key, producto in self.productos_existentes.items():
             if any(sopa in nombre_key for sopa in ['PARIHUELA', 'CHUPE', 'SUDADO', 'AGUADITO', 'CHILCANITO']):
                 if 'MARISCOS' in nombre_key or 'MIXTA' in nombre_key:
-                    self._add_alergeno_relation(producto, "Mariscos", NivelPresencia.CONTIENE)
-                    self._add_alergeno_relation(producto, "Moluscos", NivelPresencia.PUEDE_CONTENER)
+                    await self._add_alergeno_relation(producto, "Mariscos", NivelPresencia.CONTIENE)
+                    await self._add_alergeno_relation(producto, "Moluscos", NivelPresencia.PUEDE_CONTENER)
                     count += 2
                 elif 'PESCADO' in nombre_key:
-                    self._add_alergeno_relation(producto, "Pescado", NivelPresencia.CONTIENE)
+                    await self._add_alergeno_relation(producto, "Pescado", NivelPresencia.CONTIENE)
                     count += 1
         
-        print(f"   ✓ Procesadas sopas")
+        print(f"    Procesadas sopas")
         
         # ==================== REGLA 7: LOMO SALTADO ====================
-        print("\n📋 Regla 7: LOMO SALTADO → Soja (posible)")
+        print("\n Regla 7: LOMO SALTADO  Soja (posible)")
         for nombre_key, producto in self.productos_existentes.items():
             if 'LOMO' in nombre_key and 'SALTADO' in nombre_key:
-                self._add_alergeno_relation(producto, "Soja", NivelPresencia.PUEDE_CONTENER, "Salsa sillao")
+                await self._add_alergeno_relation(producto, "Soja", NivelPresencia.PUEDE_CONTENER, "Salsa sillao")
                 count += 1
         
-        print(f"   ✓ Procesados lomos saltados")
+        print(f"    Procesados lomos saltados")
         
         # ==================== REGLA 8: CONCHAS A LA PARMESANA ====================
-        print("\n📋 Regla 8: CONCHAS A LA PARMESANA → Moluscos + Lácteos")
+        print("\n Regla 8: CONCHAS A LA PARMESANA  Moluscos + Lcteos")
         for nombre_key, producto in self.productos_existentes.items():
             if 'PARMESANA' in nombre_key:
-                self._add_alergeno_relation(producto, "Moluscos", NivelPresencia.CONTIENE, "Conchas")
-                self._add_alergeno_relation(producto, "Lácteos", NivelPresencia.CONTIENE, "Queso parmesano")
+                await self._add_alergeno_relation(producto, "Moluscos", NivelPresencia.CONTIENE, "Conchas")
+                await self._add_alergeno_relation(producto, "Lcteos", NivelPresencia.CONTIENE, "Queso parmesano")
                 count += 2
         
-        print(f"   ✓ Procesadas conchas a la parmesana")
+        print(f"    Procesadas conchas a la parmesana")
         
         # ==================== REGLA 9: LECHE DE TIGRE ====================
-        print("\n📋 Regla 9: LECHE DE TIGRE → Pescado + Ají")
+        print("\n Regla 9: LECHE DE TIGRE  Pescado + Aj")
         for nombre_key, producto in self.productos_existentes.items():
             if 'LECHE DE TIGRE' in nombre_key or 'LECHE TIGRE' in nombre_key:
-                self._add_alergeno_relation(producto, "Pescado", NivelPresencia.CONTIENE)
-                self._add_alergeno_relation(producto, "Ají", NivelPresencia.CONTIENE)
+                await self._add_alergeno_relation(producto, "Pescado", NivelPresencia.CONTIENE)
+                await self._add_alergeno_relation(producto, "Aj", NivelPresencia.CONTIENE)
                 count += 2
         
-        print(f"   ✓ Procesadas leches de tigre")
+        print(f"    Procesadas leches de tigre")
         
         await self.session.commit()
         
         print(f"\n{'='*70}")
-        print(f"   ✅ TOTAL: {count} relaciones producto-alérgeno creadas")
+        print(f"    TOTAL: {count} relaciones producto-alrgeno creadas")
         print(f"{'='*70}\n")
     
-    def _add_alergeno_relation(
-        self, 
-        producto: ProductoModel, 
-        alergeno_nombre: str, 
+    async def _add_alergeno_relation(
+        self,
+        producto: ProductoModel,
+        alergeno_nombre: str,
         nivel: NivelPresencia,
         notas: str | None = None
     ):
         """
-        Helper para agregar relación producto-alérgeno.
-        
+        Helper para agregar relacin producto-alrgeno (con verificacin de duplicados).
+
         Args:
             producto: Modelo del producto
-            alergeno_nombre: Nombre del alérgeno (debe existir en self.alergenos)
+            alergeno_nombre: Nombre del alrgeno (debe existir en self.alergenos)
             nivel: Nivel de presencia (CONTIENE, PUEDE_CONTENER, TRAZAS)
             notas: Notas adicionales (opcional)
         """
         if alergeno_nombre in self.alergenos:
-            relacion = ProductoAlergenoModel(
-                id_producto=producto.id,
-                id_alergeno=self.alergenos[alergeno_nombre].id,
-                nivel_presencia=nivel,
-                notas=notas,
-                activo=True
+            # Verificar si ya existe esta relacin
+            result = await self.session.execute(
+                select(ProductoAlergenoModel).where(
+                    ProductoAlergenoModel.id_producto == producto.id,
+                    ProductoAlergenoModel.id_alergeno == self.alergenos[alergeno_nombre].id
+                )
             )
-            self.session.add(relacion)
+            existing = result.scalars().first()
+
+            if not existing:
+                # Solo crear si no existe
+                relacion = ProductoAlergenoModel(
+                    id_producto=producto.id,
+                    id_alergeno=self.alergenos[alergeno_nombre].id,
+                    nivel_presencia=nivel,
+                    notas=notas,
+                    activo=True
+                )
+                self.session.add(relacion)
     
     async def create_opciones_for_productos(self):
         """
-        🎛️  PASO 5: Crear opciones específicas para productos reales.
+          PASO 5: Crear opciones especficas para productos reales.
         """
         print("\n" + "="*70)
-        print("🎛️  CREANDO OPCIONES DE PRODUCTOS")
+        print("  CREANDO OPCIONES DE PRODUCTOS")
         print("="*70)
         
         count = 0
         
-        # ==================== OPCIONES DE NIVEL DE AJÍ ====================
-        print("\n🌶️  Opciones de Nivel de Ají (para ceviches, tiraditos, arroces)")
+        # ==================== OPCIONES DE NIVEL DE AJ ====================
+        print("\n  Opciones de Nivel de Aj (para ceviches, tiraditos, arroces)")
         opciones_aji = [
-            ("Sin ají", Decimal("0.00"), 1),
-            ("Ají suave", Decimal("0.00"), 2),
-            ("Ají normal", Decimal("0.00"), 3),
-            ("Ají picante", Decimal("1.00"), 4),
-            ("Ají extra picante", Decimal("2.00"), 5),
+            ("Sin aj", Decimal("0.00"), 1),
+            ("Aj suave", Decimal("0.00"), 2),
+            ("Aj normal", Decimal("0.00"), 3),
+            ("Aj picante", Decimal("1.00"), 4),
+            ("Aj extra picante", Decimal("2.00"), 5),
         ]
         
         productos_con_aji = 0
@@ -494,10 +551,10 @@ class DataEnricher:
                     count += 1
                 productos_con_aji += 1
         
-        print(f"   ✓ {productos_con_aji} productos con opciones de ají ({productos_con_aji * 5} opciones)")
+        print(f"    {productos_con_aji} productos con opciones de aj ({productos_con_aji * 5} opciones)")
         
-        # ==================== OPCIONES DE ACOMPAÑAMIENTO ====================
-        print("\n🍠 Opciones de Acompañamiento (ceviches, chicharrones)")
+        # ==================== OPCIONES DE ACOMPAAMIENTO ====================
+        print("\n Opciones de Acompaamiento (ceviches, chicharrones)")
         opciones_acomp = [
             ("Con camote", Decimal("3.00"), 1),
             ("Con choclo", Decimal("3.00"), 2),
@@ -513,10 +570,10 @@ class DataEnricher:
                     count += 1
                 productos_con_acomp += 1
         
-        print(f"   ✓ {productos_con_acomp} productos con acompañamientos ({productos_con_acomp * 4} opciones)")
+        print(f"    {productos_con_acomp} productos con acompaamientos ({productos_con_acomp * 4} opciones)")
         
         # ==================== OPCIONES DE TEMPERATURA ====================
-        print("\n🧊 Opciones de Temperatura (bebidas)")
+        print("\n Opciones de Temperatura (bebidas)")
         opciones_temp = [
             ("Natural", Decimal("0.00"), 1),
             ("Helada", Decimal("1.00"), 2),
@@ -526,16 +583,16 @@ class DataEnricher:
         productos_con_temp = 0
         for nombre_key, producto in self.productos_existentes.items():
             # Detectar bebidas (contienen ML, CHICHA, nombres de cervezas, etc.)
-            if any(word in nombre_key for word in ['ML', 'CHICHA', 'LIMONADA', 'PILSEN', 'INCA', 'CORONA', 'HEINEKEN', 'CRISTAL', 'CUSQUEÑA']):
+            if any(word in nombre_key for word in ['ML', 'CHICHA', 'LIMONADA', 'PILSEN', 'INCA', 'CORONA', 'HEINEKEN', 'CRISTAL', 'CUSQUEA']):
                 for nombre, precio, orden in opciones_temp:
                     self._add_opcion(producto, "temperatura", nombre, precio, orden)
                     count += 1
                 productos_con_temp += 1
         
-        print(f"   ✓ {productos_con_temp} bebidas con opciones de temperatura ({productos_con_temp * 3} opciones)")
+        print(f"    {productos_con_temp} bebidas con opciones de temperatura ({productos_con_temp * 3} opciones)")
         
-        # ==================== OPCIONES DE TAMAÑO ====================
-        print("\n📏 Opciones de Tamaño (platos principales)")
+        # ==================== OPCIONES DE TAMAO ====================
+        print("\n Opciones de Tamao (platos principales)")
         opciones_tamano = [
             ("Personal", Decimal("0.00"), 1),
             ("Para 2 personas", Decimal("15.00"), 2),
@@ -552,12 +609,12 @@ class DataEnricher:
                         count += 1
                     productos_con_tamano += 1
         
-        print(f"   ✓ {productos_con_tamano} platos con opciones de tamaño ({productos_con_tamano * 3} opciones)")
+        print(f"    {productos_con_tamano} platos con opciones de tamao ({productos_con_tamano * 3} opciones)")
         
         await self.session.commit()
         
         print(f"\n{'='*70}")
-        print(f"   ✅ TOTAL: {count} opciones de productos creadas")
+        print(f"    TOTAL: {count} opciones de productos creadas")
         print(f"{'='*70}\n")
     
     def _add_opcion(
@@ -569,14 +626,14 @@ class DataEnricher:
         orden: int
     ):
         """
-        Helper para agregar opción a producto.
+        Helper para agregar opcin a producto.
         
         Args:
             producto: Modelo del producto
-            tipo_codigo: Código del tipo de opción (debe existir en self.tipos_opciones)
-            nombre: Nombre de la opción
+            tipo_codigo: Cdigo del tipo de opcin (debe existir en self.tipos_opciones)
+            nombre: Nombre de la opcin
             precio: Precio adicional
-            orden: Orden de visualización
+            orden: Orden de visualizacin
         """
         if tipo_codigo in self.tipos_opciones:
             opcion = ProductoOpcionModel(
@@ -591,10 +648,10 @@ class DataEnricher:
     
     async def create_roles_if_not_exist(self):
         """
-        👥 PASO 6: Crear roles si no existen.
+         PASO 6: Crear roles si no existen.
         """
         print("\n" + "="*70)
-        print("👥 VERIFICANDO ROLES")
+        print(" VERIFICANDO ROLES")
         print("="*70)
         
         # Verificar si ya existen roles
@@ -602,11 +659,11 @@ class DataEnricher:
         count_roles = result.scalar()
         
         if count_roles and count_roles > 0:
-            print(f"   ℹ️  Ya existen {count_roles} roles en la BD. Skip creación.")
+            print(f"     Ya existen {count_roles} roles en la BD. Skip creacin.")
             print("="*70 + "\n")
             return
         
-        print("   Creando roles básicos...")
+        print("   Creando roles bsicos...")
         
         roles_data = [
             {
@@ -616,22 +673,22 @@ class DataEnricher:
             },
             {
                 "nombre": "Gerente",
-                "descripcion": "Gestión de restaurante y reportes",
+                "descripcion": "Gestin de restaurante y reportes",
                 "activo": True
             },
             {
                 "nombre": "Mesero",
-                "descripcion": "Atención de mesas y pedidos",
+                "descripcion": "Atencin de mesas y pedidos",
                 "activo": True
             },
             {
                 "nombre": "Cocina",
-                "descripcion": "Preparación de platos",
+                "descripcion": "Preparacin de platos",
                 "activo": True
             },
             {
                 "nombre": "Caja",
-                "descripcion": "Gestión de pagos",
+                "descripcion": "Gestin de pagos",
                 "activo": True
             }
         ]
@@ -639,23 +696,23 @@ class DataEnricher:
         for data in roles_data:
             rol = RolModel(**data)
             self.session.add(rol)
-            print(f"   ✓ {data['nombre']:<20} - {data['descripcion']}")
+            print(f"    {data['nombre']:<20} - {data['descripcion']}")
         
         await self.session.commit()
         
-        print(f"\n   → {len(roles_data)} roles creados exitosamente")
+        print(f"\n    {len(roles_data)} roles creados exitosamente")
         print("="*70 + "\n")
     
     async def update_images_from_seed(self):
         """
-        🖼️  PASO 7: Actualizar imagen_path de productos/categorías reales
-        usando las imágenes del seed cuando coincidan los nombres.
+          PASO 7: Actualizar imagen_path de productos/categoras reales
+        usando las imgenes del seed cuando coincidan los nombres.
         """
         print("\n" + "="*70)
-        print("🖼️  ACTUALIZANDO IMÁGENES DESDE SEED")
+        print("  ACTUALIZANDO IMGENES DESDE SEED")
         print("="*70)
         
-        # ==================== MAPEO DE IMÁGENES DE PRODUCTOS ====================
+        # ==================== MAPEO DE IMGENES DE PRODUCTOS ====================
         productos_seed_imagenes = {
             # CEVICHES (ya tienen imagen los siguientes)
             "CEVICHE CLASICO": "https://drive.google.com/file/d/14MotvG3-NJLZO5bUJjGqyMkOMMSzOZ7L/view?usp=sharing",
@@ -663,7 +720,7 @@ class DataEnricher:
             "CEVICHE DE CONCHAS NEGRAS": "https://drive.google.com/file/d/1qsrha511qKobIjyCV91PDmJxPcOz8tOd/view?usp=sharing",
             "CEVICHE DE PULPO": "https://drive.google.com/file/d/1dIm4pjLo3E2g_Zop6rvNXc8OErAmHuBd/view?usp=sharing",
             
-            # CEVICHES (faltan imágenes - agregar URLs después)
+            # CEVICHES (faltan imgenes - agregar URLs despus)
             "CEVICHE DE POTA": "",
             "CEVICHE NORTENO": "",
             "CEVICHE LIMENO": "https://drive.google.com/file/d/1ZaYA_c1ZGfl6tsPe80-fwSzpHR_LYzSZ/view?usp=sharing",
@@ -687,7 +744,7 @@ class DataEnricher:
             "TIRADITO NIKKEI": "https://drive.google.com/file/d/1QNR6LydeY06cg_71gw376Iep3dZddvsI/view?usp=sharing",
             "TIRADITO DE ATUN": "https://drive.google.com/file/d/1Nv1fxVvE4zoEzdnQ44hoAhfQnRKiI2ov/view?usp=sharing",
             
-            # TIRADITOS (faltan imágenes)
+            # TIRADITOS (faltan imgenes)
             "TIRADITO AJI AMARILLO": "",
             "TIRADITO BICOLOR": "",
             "TIRADITO CARRETILLERO": "",
@@ -698,7 +755,7 @@ class DataEnricher:
             "CHICHARRON DE CALAMAR": "https://drive.google.com/file/d/1i0KzBtnznRC71VMMT5ZUPnIbPky7vJYo/view?usp=sharing",
             "CHICHARRON MIXTO": "https://drive.google.com/file/d/1eoiQJqdR3SHjeBqcufrNGNnzZJKwgaUf/view?usp=sharing",
             
-            # CHICHARRONES (faltan imágenes)
+            # CHICHARRONES (faltan imgenes)
             "CHICHARRON DE PULPO": "https://drive.google.com/file/d/1qdabG7kbNr86IpRQALOw1mgQDxBRTnsC/view?usp=sharing",
             
             # ARROCES (ya tienen imagen los siguientes)
@@ -706,7 +763,7 @@ class DataEnricher:
             "ARROZ CHAUFA DE MARISCOS": "https://drive.google.com/file/d/1UUncdgoiAw-af4HLBKz7_S0AiJAqDaV_/view?usp=sharing",
             "TACU TACU CON MARISCOS": "https://drive.google.com/file/d/12zU5d9MgOFY1tRjurnOMZ-QR38I-RHo2/view?usp=sharing",
             
-            # ARROCES (faltan imágenes)
+            # ARROCES (faltan imgenes)
             "FILETE DE PESCADO A LA PLANCHA": "https://drive.google.com/file/d/1yRLGVNmJ5bYmf-v995gE3v5mf-1fjsqd/view?usp=sharing",
             "FILETE DE PESCADO FRITO": "https://drive.google.com/file/d/1yRLGVNmJ5bYmf-v995gE3v5mf-1fjsqd/view?usp=sharing",
             "CHAUFA DE PESCADO": "",
@@ -726,7 +783,7 @@ class DataEnricher:
             "CAUSA DE PULPO": "https://drive.google.com/file/d/1qdxy8MH-XXac8cWwRWeMm2_GHsESYp_g/view?usp=sharing",
             "CAUSA ESPECIAL": "https://drive.google.com/file/d/1busoPwLfMp0FgxAo9g1pc0kcPZazw1ln/view?usp=sharing",
             
-            # CAUSAS (faltan imágenes)
+            # CAUSAS (faltan imgenes)
             "CAUSA DE CANGREJO": "https://drive.google.com/file/d/1W4hdy1zz8WQ5-u3DXJlnw7p9on3Cbd5Q/view?usp=sharing",
             "CAUSA DE PULPO AL OLIVO": "https://drive.google.com/file/d/1rGDz0fOqxT9yhkouWdDthsInxauU4hu2/view?usp=sharing",
             "CAUSA ACEVICHADA LIMENA": "https://drive.google.com/file/d/1Sdvoadea5xZDLe8D9-eBwwvQqNNMsh99/view?usp=sharing",
@@ -740,7 +797,7 @@ class DataEnricher:
             "CAUSA DE LOMO FINO": "https://drive.google.com/file/d/107MTUjtrlpK5Wbwxo-c0k1nr-fABYrLF/view?usp=sharing",
             "CAUSA DE POLLO 30 PORC": "https://drive.google.com/file/d/1dGJGUCRprCtRqJCFnxL6XBHqCOXcb47-/view?usp=sharing",
             
-            # PIQUEOS (faltan imágenes)
+            # PIQUEOS (faltan imgenes)
             "TAMAL VERDE NORTENO": "https://drive.google.com/file/d/1NmPHg7MX2PQ2g8p_iFR4I7ggbASQ2ohy/view?usp=sharing",
             "WANTAN DE PESCADO": "https://drive.google.com/file/d/1Qhdcy2gadnTbbXwhMz-oDWg_dvgiqU09/view?usp=sharing",
             "CHOROS A LA CHALACA": "https://drive.google.com/file/d/1gvtcBrxAE1HRr_vjeq2-iXSaoe33f-_h/view?usp=sharing",
@@ -754,14 +811,14 @@ class DataEnricher:
             "TORTITAS DE CHOCLO": "https://drive.google.com/file/d/1YlRzG7Eh4yjuHcnYL53rXeI7njyjhsk6/view?usp=sharing",
             "MARISCOS A LA CHALACA": "https://drive.google.com/file/d/1elCSo_i9mMbl7FY9npufp2qoVrRNg2cY/view?usp=sharing",
             
-            # LECHE DE TIGRE (faltan imágenes)
+            # LECHE DE TIGRE (faltan imgenes)
             "LECHE DE TIGRE": "https://drive.google.com/file/d/1Ci_Ujn_DUZdYcT0yDF6Ms7O3aXn1pEUL/view?usp=sharing",
             "LECHE CARRETILLERA": "https://drive.google.com/file/d/1b55LxE19x947NLQty-FF6eGdMv-kZZ9M/view?usp=sharing",
             "LECHE DE PANTERA": "https://drive.google.com/file/d/1vxvWPvGLpek4IULJSPGVerSskJs38sI9/view?usp=sharing",
             "LECHE DE MARISCOS": "https://drive.google.com/file/d/1JmJCPjmPzwjl4M9_rk60u1FcOh_CLF0e/view?usp=sharing",
             "LECHE BARRA ARENA": "https://drive.google.com/file/d/1b55LxE19x947NLQty-FF6eGdMv-kZZ9M/view?usp=sharing",
             
-            # TACU TACU (faltan imágenes)
+            # TACU TACU (faltan imgenes)
             "TACU TACU DE PESCADO FRITO": "",
             "TACU TACU DE PESCADO A LA PLANCHA": "",
             "TACU TACU DE MARISCOS": "",
@@ -769,7 +826,7 @@ class DataEnricher:
             "TACU TACU DE LOMO FINO": "",
             "TACU TACU A LO MACHO": "",
             
-            # SOPAS (faltan imágenes)
+            # SOPAS (faltan imgenes)
             "CHILCANITO DE PESCADO": "",
             "CHUPE DE PESCADO": "",
             "SUDADO DE FILETE DE PESCADO": "",
@@ -779,18 +836,18 @@ class DataEnricher:
             "SUDADO DE CHITA ENTERA": "",
             "AGUADITO DE MARISCOS": "",
             
-            # DUO MARINO (faltan imágenes)
+            # DUO MARINO (faltan imgenes)
             "DUO CARRETILLERO": "https://drive.google.com/file/d/1nVCbCj6U7cjF-jQqYfY05CHDPSUJx7f1/view?usp=sharing",
             "DUO BARRA ARENA": "https://drive.google.com/file/d/1nVCbCj6U7cjF-jQqYfY05CHDPSUJx7f1/view?usp=sharing",
             
-            # TRIO MARINO (faltan imágenes)
+            # TRIO MARINO (faltan imgenes)
             "TRIO MARINO": "https://drive.google.com/file/d/1NH3M9iey30HGYW4y5iqx4QDEpoUBguGu/view?usp=sharing",
             
-            # PROMOCIONES (faltan imágenes)
+            # PROMOCIONES (faltan imgenes)
             "PROMOCION CEVICHE + CHICHARRON": "",
             "PROMOCION CEVICHE + ARROZ": "",
             
-            # RONDA MARINA (faltan imágenes)
+            # RONDA MARINA (faltan imgenes)
             "RONDA MARINA CLASICA": "",
             "RONDA MARINA PREMIUM": "",
             
@@ -798,7 +855,7 @@ class DataEnricher:
             "PISCO SOUR": "https://drive.google.com/file/d/1V5NGG5U4HCbPTEOZkC3UC8OZQlQLSrlQ/view?usp=sharing",
             "CHILCANO DE PISCO": "https://drive.google.com/file/d/1QlMnH9bRnnJGrZT6MU8Yj2ddOkl9knKK/view?usp=sharing",
             
-            # BEBIDAS CON ALCOHOL (faltan imágenes)
+            # BEBIDAS CON ALCOHOL (faltan imgenes)
             "CHILCANO DE MARACUYA": "",
             "ALGARROBINA": "",
             "MARACUYA SOUR": "",
@@ -810,7 +867,7 @@ class DataEnricher:
             "INCA KOLA": "https://drive.google.com/file/d/14KIxsU03UQhq80ijLqdEDJXB0HLgLqr7/view?usp=sharing",
             "AGUA MINERAL SAN LUIS": "https://drive.google.com/file/d/1yJ9gMthGnBnaV6kXLM7pENmiFT5K5u3Z/view?usp=sharing",
             
-            # BEBIDAS SIN ALCOHOL (faltan imágenes)
+            # BEBIDAS SIN ALCOHOL (faltan imgenes)
             "LIMONADA CLASICA": "https://drive.google.com/file/d/1fbXhbre-TzuqinCYw5637T375-a8f1Go/view?usp=sharing",
             "LIMONADA DE HIERBA BUENA": "https://drive.google.com/file/d/1fbXhbre-TzuqinCYw5637T375-a8f1Go/view?usp=sharing",
             "CHICHA MORADA NATURAL": "",
@@ -826,45 +883,45 @@ class DataEnricher:
             "PICARONES": "https://drive.google.com/file/d/1SnEdVTnPECzLKSRwnEHuErbMPDAHFi5h/view?usp=sharing",
             "CREMA VOLTEADA": "https://drive.google.com/file/d/1WxJ46tSOhXDVaVi92_4NRx5lk5NHc80e/view?usp=sharing",
             
-            # ADICIONALES (faltan imágenes)
+            # ADICIONALES (faltan imgenes)
             "CAMOTE": "",
             "CHOCLO": "",
             "YUCA": "",
             "CANCHA": "",
             "YUQUITAS FRITAS": "",
             
-            # PORCIONES (faltan imágenes)
+            # PORCIONES (faltan imgenes)
             "PORCION DE ARROZ": "",
             "PORCION DE PAPAS FRITAS": "",
             "PORCION DE ENSALADA": "",
             
-            # BAR ARENA (faltan imágenes)
+            # BAR ARENA (faltan imgenes)
             "COCTEL ESPECIAL": "",
             "SANGRIA": "",
             
-            # PESCADOS ENTEROS (faltan imágenes)
+            # PESCADOS ENTEROS (faltan imgenes)
             "CHITA FRITA": "",
             "CORVINA FRITA": "",
             "LENGUADO FRITO": "",
             
-            # CRIOLLO (faltan imágenes)
+            # CRIOLLO (faltan imgenes)
             "LOMO SALTADO": "",
             "AJI DE GALLINA": "",
             "SECO DE CABRITO": "",
             
-            # CHILCANOS PRECIO NORMAL (faltan imágenes)
+            # CHILCANOS PRECIO NORMAL (faltan imgenes)
             "CHILCANO CLASICO": "",
             "CHILCANO DE MARACUYA NORMAL": "",
             
-            # MAKIS Y ALITAS (faltan imágenes)
+            # MAKIS Y ALITAS (faltan imgenes)
             "MAKI DE LANGOSTINOS": "https://drive.google.com/file/d/1NxiGRZw3di91BCuxzEJv6xAmhj4r5H6A/view?usp=sharing",
             "MAKI ACEVICHADO": "https://drive.google.com/file/d/1NxiGRZw3di91BCuxzEJv6xAmhj4r5H6A/view?usp=sharing",
             "ALITAS BROASTER": "https://drive.google.com/file/d/15JROipoRmMIDj-YKO8Sc5UcZmi8kZKyU/view?usp=sharing",
         }
         
-        # ==================== MAPEO DE IMÁGENES DE CATEGORÍAS ====================
+        # ==================== MAPEO DE IMGENES DE CATEGORAS ====================
         categorias_seed_imagenes = {
-            # Categorías con imagen
+            # Categoras con imagen
             "CEVICHES": "https://drive.google.com/file/d/1ZaYA_c1ZGfl6tsPe80-fwSzpHR_LYzSZ/view?usp=sharing",
             "TIRADITOS": "https://drive.google.com/file/d/10xFfoYsezQRTC3EvLKm28BJGnImhAJjO/view?usp=sharing",
             "CHICHARRONES": "https://drive.google.com/file/d/1qdabG7kbNr86IpRQALOw1mgQDxBRTnsC/view?usp=sharing",
@@ -873,7 +930,7 @@ class DataEnricher:
             "BEBIDAS": "https://drive.google.com/file/d/1AhNWmlJwuWb0XzXV8Zjs0xD2ZPHT6jzm/view?usp=sharing",
             "POSTRES": "https://drive.google.com/file/d/1gxaT1PCMx1lQ-Hvcug9ujWr3RnVK3WPd/view?usp=sharing",
             
-            # Categorías sin imagen (agregar URLs después)
+            # Categoras sin imagen (agregar URLs despus)
             "PIQUEOS": "https://drive.google.com/file/d/1p-sCs6-LuOXhmGNDNcjJ7xMn84kk0PWA/view?usp=sharing",
             "LECHE DE TIGRE": "https://drive.google.com/file/d/1Ci_Ujn_DUZdYcT0yDF6Ms7O3aXn1pEUL/view?usp=sharing",
             "ARROZ": "https://drive.google.com/file/d/1spMKGOWCTLbjI1jSXg95MceV5xb5M7cT/view?usp=sharing",
@@ -897,8 +954,8 @@ class DataEnricher:
             "MAKIS Y ALITAS": "https://drive.google.com/file/d/1MEkKCJuwHUoXyIyHWsidNAy2RzoTxxs6/view?usp=sharing",
         }
         
-        # ==================== ACTUALIZAR IMÁGENES DE PRODUCTOS ====================
-        print("\n📦 Actualizando imágenes de productos...")
+        # ==================== ACTUALIZAR IMGENES DE PRODUCTOS ====================
+        print("\n Actualizando imgenes de productos...")
         productos_actualizados = 0
         productos_con_imagen_previa = 0
         productos_no_encontrados = []
@@ -907,17 +964,17 @@ class DataEnricher:
             if nombre_key in productos_seed_imagenes:
                 imagen_url = productos_seed_imagenes[nombre_key]
                 
-                # ⚠️ SOLO actualizar si la URL NO está vacía y el producto NO tiene imagen
-                if imagen_url and imagen_url.strip():  # Filtrar URLs vacías
+                #  SOLO actualizar si la URL NO est vaca y el producto NO tiene imagen
+                if imagen_url and imagen_url.strip():  # Filtrar URLs vacas
                     if not producto.imagen_path:
                         producto.imagen_path = imagen_url
                         self.session.add(producto)
                         productos_actualizados += 1
-                        print(f"   ✓ {producto.nombre:<45} → Imagen agregada")
+                        print(f"    {producto.nombre:<45}  Imagen agregada")
                     else:
                         productos_con_imagen_previa += 1
-                        print(f"   ⊘ {producto.nombre:<45} → Ya tiene imagen, skip")
-                # Si la URL está vacía, lo tratamos como "no encontrado"
+                        print(f"    {producto.nombre:<45}  Ya tiene imagen, skip")
+                # Si la URL est vaca, lo tratamos como "no encontrado"
                 elif not producto.imagen_path:
                     productos_no_encontrados.append(producto.nombre)
             else:
@@ -927,19 +984,19 @@ class DataEnricher:
         
         await self.session.commit()
         
-        print(f"\n   ✅ {productos_actualizados} productos actualizados con imágenes")
+        print(f"\n    {productos_actualizados} productos actualizados con imgenes")
         if productos_con_imagen_previa > 0:
-            print(f"   ⊘ {productos_con_imagen_previa} productos ya tenían imagen (sin cambios)")
+            print(f"    {productos_con_imagen_previa} productos ya tenan imagen (sin cambios)")
         
         if productos_no_encontrados:
-            print(f"\n   ⚠️  {len(productos_no_encontrados)} productos SIN imagen en seed:")
+            print(f"\n     {len(productos_no_encontrados)} productos SIN imagen en seed:")
             for i, nombre in enumerate(productos_no_encontrados[:10], 1):  # Mostrar solo primeros 10
                 print(f"      {i}. {nombre}")
             if len(productos_no_encontrados) > 10:
-                print(f"      ... y {len(productos_no_encontrados) - 10} más")
+                print(f"      ... y {len(productos_no_encontrados) - 10} ms")
         
-        # ==================== ACTUALIZAR IMÁGENES DE CATEGORÍAS ====================
-        print("\n📁 Actualizando imágenes de categorías...")
+        # ==================== ACTUALIZAR IMGENES DE CATEGORAS ====================
+        print("\n Actualizando imgenes de categoras...")
         categorias_actualizadas = 0
         categorias_con_imagen_previa = 0
         
@@ -947,45 +1004,49 @@ class DataEnricher:
             if nombre_key in categorias_seed_imagenes:
                 imagen_url = categorias_seed_imagenes[nombre_key]
                 
-                # ⚠️ SOLO actualizar si la URL NO está vacía y la categoría NO tiene imagen
-                if imagen_url and imagen_url.strip():  # Filtrar URLs vacías
+                #  SOLO actualizar si la URL NO est vaca y la categora NO tiene imagen
+                if imagen_url and imagen_url.strip():  # Filtrar URLs vacas
                     if not categoria.imagen_path:
                         categoria.imagen_path = imagen_url
                         self.session.add(categoria)
                         categorias_actualizadas += 1
-                        print(f"   ✓ {categoria.nombre:<30} → Imagen agregada")
+                        print(f"    {categoria.nombre:<30}  Imagen agregada")
                     else:
                         categorias_con_imagen_previa += 1
-                        print(f"   ⊘ {categoria.nombre:<30} → Ya tiene imagen, skip")
+                        print(f"    {categoria.nombre:<30}  Ya tiene imagen, skip")
         
         await self.session.commit()
         
-        print(f"\n   ✅ {categorias_actualizadas} categorías actualizadas con imágenes")
+        print(f"\n    {categorias_actualizadas} categoras actualizadas con imgenes")
         if categorias_con_imagen_previa > 0:
-            print(f"   ⊘ {categorias_con_imagen_previa} categorías ya tenían imagen (sin cambios)")
+            print(f"    {categorias_con_imagen_previa} categoras ya tenan imagen (sin cambios)")
         print("="*70 + "\n")
     
     async def enrich_all(self):
         """
-        🚀 Ejecuta todos los pasos de enriquecimiento.
+         Ejecuta todos los pasos de enriquecimiento.
         """
         print("\n" + "="*70)
-        print("🚀 INICIANDO ENRIQUECIMIENTO DE DATOS EXISTENTES")
+        print(" INICIANDO ENRIQUECIMIENTO DE DATOS EXISTENTES")
         print("="*70)
-        print("   ⚠️  NO se crearán productos ni categorías nuevas")
-        print("   ✅ Solo se agregará información complementaria")
+        print("     NO se crearn productos ni categoras nuevas")
+        print("    Solo se agregar informacin complementaria")
         print("="*70)
-        
+
+        # PASO 0: Crear Local (las Zonas y Mesas se crean via POST /sync/mesas)
+        await self.create_local()
+        await self.session.commit()
+
         # Cargar datos existentes (solo consulta, no crea)
         await self.load_existing_data()
-        
-        # PASO 2: Crear alérgenos
+
+        # PASO 2: Crear alrgenos
         await self.create_alergenos()
-        
+
         # PASO 3: Crear tipos de opciones
         await self.create_tipos_opciones()
         
-        # PASO 4: Asociar alérgenos a productos
+        # PASO 4: Asociar alrgenos a productos
         await self.associate_alergenos_to_productos()
         
         # PASO 5: Crear opciones para productos
@@ -994,29 +1055,29 @@ class DataEnricher:
         # PASO 6: Crear roles si no existen
         await self.create_roles_if_not_exist()
         
-        # PASO 7: Actualizar imágenes desde seed (NUEVO)
+        # PASO 7: Actualizar imgenes desde seed (NUEVO)
         await self.update_images_from_seed()
         
         print("\n" + "="*70)
-        print("✅ ENRIQUECIMIENTO COMPLETADO EXITOSAMENTE")
+        print(" ENRIQUECIMIENTO COMPLETADO EXITOSAMENTE")
         print("="*70)
-        print(f"   📦 Productos procesados: {len(self.productos_existentes)}")
-        print(f"   ⚠️  Alérgenos creados: {len(self.alergenos)}")
-        print(f"   ⚙️  Tipos de opciones creados: {len(self.tipos_opciones)}")
+        print(f"    Productos procesados: {len(self.productos_existentes)}")
+        print(f"     Alrgenos creados: {len(self.alergenos)}")
+        print(f"     Tipos de opciones creados: {len(self.tipos_opciones)}")
         print("="*70 + "\n")
 
 
 async def main():
-    """Función principal."""
+    """Funcin principal."""
     database_url = get_database_url()
     
     print("\n" + "="*70)
-    print("🔗 CONFIGURACIÓN DE BASE DE DATOS")
+    print(" CONFIGURACIN DE BASE DE DATOS")
     print("="*70)
     print(f"   URL: {database_url}")
     print("="*70)
     
-    # Crear engine y sesión
+    # Crear engine y sesin
     engine = create_async_engine(database_url, echo=False)
     async_session_maker = async_sessionmaker(
         engine, 

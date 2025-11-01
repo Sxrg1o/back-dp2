@@ -2,6 +2,7 @@
 Servicio para la gestión de relaciones producto-alérgeno en el sistema.
 """
 
+from typing import List
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.exc import IntegrityError
 
@@ -197,6 +198,42 @@ class ProductoAlergenoService:
 
         # Retornar esquema de lista
         return ProductoAlergenoList(items=producto_alergeno_summaries, total=total)
+
+    async def get_alergenos_by_producto(self, id_producto: str) -> List:
+        """
+        Obtiene todos los alérgenos asociados a un producto específico.
+
+        Parameters
+        ----------
+        id_producto : str
+            Identificador único del producto (ULID).
+
+        Returns
+        -------
+        List[AlergenoResponse]
+            Lista de alérgenos asociados al producto.
+
+        Raises
+        ------
+        ProductoAlergenoValidationError
+            Si los parámetros de entrada no son válidos.
+        """
+        if not id_producto:
+            raise ProductoAlergenoValidationError(
+                "El ID del producto es requerido"
+            )
+
+        # Obtener alérgenos desde el repositorio
+        alergenos = await self.repository.get_alergenos_by_producto(id_producto)
+
+        # Convertir modelos a esquemas de respuesta
+        # Importación tardía para evitar referencias circulares
+        try:
+            from src.api.schemas.alergeno_schema import AlergenoResponse
+            return [AlergenoResponse.model_validate(alergeno) for alergeno in alergenos]
+        except ImportError as e:
+            # Si hay problema con el schema, devolver diccionarios simples
+            return [alergeno.to_dict() for alergeno in alergenos]
 
     async def update_producto_alergeno(
         self,

@@ -7,7 +7,6 @@ representar las mesas en la API.
 
 
 from typing import Optional, ClassVar, List
-from uuid import UUID
 from datetime import datetime
 from pydantic import BaseModel, Field, ConfigDict
 
@@ -39,9 +38,9 @@ class MesaBase(BaseModel):
         default=None,
         description="Capacidad de la mesa."
     )
-    zona: Optional[str] = Field(
+    id_zona: Optional[str] = Field(
         default=None,
-        description="Zona donde se encuentra la mesa."
+        description="ID de la zona donde se encuentra la mesa."
     )
     nota: Optional[str] = Field(
         default=None,
@@ -80,9 +79,9 @@ class MesaUpdate(BaseModel):
         default=None,
         description="Nueva capacidad de la mesa."
     )
-    zona: Optional[str] = Field(
+    id_zona: Optional[str] = Field(
         default=None,
-        description="Nueva zona donde se encuentra la mesa."
+        description="Nuevo ID de la zona donde se encuentra la mesa."
     )
     nota: Optional[str] = Field(
         default=None,
@@ -124,7 +123,7 @@ class MesaSummary(BaseModel):
     id: str = Field(description="Identificador único de la mesa (ULID).")
     numero: str = Field(description="Número de la mesa.")
     capacidad: Optional[int] = Field(description="Capacidad de la mesa.")
-    zona: Optional[str] = Field(description="Zona donde se encuentra la mesa.")
+    id_zona: Optional[str] = Field(description="ID de la zona donde se encuentra la mesa.")
     nota: Optional[str] = Field(description="Notas adicionales sobre la mesa.")
     estado: EstadoMesa = Field(description="Estado actual de la mesa.")
 

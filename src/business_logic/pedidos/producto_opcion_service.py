@@ -2,7 +2,6 @@
 Servicio para la gestión de opciones de productos en el sistema.
 """
 
-from uuid import UUID
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.exc import IntegrityError
 
@@ -86,13 +85,13 @@ class ProductoOpcionService:
                 f"Ya existe una opción de producto con el nombre '{producto_opcion_data.nombre}'"
             )
 
-    async def get_producto_opcion_by_id(self, producto_opcion_id: UUID) -> ProductoOpcionResponse:
+    async def get_producto_opcion_by_id(self, producto_opcion_id: str) -> ProductoOpcionResponse:
         """
         Obtiene una opción de producto por su ID.
 
         Parameters
         ----------
-        producto_opcion_id : UUID
+        producto_opcion_id : str
             Identificador único de la opción de producto a buscar.
 
         Returns
@@ -115,13 +114,13 @@ class ProductoOpcionService:
         # Convertir y retornar como esquema de respuesta
         return ProductoOpcionResponse.model_validate(producto_opcion)
 
-    async def delete_producto_opcion(self, producto_opcion_id: UUID) -> bool:
+    async def delete_producto_opcion(self, producto_opcion_id: str) -> bool:
         """
         Elimina una opción de producto por su ID.
         
         Parameters
         ----------
-        producto_opcion_id : UUID
+        producto_opcion_id : str
             Identificador único de la opción de producto a eliminar.
 
         Returns
@@ -176,13 +175,13 @@ class ProductoOpcionService:
         # Retornar esquema de lista
         return ProductoOpcionList(items=producto_opcion_summaries, total=total)
 
-    async def update_producto_opcion(self, producto_opcion_id: UUID, producto_opcion_data: ProductoOpcionUpdate) -> ProductoOpcionResponse:
+    async def update_producto_opcion(self, producto_opcion_id: str, producto_opcion_data: ProductoOpcionUpdate) -> ProductoOpcionResponse:
         """
         Actualiza una opción de producto existente.
 
         Parameters
         ----------
-        producto_opcion_id : UUID
+        producto_opcion_id : str
             Identificador único de la opción de producto a actualizar.
         producto_opcion_data : ProductoOpcionUpdate
             Datos para actualizar la opción de producto.

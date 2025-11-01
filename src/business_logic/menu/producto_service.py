@@ -17,13 +17,15 @@ from src.api.schemas.producto_schema import (
     ProductoCard,
     ProductoCardList,
     ProductoConOpcionesResponse,
+    TipoOpcionConOpcionesSchema,
+    ProductoOpcionDetalleSchema
 )
 from src.business_logic.exceptions.producto_exceptions import (
     ProductoValidationError,
     ProductoNotFoundError,
     ProductoConflictError,
 )
-
+from src.core.utils.text_utils import normalize_product_name, normalize_category_name
 
 class ProductoService:
     """Servicio para la gestión de productos en el sistema.
@@ -81,6 +83,9 @@ class ProductoService:
             # Persistir en la base de datos
             created_producto = await self.repository.create(producto)
 
+            # Normalizar el nombre antes de retornar
+            created_producto.nombre = normalize_product_name(created_producto.nombre)
+            
             # Convertir y retornar como esquema de respuesta
             return ProductoResponse.model_validate(created_producto)
         except IntegrityError:
@@ -108,57 +113,43 @@ class ProductoService:
         ProductoNotFoundError
             Si no se encuentra un producto con el ID proporcionado.
         """
-        # Buscar el producto por su ID
+        # Buscar el producto por su ID (ahora incluye alérgenos)
         producto = await self.repository.get_by_id(producto_id)
 
         # Verificar si existe
         if not producto:
             raise ProductoNotFoundError(f"No se encontró el producto con ID {producto_id}")
 
-        # Convertir y retornar como esquema de respuesta
-        return ProductoResponse.model_validate(producto)
+        # Convertir a dict y agregar alérgenos
+        producto_dict = producto.to_dict()
+        producto_dict['alergenos'] = getattr(producto, '_alergenos', [])
 
-    async def get_producto_con_opciones(self, producto_id: str) -> "ProductoConOpcionesResponse":
+        # Convertir y retornar como esquema de respuesta
+        return ProductoResponse.model_validate(producto_dict)
+
+    async def get_producto_con_opciones(self, producto_id: str) -> ProductoConOpcionesResponse:
         """
         Obtiene un producto por su ID con todas sus opciones agrupadas por tipo.
-        
-        Modified: Now returns description, price, and options grouped by type.
-        
-        Parameters
-        ----------
-        producto_id : str
-            Identificador único del producto a buscar (ULID).
-            
         Returns
         -------
         ProductoConOpcionesResponse
             Esquema de respuesta con el producto y opciones agrupadas por tipo.
-            
-        Raises
-        ------
-        ProductoNotFoundError
-            Si no se encuentra un producto con el ID proporcionado.
         """
-        from src.api.schemas.producto_schema import ProductoConOpcionesResponse
-        
-        # Buscar el producto con opciones (eager loading includes tipo_opcion)
+
+
+        # Buscar el producto con opciones
         producto = await self.repository.get_by_id_with_opciones(producto_id)
-        
-        # Verificar si existe
         if not producto:
             raise ProductoNotFoundError(
                 f"No se encontró el producto con el ID proporcionado"
             )
-        
+
         # Agrupar opciones por tipo
         tipos_dict: dict[str, dict] = {}
-        
         for opcion in producto.opciones:
-            tipo_id = str(opcion.id_tipo_opcion)  # Convert to str for dict key
-            
-            # Crear entrada del tipo si no existe
+            tipo_id = str(opcion.id_tipo_opcion)
             if tipo_id not in tipos_dict:
-                tipo_opcion = opcion.tipo_opcion  # Viene por eager loading
+                tipo_opcion = opcion.tipo_opcion
                 tipos_dict[tipo_id] = {
                     "id_tipo_opcion": tipo_id,
                     "nombre_tipo": tipo_opcion.nombre,
@@ -168,8 +159,6 @@ class ProductoService:
                     "orden_tipo": tipo_opcion.orden if tipo_opcion.orden else 0,
                     "opciones": []
                 }
-            
-            # Agregar opción al tipo correspondiente
             tipos_dict[tipo_id]["opciones"].append({
                 "id": opcion.id,
                 "nombre": opcion.nombre,
@@ -179,24 +168,12 @@ class ProductoService:
                 "fecha_creacion": opcion.fecha_creacion,
                 "fecha_modificacion": opcion.fecha_modificacion
             })
-        
-        # Convertir dict a lista y ordenar
+
         tipos_list = list(tipos_dict.values())
-        
-        # Ordenar tipos por orden_tipo
         tipos_list.sort(key=lambda x: x["orden_tipo"])
-        
-        # Ordenar opciones dentro de cada tipo por orden
         for tipo in tipos_list:
             tipo["opciones"].sort(key=lambda x: x["orden"])
-        
-        # Construir respuesta con todos los campos
-        from src.api.schemas.producto_schema import (
-            TipoOpcionConOpcionesSchema,
-            ProductoOpcionDetalleSchema
-        )
-        
-        # Convertir tipos_list a schemas validados
+
         tipos_opciones_schemas = [
             TipoOpcionConOpcionesSchema(
                 id_tipo_opcion=tipo["id_tipo_opcion"],
@@ -212,21 +189,19 @@ class ProductoService:
             )
             for tipo in tipos_list
         ]
-        
+
         return ProductoConOpcionesResponse(
-            # Info del producto (includes descripcion and precio_base)
             id=producto.id,
-            nombre=producto.nombre,
+            nombre=normalize_product_name(producto.nombre),
             descripcion=producto.descripcion,
             precio_base=producto.precio_base,
             imagen_path=producto.imagen_path,
             imagen_alt_text=producto.imagen_alt_text,
-            id_categoria=str(producto.id_categoria),  # Convert UUID to str
+            id_categoria=str(producto.id_categoria),
             disponible=producto.disponible,
             destacado=producto.destacado,
             fecha_creacion=producto.fecha_creacion,
             fecha_modificacion=producto.fecha_modificacion,
-            # Opciones agrupadas por tipo
             tipos_opciones=tipos_opciones_schemas
         )
 
@@ -290,7 +265,9 @@ class ProductoService:
         # Obtener productos desde el repositorio
         productos, total = await self.repository.get_all(skip, limit, id_categoria)
 
-        # Convertir modelos a esquemas de resumen
+        # Normalizar nombres y convertir modelos a esquemas de resumen
+        for producto in productos:
+            producto.nombre = normalize_product_name(producto.nombre)
         producto_summaries = [ProductoSummary.model_validate(producto) for producto in productos]
 
         # Retornar esquema de lista
@@ -335,6 +312,9 @@ class ProductoService:
             if not updated_producto:
                 raise ProductoNotFoundError(f"No se encontró el producto con ID {producto_id}")
 
+            # Normalizar el nombre antes de retornar
+            updated_producto.nombre = normalize_product_name(updated_producto.nombre)
+            
             # Convertir y retornar como esquema de respuesta
             return ProductoResponse.model_validate(updated_producto)
         except IntegrityError:
@@ -387,7 +367,9 @@ class ProductoService:
             # Persistir en la base de datos usando batch insert
             created_productos = await self.repository.batch_insert(producto_models)
 
-            # Convertir y retornar como esquemas de respuesta
+            # Normalizar nombres y convertir a esquemas de respuesta
+            for producto in created_productos:
+                producto.nombre = normalize_product_name(producto.nombre)
             return [
                 ProductoResponse.model_validate(producto)
                 for producto in created_productos
@@ -449,7 +431,9 @@ class ProductoService:
                         f"No se encontraron los productos con IDs: {missing_ids}"
                     )
 
-            # Convertir y retornar como esquemas de respuesta
+            # Normalizar nombres y convertir a esquemas de respuesta
+            for producto in updated_productos:
+                producto.nombre = normalize_product_name(producto.nombre)
             return [
                 ProductoResponse.model_validate(producto)
                 for producto in updated_productos
@@ -471,7 +455,7 @@ class ProductoService:
 
         Parameters
         ----------
-        categoria_id : UUID | None, optional
+        categoria_id : str | None, optional
             ID de la categoría para filtrar productos. Si es None, retorna todos los productos.
         skip : int, optional
             Número de registros a omitir (offset), por defecto 0.
@@ -503,15 +487,15 @@ class ProductoService:
         # Necesitamos incluir la información de la categoría para cada producto
         producto_cards = []
         for producto in productos:
-            # Construir el objeto ProductoCard con información de categoría
+            # Construir el objeto ProductoCard con información de categoría (nombres normalizados)
             card_data = {
                 "id": producto.id,
-                "nombre": producto.nombre,
+                "nombre": normalize_product_name(producto.nombre),
                 "imagen_path": producto.imagen_path,
                 "precio_base": producto.precio_base,
                 "categoria": {
                     "id": producto.categoria.id,
-                    "nombre": producto.categoria.nombre,
+                    "nombre": normalize_category_name(producto.categoria.nombre),
                     "imagen_path": producto.categoria.imagen_path,
                 }
             }

@@ -2,7 +2,6 @@
 Servicio para la gestión de mesas en el sistema.
 """
 
-from uuid import UUID
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.exc import IntegrityError
 
@@ -41,7 +40,7 @@ class MesaService:
             MesaModel(
                 numero=mesa.numero,
                 capacidad=mesa.capacidad,
-                zona=mesa.zona,
+                id_zona=mesa.id_zona,
                 estado=mesa.estado
             )
             for mesa in mesas_data
@@ -49,7 +48,7 @@ class MesaService:
         created_mesas = await self.repository.batch_insert(mesas_models)
         return [MesaResponse.model_validate(mesa) for mesa in created_mesas]
 
-    async def batch_delete_mesas(self, mesa_ids: list[UUID]) -> int:
+    async def batch_delete_mesas(self, mesa_ids: list[str]) -> int:
         """
         Elimina múltiples mesas por sus IDs en una sola operación batch.
 
@@ -74,7 +73,8 @@ class MesaService:
     ----------
     repository : MesaRepository
         Repositorio para acceso a datos de mesas.
-    """
+    """    
+
 
     def __init__(self, session: AsyncSession):
         """
@@ -111,7 +111,7 @@ class MesaService:
             mesa = MesaModel(
                 numero=mesa_data.numero,
                 capacidad=mesa_data.capacidad,
-                zona=mesa_data.zona,
+                id_zona=mesa_data.id_zona,
                 estado=mesa_data.estado
             )
 
@@ -126,7 +126,7 @@ class MesaService:
                 f"Ya existe una mesa con el número '{mesa_data.numero}'"
             )
 
-    async def get_mesa_by_id(self, mesa_id: UUID) -> MesaResponse:
+    async def get_mesa_by_id(self, mesa_id: str) -> MesaResponse:
         """
         Obtiene una mesa por su ID.
 
@@ -155,7 +155,7 @@ class MesaService:
         # Convertir y retornar como esquema de respuesta
         return MesaResponse.model_validate(mesa)
 
-    async def delete_mesa(self, mesa_id: UUID) -> bool:
+    async def delete_mesa(self, mesa_id: str) -> bool:
         """
         Elimina una mesa por su ID.
 
@@ -216,7 +216,7 @@ class MesaService:
         # Retornar esquema de lista
         return MesaList(items=mesa_summaries, total=total)
 
-    async def update_mesa(self, mesa_id: UUID, mesa_data: MesaUpdate) -> MesaResponse:
+    async def update_mesa(self, mesa_id: str, mesa_data: MesaUpdate) -> MesaResponse:
         """
         Actualiza una mesa existente.
 

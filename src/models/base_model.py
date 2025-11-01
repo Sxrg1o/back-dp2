@@ -28,17 +28,16 @@ class BaseModel(DeclarativeBase):
     ----------
     id : str
         Identificador único ULID (Universally Unique Lexicographically Sortable Identifier).
-        26 caracteres, ordenado cronológicamente, compatible con UUID v4 existente.
+        26 caracteres, ordenado cronológicamente.
     """
 
     # Metadata configurations can be added here
     __abstract__ = True
 
     # Definición de clave primaria usando ULID
-    # ULID = timestamp-ordered, 26 chars, 160-180% más rápido que UUID v4
-    # Compatible con data antigua UUID v4 (36 chars) - convivencia sin migración
+    # ULID = timestamp-ordered, 26 chars
     id: Mapped[str] = mapped_column(
-        String(36),  # 36 chars para soportar UUID v4 existente + ULID (26 chars)
+        String(26),  # 26 chars para ULID
         primary_key=True,
         default=lambda: str(ULID())
     )

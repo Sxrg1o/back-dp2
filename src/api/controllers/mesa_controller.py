@@ -2,7 +2,6 @@ from typing import List
 
 
 from typing import List
-from uuid import UUID
 from fastapi import APIRouter, Depends, HTTPException, status, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 from src.core.database import get_database_session
@@ -53,7 +52,7 @@ async def batch_create_mesas(
     description="Elimina varias mesas en una sola operación batch.",
 )
 async def batch_delete_mesas(
-    mesa_ids: List[UUID],
+    mesa_ids: List[str],
     session: AsyncSession = Depends(get_database_session),
 ) -> dict:
     """
@@ -72,7 +71,6 @@ async def batch_delete_mesas(
 Endpoints para gestión de mesas.
 """
 
-from uuid import UUID
 from fastapi import APIRouter, Depends, HTTPException, status, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -138,7 +136,7 @@ async def create_mesa(
     description="Obtiene los detalles de una mesa específica por su ID.",
 )
 async def get_mesa(
-    mesa_id: UUID, session: AsyncSession = Depends(get_database_session)
+    mesa_id: str, session: AsyncSession = Depends(get_database_session)
 ) -> MesaResponse:
     """
     Obtiene una mesa específica por su ID.
@@ -217,7 +215,7 @@ async def list_mesas(
     description="Actualiza los datos de una mesa existente.",
 )
 async def update_mesa(
-    mesa_id: UUID,
+    mesa_id: str,
     mesa_data: MesaUpdate,
     session: AsyncSession = Depends(get_database_session),
 ) -> MesaResponse:
@@ -259,7 +257,7 @@ async def update_mesa(
     description="Elimina una mesa existente del sistema.",
 )
 async def delete_mesa(
-    mesa_id: UUID, session: AsyncSession = Depends(get_database_session)
+    mesa_id: str, session: AsyncSession = Depends(get_database_session)
 ) -> None:
     """
     Elimina una mesa existente.

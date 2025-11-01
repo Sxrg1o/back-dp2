@@ -132,7 +132,11 @@ def register_routers(app: FastAPI) -> None:
     """
     # Estructura de controladores a cargar: (módulo, tag)
     controllers = [
+        ("src.api.controllers.auth_controller", "Autenticación"),
         ("src.api.controllers.rol_controller", "Roles"),
+        ("src.api.controllers.local_controller", "Locales"),
+        ("src.api.controllers.zona_controller", "Zonas"),
+        ("src.api.controllers.sesion_controller", "Sesiones"),
         ("src.api.controllers.categoria_controller", "Categorías"),
         ("src.api.controllers.alergeno_controller", "Alérgenos"),
         ("src.api.controllers.producto_controller", "Productos"),
@@ -141,7 +145,11 @@ def register_routers(app: FastAPI) -> None:
         ("src.api.controllers.sync_controller", "Sincronización"),
         # ("src.api.controllers.usuarios_controller", "Usuarios"),
         ("src.api.controllers.mesa_controller", "Mesas"),
-        # ("src.api.controllers.pedidos_controller", "Pedidos"),
+        ("src.api.controllers.pedido_controller", "Pedidos"),
+        ("src.api.controllers.pedido_producto_controller", "Pedidos Productos"),
+        ("src.api.controllers.pedido_opcion_controller", "Pedido Opciones"),
+        # ("src.api.controllers.division_cuenta_controller", "Divisiones de Cuenta"),
+        # ("src.api.controllers.division_cuenta_detalle_controller", "Detalles de División"),
         # ("src.api.controllers.pagos_controller", "Pagos"),
     ]
 
@@ -265,3 +273,4 @@ if __name__ == "__main__":
         reload=settings.debug,
         log_level=settings.log_level.lower(),
     )
+

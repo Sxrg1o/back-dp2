@@ -10,7 +10,6 @@ from typing import Any, Dict, Optional, Type, TypeVar
 from sqlalchemy.orm import Mapped, mapped_column
 from sqlalchemy import String, Boolean, Enum, ForeignKey, Index, inspect
 from datetime import datetime
-from uuid import UUID
 from src.models.base_model import BaseModel
 from src.models.mixins.audit_mixin import AuditMixin
 from src.core.enums.alergeno_enums import NivelPresencia
@@ -31,9 +30,9 @@ class ProductoAlergenoModel(BaseModel, AuditMixin):
 
     Attributes
     ----------
-    id_producto : UUID
+    id_producto : str
         Identificador del producto (parte de la clave primaria compuesta).
-    id_alergeno : UUID
+    id_alergeno : str
         Identificador del alérgeno (parte de la clave primaria compuesta).
     nivel_presencia : NivelPresencia
         Nivel de presencia del alérgeno: contiene, trazas, puede_contener.
@@ -47,16 +46,16 @@ class ProductoAlergenoModel(BaseModel, AuditMixin):
         Fecha y hora de última modificación.
     """
 
-    __tablename__ = "producto_alergeno"
+    __tablename__ = "productos_alergenos"
 
     # Claves foráneas que forman la clave primaria compuesta
-    id_producto: Mapped[UUID] = mapped_column(
-        ForeignKey("producto.id", ondelete="CASCADE"),
+    id_producto: Mapped[str] = mapped_column(
+        ForeignKey("productos.id", ondelete="CASCADE"),
         primary_key=True,
         nullable=False
     )
-    id_alergeno: Mapped[UUID] = mapped_column(
-        ForeignKey("alergeno.id", ondelete="RESTRICT"),
+    id_alergeno: Mapped[str] = mapped_column(
+        ForeignKey("alergenos.id", ondelete="RESTRICT"),
         primary_key=True,
         nullable=False
     )

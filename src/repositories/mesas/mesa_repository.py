@@ -3,7 +3,6 @@ Repositorio para la gestión de mesas en el sistema.
 """
 
 from typing import Optional, List, Tuple, Dict, Any
-from uuid import UUID
 
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -15,13 +14,13 @@ from src.models.mesas.mesa_model import MesaModel
 
 
 class MesaRepository:
-    async def batch_delete(self, mesa_ids: List[UUID]) -> int:
+    async def batch_delete(self, mesa_ids: List[str]) -> int:
         """
         Elimina múltiples mesas por sus IDs en una sola operación batch.
 
         Parameters
         ----------
-        mesa_ids : List[UUID]
+        mesa_ids : List[str]
             Lista de IDs de las mesas a eliminar.
 
         Returns
@@ -53,7 +52,7 @@ class MesaRepository:
     ----------
     session : AsyncSession
         Sesión asíncrona de SQLAlchemy para realizar operaciones en la base de datos.
-    """
+    """    
 
     def __init__(self, session: AsyncSession):
         """
@@ -95,13 +94,13 @@ class MesaRepository:
             await self.session.rollback()
             raise
 
-    async def get_by_id(self, mesa_id: UUID) -> Optional[MesaModel]:
+    async def get_by_id(self, mesa_id: str) -> Optional[MesaModel]:
         """
         Obtiene una mesa por su identificador único.
 
         Parameters
         ----------
-        mesa_id : UUID
+        mesa_id : str
             Identificador único de la mesa a buscar.
 
         Returns
@@ -134,13 +133,13 @@ class MesaRepository:
         result = await self.session.execute(query)
         return result.scalars().first()
 
-    async def delete(self, mesa_id: UUID) -> bool:
+    async def delete(self, mesa_id: str) -> bool:
         """
         Elimina una mesa de la base de datos por su ID.
 
         Parameters
         ----------
-        mesa_id : UUID
+        mesa_id : str
             Identificador único de la mesa a eliminar.
 
         Returns
@@ -162,13 +161,13 @@ class MesaRepository:
             await self.session.rollback()
             raise
 
-    async def update(self, mesa_id: UUID, **kwargs) -> Optional[MesaModel]:
+    async def update(self, mesa_id: str, **kwargs) -> Optional[MesaModel]:
         """
         Actualiza una mesa existente con los valores proporcionados.
 
         Parameters
         ----------
-        mesa_id : UUID
+        mesa_id : str
             Identificador único de la mesa a actualizar.
         **kwargs
             Campos y valores a actualizar.
