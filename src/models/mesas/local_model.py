@@ -14,8 +14,8 @@ from src.models.mixins.audit_mixin import AuditMixin
 from src.core.enums.local_enums import TipoLocal
 
 if TYPE_CHECKING:
-    from src.models.zona_model import ZonaModel
-    from src.models.sesion_model import SesionModel
+    from src.models.mesas.zona_model import ZonaModel
+    from src.models.auth.sesion_model import SesionModel
 
 # Definimos un TypeVar para el tipado genérico
 T = TypeVar("T", bound="LocalModel")
@@ -61,7 +61,7 @@ class LocalModel(BaseModel, AuditMixin):
         Usuario que realizó la última modificación (heredado de AuditMixin).
     """
 
-    __tablename__ = "local"
+    __tablename__ = "locales"
 
     # Columnas específicas del modelo de local
     codigo: Mapped[str] = mapped_column(String(20), nullable=False, unique=True)

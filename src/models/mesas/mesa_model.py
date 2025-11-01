@@ -7,7 +7,7 @@ from src.models.base_model import BaseModel
 from src.core.enums.mesa_enums import EstadoMesa
 
 if TYPE_CHECKING:
-    from src.models.zona_model import ZonaModel
+    from src.models.mesas.zona_model import ZonaModel
 
 # Definimos un TypeVar para el tipado genérico
 T = TypeVar("T", bound="MesaModel")
@@ -49,7 +49,7 @@ class MesaModel(BaseModel, AuditMixin):
     numero: Mapped[str] = mapped_column(String(50), nullable=False, unique=True)
     capacidad: Mapped[int] = mapped_column(Integer, nullable=True)
     id_zona: Mapped[Optional[str]] = mapped_column(
-        String(36), ForeignKey("zona.id", ondelete="SET NULL"), nullable=True, index=True
+        String(36), ForeignKey("zonas.id", ondelete="SET NULL"), nullable=True, index=True
     )
     nota: Mapped[str] = mapped_column(String(255), nullable=True)
     activo: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)

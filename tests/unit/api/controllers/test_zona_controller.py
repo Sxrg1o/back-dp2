@@ -9,8 +9,8 @@ from ulid import ULID
 from datetime import datetime
 
 from src.main import app
-from src.models.zona_model import ZonaModel
-from src.models.local_model import LocalModel
+from src.models.mesas.zona_model import ZonaModel
+from src.models.mesas.local_model import LocalModel
 from src.api.schemas.zona_schema import ZonaResponse, ZonaList, LocalInfo
 from src.business_logic.exceptions.zona_exceptions import (
     ZonaValidationError,
@@ -160,8 +160,6 @@ async def test_get_zonas_by_local_success(sample_zona, sample_local):
         zona_list = ZonaList(
             items=[sample_zona],
             total=1,
-            skip=0,
-            limit=10,
         )
         mock_service.get_zonas_by_local.return_value = zona_list
 
@@ -191,8 +189,6 @@ async def test_get_zonas_by_nivel_success(sample_zona):
         zona_list = ZonaList(
             items=[sample_zona],
             total=1,
-            skip=0,
-            limit=10,
         )
         mock_service.get_zonas_by_nivel.return_value = zona_list
 
@@ -220,8 +216,6 @@ async def test_get_all_zonas_success(sample_zona, sample_local):
         zona_list = ZonaList(
             items=[sample_zona],
             total=1,
-            skip=0,
-            limit=10,
         )
         mock_service.get_zonas.return_value = zona_list
 

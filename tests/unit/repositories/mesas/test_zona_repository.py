@@ -8,8 +8,8 @@ from unittest.mock import AsyncMock, MagicMock
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.exc import SQLAlchemyError
 
-from src.repositories.zona_repository import ZonaRepository
-from src.models.zona_model import ZonaModel
+from src.repositories.mesas.zona_repository import ZonaRepository
+from src.models.mesas.zona_model import ZonaModel
 
 
 @pytest.mark.asyncio
@@ -177,20 +177,6 @@ async def test_delete_zona():
 async def test_update_zona():
     """
     Verifica que el método update actualiza correctamente una zona.
-
-    PRECONDICIONES:
-        - Se debe tener una instancia mock de AsyncSession.
-        - Se debe tener un ULID válido y datos para actualizar.
-
-    PROCESO:
-        - Configurar los mocks para simular el comportamiento de la base de datos.
-        - Llamar al método update con un ID y campos a actualizar.
-        - Verificar que se ejecute la sentencia correcta y se retorne el resultado esperado.
-
-    POSTCONDICIONES:
-        - El método debe retornar el ZonaModel actualizado cuando existe.
-        - El método debe retornar None cuando no existe la zona.
-        - En caso de error, debe hacer rollback y propagar la excepción.
     """
     # Arrange - Caso exitoso
     mock_session = AsyncMock(spec=AsyncSession)
@@ -208,8 +194,8 @@ async def test_update_zona():
     )
 
     # Mock para get_by_id que se llama después del update
-    async def mock_get_by_id(zid):
-        return updated_zona if zid == zona_id else None
+    async def mock_get_by_id(zona_id):
+        return updated_zona if zona_id == updated_zona.id else None
 
     repository = ZonaRepository(mock_session)
     repository.get_by_id = mock_get_by_id

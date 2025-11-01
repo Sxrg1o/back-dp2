@@ -204,6 +204,7 @@ async def create_tables():
     """
     # Import all models to ensure they are registered with the Base
     from src.models.auth.rol_model import RolModel  # noqa: F401
+    from src.models.auth.usuario_model import UsuarioModel  # noqa: F401
     from src.models.menu.categoria_model import CategoriaModel  # noqa: F401
     from src.models.menu.alergeno_model import AlergenoModel  # noqa: F401
     from src.models.menu.producto_model import ProductoModel  # noqa: F401

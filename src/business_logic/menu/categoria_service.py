@@ -406,3 +406,36 @@ class CategoriaService:
             items.append(categoria_card)
 
         return CategoriaConProductosCardList(items=items, total=total)
+
+    async def get_categorias_activas(self, skip: int = 0, limit: int = 100) -> CategoriaList:
+        """
+        Obtiene una lista paginada de categorías activas.
+
+        Parameters
+        ----------
+        skip : int, optional
+            Número de registros a omitir (offset), por defecto 0.
+        limit : int, optional
+            Número máximo de registros a retornar, por defecto 100.
+
+        Returns
+        -------
+        CategoriaList
+            Esquema con la lista de categorías activas y el total.
+        """
+        # Validar parámetros de entrada
+        if skip < 0:
+            raise CategoriaValidationError("El parámetro 'skip' debe ser mayor o igual a cero")
+        if limit < 1:
+            raise CategoriaValidationError("El parámetro 'limit' debe ser mayor a cero")
+
+        # Obtener categorías activas desde el repositorio
+        categorias, total = await self.repository.get_all(skip, limit, activo=True)
+
+        # Normalizar nombres y convertir modelos a esquemas de resumen
+        for categoria in categorias:
+            categoria.nombre = normalize_category_name(categoria.nombre)
+        categoria_summaries = [CategoriaSummary.model_validate(categoria) for categoria in categorias]
+
+        # Retornar esquema de lista
+        return CategoriaList(items=categoria_summaries, total=total)

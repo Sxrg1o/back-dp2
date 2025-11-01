@@ -8,6 +8,10 @@
 
 ## 📚 Módulos
 
+### Autenticación
+
+- **[Autenticación](modulos/auth/README.md)** — Sistema de login, registro y gestión de usuarios
+
 ### Gestión de Recursos
 
 - **[Roles](modulos/roles/README.md)** — Gestión de roles de usuario

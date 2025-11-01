@@ -6,7 +6,7 @@ from fastapi import APIRouter, Depends, HTTPException, status, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.core.database import get_database_session
-from src.business_logic.zona_service import ZonaService
+from src.business_logic.mesas.zona_service import ZonaService
 from src.api.schemas.zona_schema import (
     ZonaCreate,
     ZonaResponse,

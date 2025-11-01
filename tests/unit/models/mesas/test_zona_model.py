@@ -1,5 +1,5 @@
 from ulid import ULID
-from src.models.zona_model import ZonaModel
+from src.models.mesas.zona_model import ZonaModel
 
 
 def test_zona_model_creation():

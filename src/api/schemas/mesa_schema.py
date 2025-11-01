@@ -7,7 +7,6 @@ representar las mesas en la API.
 
 
 from typing import Optional, ClassVar, List
-from uuid import UUID
 from datetime import datetime
 from pydantic import BaseModel, Field, ConfigDict
 

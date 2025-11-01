@@ -202,7 +202,7 @@ def test_pedido_opcion_model_tablename():
         - Verifica que el atributo __tablename__ tenga el valor esperado.
 
     POSTCONDICIONES:
-        - El nombre de la tabla debe ser 'pedido_opcion'.
+        - El nombre de la tabla debe ser 'pedidos_opciones'.
     """
     # Assert
-    assert PedidoOpcionModel.__tablename__ == "pedido_opcion"
+    assert PedidoOpcionModel.__tablename__ == "pedidos_opciones"
