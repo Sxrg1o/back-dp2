@@ -53,6 +53,7 @@ class ProductoAlergenoResponse(ProductoAlergenoBase):
 
     model_config: ClassVar[ConfigDict] = ConfigDict(from_attributes=True)
 
+    id: str = Field(description="Unique relationship ID (ULID)")
     activo: bool = Field(description="Indicates if the relationship is active")
     fecha_creacion: Optional[datetime] = Field(
         default=None, description="Creation timestamp"
@@ -67,6 +68,7 @@ class ProductoAlergenoSummary(BaseModel):
 
     model_config: ClassVar[ConfigDict] = ConfigDict(from_attributes=True)
 
+    id: str = Field(description="Unique relationship ID (ULID)")
     id_producto: str = Field(description="Product ID")
     id_alergeno: str = Field(description="Allergen ID")
     nivel_presencia: NivelPresencia = Field(
