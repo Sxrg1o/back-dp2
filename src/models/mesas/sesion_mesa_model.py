@@ -1,0 +1,183 @@
+"""
+Modelo de sesiones de mesa del restaurante.
+
+Implementa la estructura de datos para las sesiones temporales que asocian
+usuarios con mesas, permitiendo trackear los pedidos realizados durante la visita.
+"""
+
+from typing import Any, Dict, Type, TypeVar, List, TYPE_CHECKING, Optional
+from datetime import datetime
+from sqlalchemy.orm import Mapped, mapped_column, relationship
+from sqlalchemy import String, TIMESTAMP, Enum as SQLEnum, ForeignKey, CheckConstraint, Index, inspect
+from src.models.base_model import BaseModel
+from src.models.mixins.audit_mixin import AuditMixin
+from src.core.enums.sesion_mesa_enums import EstadoSesionMesa
+
+if TYPE_CHECKING:
+    from src.models.auth.usuario_model import UsuarioModel
+    from src.models.mesas.mesa_model import MesaModel
+    from src.models.pedidos.pedido_model import PedidoModel
+
+# Definimos un TypeVar para el tipado genérico
+T = TypeVar("T", bound="SesionMesaModel")
+
+
+class SesionMesaModel(BaseModel, AuditMixin):
+    """Modelo para representar sesiones de mesa en el sistema.
+
+    Una sesión de mesa es una asociación temporal entre un usuario y una mesa
+    que se crea cuando el usuario se loguea/registra. Permite agrupar todos
+    los pedidos que el usuario realiza durante su visita a esa mesa.
+
+    Attributes
+    ----------
+    id : str
+        Identificador único ULID de la sesión (heredado de BaseModel).
+    id_usuario : str
+        Identificador ULID del usuario asociado a la sesión.
+    id_mesa : str
+        Identificador ULID de la mesa donde se realiza la sesión.
+    token_sesion : str
+        Token único generado para identificar la sesión.
+    estado : EstadoSesionMesa
+        Estado actual de la sesión (activa, finalizada).
+    fecha_inicio : datetime
+        Fecha y hora de inicio de la sesión.
+    fecha_fin : datetime, optional
+        Fecha y hora de finalización de la sesión.
+    fecha_creacion : datetime
+        Fecha y hora de creación del registro (heredado de AuditMixin).
+    fecha_modificacion : datetime
+        Fecha y hora de última modificación (heredado de AuditMixin).
+    creado_por : str, optional
+        Usuario que creó el registro (heredado de AuditMixin).
+    modificado_por : str, optional
+        Usuario que realizó la última modificación (heredado de AuditMixin).
+    """
+
+    __tablename__ = "sesiones_mesas"
+
+    # Foreign Keys
+    id_usuario: Mapped[str] = mapped_column(
+        String(36),
+        ForeignKey("usuarios.id", ondelete="RESTRICT"),
+        nullable=False,
+        comment="Usuario asociado a la sesión"
+    )
+
+    id_mesa: Mapped[str] = mapped_column(
+        String(36),
+        ForeignKey("mesas.id", ondelete="RESTRICT"),
+        nullable=False,
+        comment="Mesa donde se realiza la sesión"
+    )
+
+    # Campos específicos del modelo de sesión mesa
+    token_sesion: Mapped[str] = mapped_column(
+        String(100),
+        nullable=False,
+        unique=True,
+        index=True,
+        comment="Token único para identificar la sesión"
+    )
+
+    estado: Mapped[EstadoSesionMesa] = mapped_column(
+        SQLEnum(EstadoSesionMesa),
+        nullable=False,
+        default=EstadoSesionMesa.ACTIVA,
+        index=True
+    )
+
+    fecha_inicio: Mapped[datetime] = mapped_column(
+        TIMESTAMP,
+        nullable=False,
+        default=datetime.now,
+        comment="Fecha y hora de inicio de la sesión"
+    )
+
+    fecha_fin: Mapped[Optional[datetime]] = mapped_column(
+        TIMESTAMP,
+        nullable=True,
+        comment="Fecha y hora de finalización de la sesión"
+    )
+
+    # Relaciones
+    usuario: Mapped["UsuarioModel"] = relationship(
+        "UsuarioModel",
+        lazy="selectin"
+    )
+
+    mesa: Mapped["MesaModel"] = relationship(
+        "MesaModel",
+        lazy="selectin"
+    )
+
+    pedidos: Mapped[List["PedidoModel"]] = relationship(
+        "PedidoModel",
+        back_populates="sesion_mesa",
+        cascade="all",
+        lazy="select"
+    )
+
+    # Constraints e índices
+    __table_args__ = (
+        CheckConstraint(
+            "fecha_fin IS NULL OR fecha_fin >= fecha_inicio",
+            name="chk_sesion_mesa_fecha_fin_valida"
+        ),
+        Index("idx_sesion_mesa_usuario_mesa", "id_usuario", "id_mesa"),
+    )
+
+    # Métodos comunes para todos los modelos
+    def to_dict(self) -> Dict[str, Any]:
+        """Convierte la instancia del modelo a un diccionario.
+
+        Transforma todos los atributos del modelo en un diccionario para
+        facilitar su serialización y uso en APIs.
+
+        Returns
+        -------
+        Dict[str, Any]
+            Diccionario con los nombres de columnas como claves y sus valores correspondientes.
+        """
+        result = {}
+        for c in self.__table__.columns:
+            value = getattr(self, c.name)
+            # Convertir Enum a string
+            if isinstance(value, EstadoSesionMesa):
+                value = value.value
+            result[c.name] = value
+        return result
+
+    @classmethod
+    def from_dict(cls: Type[T], data: Dict[str, Any]) -> T:
+        """Crea una instancia del modelo a partir de un diccionario.
+
+        Parameters
+        ----------
+        data : Dict[str, Any]
+            Diccionario con los datos para crear la instancia.
+
+        Returns
+        -------
+        T
+            Nueva instancia del modelo con los datos proporcionados.
+        """
+        return cls(
+            **{k: v for k, v in data.items() if k in inspect(cls).columns.keys()}
+        )
+
+    def update_from_dict(self, data: Dict[str, Any]) -> None:
+        """Actualiza la instancia con datos de un diccionario.
+
+        Parameters
+        ----------
+        data : Dict[str, Any]
+            Diccionario con los datos para actualizar la instancia.
+        """
+        for key, value in data.items():
+            if hasattr(self, key):
+                setattr(self, key, value)
+
+    def __repr__(self):
+        return f"<SesionMesa(id={self.id}, token={self.token_sesion}, usuario={self.id_usuario}, mesa={self.id_mesa}, estado={self.estado.value})>"

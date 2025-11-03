@@ -682,8 +682,8 @@ class DataEnricher:
                 "activo": True
             },
             {
-                "nombre": "Gerente",
-                "descripcion": "Gestin de restaurante y reportes",
+                "nombre": "Cliente",
+                "descripcion": "Acceso a funciones de cliente",
                 "activo": True
             },
             {

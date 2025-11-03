@@ -82,6 +82,7 @@ from src.api.schemas.mesa_schema import (
     MesaUpdate,
     MesaList,
 )
+from src.api.schemas.mesa_schema_detalle import MesaDetalleResponse
 from src.api.schemas.local_schema import LocalResponse
 from src.business_logic.exceptions.mesa_exceptions import (
     MesaValidationError,
@@ -101,7 +102,7 @@ router = APIRouter(prefix="/mesas", tags=["Mesas"])
 )
 async def create_mesa(
     mesa_data: MesaCreate, session: AsyncSession = Depends(get_database_session)
-) -> MesaResponse:
+) -> MesaDetalleResponse:
     """
     Crea una nueva mesa en el sistema.
 
@@ -131,14 +132,14 @@ async def create_mesa(
 
 @router.get(
     "/{mesa_id}",
-    response_model=MesaResponse,
+    response_model=MesaDetalleResponse,
     status_code=status.HTTP_200_OK,
     summary="Obtener una mesa por ID",
     description="Obtiene los detalles de una mesa específica por su ID.",
 )
 async def get_mesa(
     mesa_id: str, session: AsyncSession = Depends(get_database_session)
-) -> MesaResponse:
+) -> MesaDetalleResponse:
     """
     Obtiene una mesa específica por su ID.
 
@@ -219,7 +220,7 @@ async def update_mesa(
     mesa_id: str,
     mesa_data: MesaUpdate,
     session: AsyncSession = Depends(get_database_session),
-) -> MesaResponse:
+) -> MesaDetalleResponse:
     """
     Actualiza una mesa existente.
 

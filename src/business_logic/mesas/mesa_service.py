@@ -14,6 +14,7 @@ from src.api.schemas.mesa_schema import (
     MesaSummary,
     MesaList,
 )
+from src.api.schemas.mesa_schema_detalle import MesaDetalleResponse
 from src.api.schemas.local_schema import LocalResponse
 from src.business_logic.exceptions.mesa_exceptions import (
     MesaValidationError,
@@ -127,9 +128,9 @@ class MesaService:
                 f"Ya existe una mesa con el número '{mesa_data.numero}'"
             )
 
-    async def get_mesa_by_id(self, mesa_id: str) -> MesaResponse:
+    async def get_mesa_by_id(self, mesa_id: str) -> MesaDetalleResponse:
         """
-        Obtiene una mesa por su ID.
+        Obtiene una mesa por su ID con datos de zona y local.
 
         Parameters
         ----------
@@ -138,8 +139,8 @@ class MesaService:
 
         Returns
         -------
-        MesaResponse
-            Esquema de respuesta con los datos de la mesa.
+        MesaDetalleResponse
+            Esquema de respuesta con los datos de la mesa, zona y local.
 
         Raises
         ------
@@ -153,8 +154,23 @@ class MesaService:
         if not mesa:
             raise MesaNotFoundError(f"No se encontró la mesa con ID {mesa_id}")
 
-        # Convertir y retornar como esquema de respuesta
-        return MesaResponse.model_validate(mesa)
+        # Preparar datos completos con zona y local
+        mesa_dict = mesa.to_dict()
+
+        # Agregar datos de zona si existe
+        if mesa.zona:
+            mesa_dict["zona"] = mesa.zona.to_dict()
+            # Agregar datos de local si la zona tiene local
+            if mesa.zona.local:
+                mesa_dict["local"] = mesa.zona.local.to_dict()
+            else:
+                mesa_dict["local"] = None
+        else:
+            mesa_dict["zona"] = None
+            mesa_dict["local"] = None
+
+        # Convertir y retornar como esquema de respuesta detallado
+        return MesaDetalleResponse(**mesa_dict)
 
     async def delete_mesa(self, mesa_id: str) -> bool:
         """

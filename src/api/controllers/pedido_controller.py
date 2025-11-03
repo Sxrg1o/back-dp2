@@ -17,6 +17,7 @@ from src.api.schemas.pedido_schema import (
     PedidoCompletoCreate,
     PedidoCompletoResponse,
 )
+from src.api.schemas.pedido_detallado_schema import PedidoDetalladoList
 from src.business_logic.exceptions.pedido_exceptions import (
     PedidoValidationError,
     PedidoNotFoundError,
@@ -222,6 +223,7 @@ async def list_pedidos(
         None, description="Filtrar por estado del pedido"
     ),
     id_mesa: Optional[str] = Query(None, description="Filtrar por ID de mesa"),
+    id_usuario: Optional[str] = Query(None, description="Filtrar por ID de usuario"),
     session: AsyncSession = Depends(get_database_session),
 ) -> PedidoList:
     """
@@ -232,6 +234,7 @@ async def list_pedidos(
         limit: Número máximo de registros a retornar, por defecto 100.
         estado: Filtrar por estado del pedido (opcional).
         id_mesa: Filtrar por ID de mesa (opcional).
+        id_usuario: Filtrar por ID de usuario (opcional).
         session: Sesión de base de datos.
 
     Returns:
@@ -244,7 +247,62 @@ async def list_pedidos(
     """
     try:
         pedido_service = PedidoService(session)
-        return await pedido_service.get_pedidos(skip, limit, estado, id_mesa)
+        return await pedido_service.get_pedidos(skip, limit, estado, id_mesa, id_usuario)
+    except PedidoValidationError as e:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error interno del servidor: {str(e)}",
+        )
+
+
+@router.get(
+    "/detallado",
+    response_model=PedidoDetalladoList,
+    status_code=status.HTTP_200_OK,
+    summary="Listar pedidos detallados",
+    description="Obtiene una lista paginada de pedidos con información completa de productos y opciones.",
+)
+async def list_pedidos_detallado(
+    skip: int = Query(0, ge=0, description="Número de registros a omitir (paginación)"),
+    limit: int = Query(
+        100, gt=0, le=500, description="Número máximo de registros a retornar"
+    ),
+    estado: Optional[EstadoPedido] = Query(
+        None, description="Filtrar por estado del pedido"
+    ),
+    id_mesa: Optional[str] = Query(None, description="Filtrar por ID de mesa"),
+    id_usuario: Optional[str] = Query(None, description="Filtrar por ID de usuario"),
+    session: AsyncSession = Depends(get_database_session),
+) -> PedidoDetalladoList:
+    """
+    Obtiene una lista paginada de pedidos con información detallada.
+
+    Este endpoint retorna pedidos con:
+    - Información completa de cada producto en el pedido
+    - Todas las opciones seleccionadas con sus detalles
+    - Datos completos de productos y opciones
+
+    Args:
+        skip: Número de registros a omitir (offset), por defecto 0.
+        limit: Número máximo de registros a retornar, por defecto 100.
+        estado: Filtrar por estado del pedido (opcional).
+        id_mesa: Filtrar por ID de mesa (opcional).
+        id_usuario: Filtrar por ID de usuario (opcional).
+        session: Sesión de base de datos.
+
+    Returns:
+        Lista paginada de pedidos detallados y el número total de registros.
+
+    Raises:
+        HTTPException:
+            - 400: Si los parámetros de paginación son inválidos.
+            - 500: Si ocurre un error interno del servidor.
+    """
+    try:
+        pedido_service = PedidoService(session)
+        return await pedido_service.get_pedidos_detallado(skip, limit, estado, id_mesa, id_usuario)
     except PedidoValidationError as e:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
     except Exception as e:
