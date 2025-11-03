@@ -35,7 +35,7 @@ async def create_producto_alergeno(
 ) -> ProductoAlergenoResponse:
     """
     Crea una nueva relación producto-alérgeno en el sistema.
-    
+
     Args:
         producto_alergeno_data: Datos de la relación producto-alérgeno a crear.
         session: Sesión de base de datos.
@@ -61,58 +61,19 @@ async def create_producto_alergeno(
 
 
 @router.get(
-    "/{id}",
+    "/{id_producto}/{id_alergeno}",
     response_model=ProductoAlergenoResponse,
     status_code=status.HTTP_200_OK,
-    summary="Obtener una relación producto-alérgeno por ID",
-    description="Obtiene los detalles de una relación producto-alérgeno específica por su ID único (ULID).",
+    summary="Obtener una relación producto-alérgeno por IDs",
+    description="Obtiene los detalles de una relación producto-alérgeno específica por sus IDs.",
 )
 async def get_producto_alergeno(
-    id: str,
-    session: AsyncSession = Depends(get_database_session)
-) -> ProductoAlergenoResponse:
-    """
-    Obtiene una relación producto-alérgeno específica por su ID.
-
-    Args:
-        id: ID único (ULID) de la relación.
-        session: Sesión de base de datos.
-
-    Returns:
-        La relación producto-alérgeno encontrada con todos sus datos.
-
-    Raises:
-        HTTPException:
-            - 404: Si no se encuentra la relación producto-alérgeno.
-            - 500: Si ocurre un error interno del servidor.
-    """
-    try:
-        producto_alergeno_service = ProductoAlergenoService(session)
-        return await producto_alergeno_service.get_producto_alergeno_by_id(id)
-    except ProductoAlergenoNotFoundError as e:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
-    except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Error interno del servidor: {str(e)}",
-        )
-
-
-@router.get(
-    "/by-combination/{id_producto}/{id_alergeno}",
-    response_model=ProductoAlergenoResponse,
-    status_code=status.HTTP_200_OK,
-    summary="[LEGACY] Obtener relación por combinación producto-alérgeno",
-    description="DEPRECATED: Use GET /{id} en su lugar. Este endpoint se mantendrá por compatibilidad pero será removido en versiones futuras.",
-    deprecated=True,
-)
-async def get_producto_alergeno_by_combination(
     id_producto: str,
     id_alergeno: str,
     session: AsyncSession = Depends(get_database_session)
 ) -> ProductoAlergenoResponse:
     """
-    Obtiene una relación producto-alérgeno por combinación (LEGACY - backward compatibility).
+    Obtiene una relación producto-alérgeno específica por sus IDs.
 
     Args:
         id_producto: ID del producto.
@@ -155,7 +116,7 @@ async def list_producto_alergenos(
 ) -> ProductoAlergenoList:
     """
     Obtiene una lista paginada de relaciones producto-alérgeno.
-    
+
     Args:
         skip: Número de registros a omitir (offset), por defecto 0.
         limit: Número máximo de registros a retornar, por defecto 100.
@@ -182,66 +143,20 @@ async def list_producto_alergenos(
 
 
 @router.put(
-    "/{id}",
+    "/{id_producto}/{id_alergeno}",
     response_model=ProductoAlergenoResponse,
     status_code=status.HTTP_200_OK,
-    summary="Actualizar una relación producto-alérgeno por ID",
-    description="Actualiza los datos de una relación producto-alérgeno existente por su ID único (ULID).",
+    summary="Actualizar una relación producto-alérgeno",
+    description="Actualiza los datos de una relación producto-alérgeno existente.",
 )
 async def update_producto_alergeno(
-    id: str,
-    producto_alergeno_data: ProductoAlergenoUpdate,
-    session: AsyncSession = Depends(get_database_session)
-) -> ProductoAlergenoResponse:
-    """
-    Actualiza una relación producto-alérgeno existente por su ID.
-
-    Args:
-        id: ID único (ULID) de la relación.
-        producto_alergeno_data: Datos de la relación producto-alérgeno a actualizar.
-        session: Sesión de base de datos.
-
-    Returns:
-        La relación producto-alérgeno actualizada con todos sus datos.
-
-    Raises:
-        HTTPException:
-            - 404: Si no se encuentra la relación producto-alérgeno.
-            - 409: Si hay un conflicto.
-            - 500: Si ocurre un error interno del servidor.
-    """
-    try:
-        producto_alergeno_service = ProductoAlergenoService(session)
-        return await producto_alergeno_service.update_producto_alergeno(
-            id, producto_alergeno_data
-        )
-    except ProductoAlergenoNotFoundError as e:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
-    except ProductoAlergenoConflictError as e:
-        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=str(e))
-    except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Error interno del servidor: {str(e)}",
-        )
-
-
-@router.put(
-    "/by-combination/{id_producto}/{id_alergeno}",
-    response_model=ProductoAlergenoResponse,
-    status_code=status.HTTP_200_OK,
-    summary="[LEGACY] Actualizar relación por combinación",
-    description="DEPRECATED: Use PUT /{id} en su lugar. Este endpoint se mantendrá por compatibilidad pero será removido en versiones futuras.",
-    deprecated=True,
-)
-async def update_producto_alergeno_by_combination(
     id_producto: str,
     id_alergeno: str,
     producto_alergeno_data: ProductoAlergenoUpdate,
     session: AsyncSession = Depends(get_database_session)
 ) -> ProductoAlergenoResponse:
     """
-    Actualiza una relación por combinación (LEGACY - backward compatibility).
+    Actualiza una relación producto-alérgeno existente.
 
     Args:
         id_producto: ID del producto.
@@ -275,55 +190,18 @@ async def update_producto_alergeno_by_combination(
 
 
 @router.delete(
-    "/{id}",
+    "/{id_producto}/{id_alergeno}",
     status_code=status.HTTP_204_NO_CONTENT,
-    summary="Eliminar una relación producto-alérgeno por ID",
-    description="Elimina una relación producto-alérgeno existente del sistema por su ID único (ULID).",
+    summary="Eliminar una relación producto-alérgeno",
+    description="Elimina una relación producto-alérgeno existente del sistema.",
 )
 async def delete_producto_alergeno(
-    id: str,
-    session: AsyncSession = Depends(get_database_session)
-) -> None:
-    """
-    Elimina una relación producto-alérgeno existente por su ID.
-
-    Args:
-        id: ID único (ULID) de la relación.
-        session: Sesión de base de datos.
-
-    Raises:
-        HTTPException:
-            - 404: Si no se encuentra la relación producto-alérgeno.
-            - 500: Si ocurre un error interno del servidor.
-    """
-    try:
-        producto_alergeno_service = ProductoAlergenoService(session)
-        result = await producto_alergeno_service.delete_producto_alergeno(id)
-        # No es necesario verificar el resultado aquí ya que delete_producto_alergeno
-        # lanza ProductoAlergenoNotFoundError si no encuentra la relación
-    except ProductoAlergenoNotFoundError as e:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
-    except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Error interno del servidor: {str(e)}",
-        )
-
-
-@router.delete(
-    "/by-combination/{id_producto}/{id_alergeno}",
-    status_code=status.HTTP_204_NO_CONTENT,
-    summary="[LEGACY] Eliminar relación por combinación",
-    description="DEPRECATED: Use DELETE /{id} en su lugar. Este endpoint se mantendrá por compatibilidad pero será removido en versiones futuras.",
-    deprecated=True,
-)
-async def delete_producto_alergeno_by_combination(
     id_producto: str,
     id_alergeno: str,
     session: AsyncSession = Depends(get_database_session)
 ) -> None:
     """
-    Elimina una relación por combinación (LEGACY - backward compatibility).
+    Elimina una relación producto-alérgeno existente.
 
     Args:
         id_producto: ID del producto.

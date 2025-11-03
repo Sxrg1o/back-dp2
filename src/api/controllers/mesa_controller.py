@@ -82,6 +82,7 @@ from src.api.schemas.mesa_schema import (
     MesaUpdate,
     MesaList,
 )
+from src.api.schemas.local_schema import LocalResponse
 from src.business_logic.exceptions.mesa_exceptions import (
     MesaValidationError,
     MesaNotFoundError,
@@ -278,6 +279,103 @@ async def delete_mesa(
         # lanza MesaNotFoundError si no encuentra la mesa
     except MesaNotFoundError as e:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error interno del servidor: {str(e)}",
+        )
+
+
+@router.get(
+    "/{mesa_id}/local",
+    response_model=LocalResponse,
+    status_code=status.HTTP_200_OK,
+    summary="Obtener local por mesa",
+    description="Obtiene el local asociado a una mesa (via zona).",
+)
+async def get_local_by_mesa(
+    mesa_id: str, session: AsyncSession = Depends(get_database_session)
+) -> LocalResponse:
+    """
+    Obtiene el local asociado a una mesa específica.
+
+    El local se obtiene siguiendo la relación: Mesa → Zona → Local.
+
+    Args:
+        mesa_id: ID de la mesa.
+        session: Sesión de base de datos.
+
+    Returns:
+        El local completo con todos sus datos.
+
+    Raises:
+        HTTPException:
+            - 404: Si no se encuentra la mesa.
+            - 400: Si la mesa no tiene zona o la zona no tiene local.
+            - 500: Si ocurre un error interno del servidor.
+    """
+    try:
+        mesa_service = MesaService(session)
+        return await mesa_service.get_local_by_mesa(mesa_id)
+    except MesaNotFoundError as e:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
+    except MesaValidationError as e:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error interno del servidor: {str(e)}",
+        )
+
+
+@router.get(
+    "/qr/urls",
+    response_model=List[dict],
+    status_code=status.HTTP_200_OK,
+    summary="Listar URLs de QR para todas las mesas",
+    description="Genera las URLs de QR para todas las mesas del sistema.",
+)
+async def list_qr_urls(
+    skip: int = Query(0, ge=0, description="Número de registros a omitir (paginación)"),
+    limit: int = Query(
+        100, gt=0, le=500, description="Número máximo de registros a retornar"
+    ),
+    session: AsyncSession = Depends(get_database_session),
+) -> List[dict]:
+    """
+    Genera las URLs de QR para todas las mesas.
+
+    Retorna una lista con el ID de cada mesa y su URL de QR correspondiente.
+    Formato: https://front-dp2.onrender.com/about?{idMesa}
+
+    Args:
+        skip: Número de registros a omitir (offset), por defecto 0.
+        limit: Número máximo de registros a retornar, por defecto 100.
+        session: Sesión de base de datos.
+
+    Returns:
+        Lista con objetos conteniendo id_mesa, numero_mesa y qr_url.
+
+    Raises:
+        HTTPException:
+            - 400: Si los parámetros de paginación son inválidos.
+            - 500: Si ocurre un error interno del servidor.
+    """
+    try:
+        mesa_service = MesaService(session)
+        mesas_list = await mesa_service.get_mesas(skip, limit)
+
+        qr_urls = []
+        for mesa in mesas_list.items:
+            qr_urls.append({
+                "id_mesa": mesa.id,
+                "numero_mesa": mesa.numero_mesa,
+                "qr_url": f"https://front-dp2.onrender.com/about?{mesa.id}"
+            })
+
+        return qr_urls
+    except MesaValidationError as e:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,

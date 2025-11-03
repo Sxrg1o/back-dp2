@@ -34,6 +34,10 @@ from src.models.auth.rol_model import RolModel
 from src.models.mesas.local_model import LocalModel
 from src.models.mesas.zona_model import ZonaModel
 from src.models.mesas.mesa_model import MesaModel
+from src.models.mesas.locales_categorias_model import LocalesCategoriasModel
+from src.models.mesas.locales_productos_model import LocalesProductosModel
+from src.models.mesas.locales_tipos_opciones_model import LocalesTiposOpcionesModel
+from src.models.mesas.locales_productos_opciones_model import LocalesProductosOpcionesModel
 from src.core.enums.alergeno_enums import NivelPresencia
 from src.core.enums.local_enums import TipoLocal
 from src.core.enums.mesa_enums import EstadoMesa
@@ -1027,7 +1031,152 @@ class DataEnricher:
         if categorias_con_imagen_previa > 0:
             print(f"    {categorias_con_imagen_previa} categoras ya tenan imagen (sin cambios)")
         print("="*70 + "\n")
-    
+
+    async def populate_local_catalog_intermediate_tables(self):
+        """
+        ✨ PASO 8: Poblar tablas intermedias de catálogo multi-local.
+
+        Activa TODOS los items existentes para el local creado:
+        - Todas las categorías
+        - Todos los productos
+        - Todos los tipos de opciones
+        - Todas las opciones de productos
+        """
+        print("\n" + "="*70)
+        print(" ✨ POBLANDO TABLAS INTERMEDIAS DE CATÁLOGO MULTI-LOCAL")
+        print("="*70)
+
+        if not self.local:
+            print("   ⚠️  ERROR: No hay local creado. Abortando población.")
+            return
+
+        print(f"   📍 Local: {self.local.nombre} (ID: {self.local.id})")
+
+        # ==================== ACTIVAR TODAS LAS CATEGORÍAS ====================
+        print("\n 📂 Activando todas las categorías para el local...")
+
+        result = await self.session.execute(select(CategoriaModel))
+        categorias = result.scalars().all()
+
+        count_categorias = 0
+        for categoria in categorias:
+            # Verificar si ya existe la relación
+            existing = await self.session.execute(
+                select(LocalesCategoriasModel).where(
+                    LocalesCategoriasModel.id_local == self.local.id,
+                    LocalesCategoriasModel.id_categoria == categoria.id
+                )
+            )
+            if not existing.scalars().first():
+                relacion = LocalesCategoriasModel(
+                    id_local=self.local.id,
+                    id_categoria=categoria.id,
+                    activo=True,
+                    orden_override=None  # Usar orden original
+                )
+                self.session.add(relacion)
+                count_categorias += 1
+
+        await self.session.commit()
+        print(f"    ✅ {count_categorias} categorías activadas")
+
+        # ==================== ACTIVAR TODOS LOS PRODUCTOS ====================
+        print("\n 🍽️  Activando todos los productos para el local...")
+
+        result = await self.session.execute(select(ProductoModel))
+        productos = result.scalars().all()
+
+        count_productos = 0
+        for producto in productos:
+            # Verificar si ya existe la relación
+            existing = await self.session.execute(
+                select(LocalesProductosModel).where(
+                    LocalesProductosModel.id_local == self.local.id,
+                    LocalesProductosModel.id_producto == producto.id
+                )
+            )
+            if not existing.scalars().first():
+                relacion = LocalesProductosModel(
+                    id_local=self.local.id,
+                    id_producto=producto.id,
+                    activo=True,
+                    # Sin overrides inicialmente (NULL = usar valores originales)
+                    precio_override=None,
+                    disponible_override=None,
+                    nombre_override=None,
+                    descripcion_override=None
+                )
+                self.session.add(relacion)
+                count_productos += 1
+
+        await self.session.commit()
+        print(f"    ✅ {count_productos} productos activados")
+
+        # ==================== ACTIVAR TODOS LOS TIPOS DE OPCIONES ====================
+        print("\n 🔧 Activando todos los tipos de opciones para el local...")
+
+        result = await self.session.execute(select(TipoOpcionModel))
+        tipos_opciones = result.scalars().all()
+
+        count_tipos = 0
+        for tipo_opcion in tipos_opciones:
+            # Verificar si ya existe la relación
+            existing = await self.session.execute(
+                select(LocalesTiposOpcionesModel).where(
+                    LocalesTiposOpcionesModel.id_local == self.local.id,
+                    LocalesTiposOpcionesModel.id_tipo_opcion == tipo_opcion.id
+                )
+            )
+            if not existing.scalars().first():
+                relacion = LocalesTiposOpcionesModel(
+                    id_local=self.local.id,
+                    id_tipo_opcion=tipo_opcion.id,
+                    activo=True
+                )
+                self.session.add(relacion)
+                count_tipos += 1
+
+        await self.session.commit()
+        print(f"    ✅ {count_tipos} tipos de opciones activados")
+
+        # ==================== ACTIVAR TODAS LAS OPCIONES DE PRODUCTOS ====================
+        print("\n ⚙️  Activando todas las opciones de productos para el local...")
+
+        result = await self.session.execute(select(ProductoOpcionModel))
+        productos_opciones = result.scalars().all()
+
+        count_opciones = 0
+        for producto_opcion in productos_opciones:
+            # Verificar si ya existe la relación
+            existing = await self.session.execute(
+                select(LocalesProductosOpcionesModel).where(
+                    LocalesProductosOpcionesModel.id_local == self.local.id,
+                    LocalesProductosOpcionesModel.id_producto_opcion == producto_opcion.id
+                )
+            )
+            if not existing.scalars().first():
+                relacion = LocalesProductosOpcionesModel(
+                    id_local=self.local.id,
+                    id_producto_opcion=producto_opcion.id,
+                    activo=True,
+                    # Sin override de precio inicialmente (NULL = usar precio adicional original)
+                    precio_adicional_override=None
+                )
+                self.session.add(relacion)
+                count_opciones += 1
+
+        await self.session.commit()
+        print(f"    ✅ {count_opciones} opciones de productos activadas")
+
+        print(f"\n{'='*70}")
+        print(f" ✨ POBLACIÓN DE CATÁLOGO MULTI-LOCAL COMPLETADA")
+        print(f"{'='*70}")
+        print(f"    📂 Categorías activadas: {count_categorias}")
+        print(f"    🍽️  Productos activados: {count_productos}")
+        print(f"    🔧 Tipos de opciones activados: {count_tipos}")
+        print(f"    ⚙️  Opciones de productos activadas: {count_opciones}")
+        print(f"{'='*70}\n")
+
     async def enrich_all(self):
         """
          Ejecuta todos los pasos de enriquecimiento.
@@ -1063,7 +1212,10 @@ class DataEnricher:
         
         # PASO 7: Actualizar imgenes desde seed (NUEVO)
         await self.update_images_from_seed()
-        
+
+        # PASO 8: Poblar tablas intermedias de catálogo multi-local
+        await self.populate_local_catalog_intermediate_tables()
+
         print("\n" + "="*70)
         print(" ENRIQUECIMIENTO COMPLETADO EXITOSAMENTE")
         print("="*70)

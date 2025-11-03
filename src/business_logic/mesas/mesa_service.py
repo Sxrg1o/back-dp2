@@ -14,6 +14,7 @@ from src.api.schemas.mesa_schema import (
     MesaSummary,
     MesaList,
 )
+from src.api.schemas.local_schema import LocalResponse
 from src.business_logic.exceptions.mesa_exceptions import (
     MesaValidationError,
     MesaNotFoundError,
@@ -207,11 +208,17 @@ class MesaService:
         if limit < 1:
             raise MesaValidationError("El parámetro 'limit' debe ser mayor a cero")
 
-        # Obtener mesas desde el repositorio
-        mesas, total = await self.repository.get_all(skip, limit)
+        # Obtener mesas desde el repositorio con local eager-loaded
+        mesas, total = await self.repository.get_all_with_local(skip, limit)
 
-        # Convertir modelos a esquemas de resumen
-        mesa_summaries = [MesaSummary.model_validate(mesa) for mesa in mesas]
+        # Convertir modelos a esquemas de resumen con local
+        mesa_summaries = []
+        for mesa in mesas:
+            mesa_dict = MesaSummary.model_validate(mesa).model_dump()
+            # Agregar local si la mesa tiene zona
+            if mesa.zona and mesa.zona.local:
+                mesa_dict['local'] = LocalResponse.model_validate(mesa.zona.local)
+            mesa_summaries.append(MesaSummary.model_validate(mesa_dict))
 
         # Retornar esquema de lista
         return MesaList(items=mesa_summaries, total=total)
@@ -265,3 +272,39 @@ class MesaService:
                 )
             # Si no es por nombre, reenviar la excepción original
             raise
+
+    async def get_local_by_mesa(self, mesa_id: str) -> LocalResponse:
+        """
+        Obtiene el local asociado a una mesa (via zona).
+
+        Parameters
+        ----------
+        mesa_id : str
+            ID de la mesa.
+
+        Returns
+        -------
+        LocalResponse
+            Esquema de respuesta con los datos del local.
+
+        Raises
+        ------
+        MesaNotFoundError
+            Si no se encuentra la mesa.
+        MesaValidationError
+            Si la mesa no tiene zona o la zona no tiene local asignado.
+        """
+        # Primero verificar que la mesa existe
+        mesa = await self.repository.get_by_id(mesa_id)
+        if not mesa:
+            raise MesaNotFoundError(f"No se encontró la mesa con ID {mesa_id}")
+
+        # Obtener el local via repository
+        local = await self.repository.get_local_by_mesa_id(mesa_id)
+
+        if not local:
+            raise MesaValidationError(
+                f"La mesa {mesa_id} no tiene un local asignado (debe estar asociada a una zona con local)"
+            )
+
+        return LocalResponse.model_validate(local)

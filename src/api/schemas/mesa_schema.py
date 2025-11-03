@@ -11,6 +11,7 @@ from datetime import datetime
 from pydantic import BaseModel, Field, ConfigDict
 
 from src.core.enums.mesa_enums import EstadoMesa
+from src.api.schemas.local_schema import LocalResponse
 
 class MesaBase(BaseModel):
     """
@@ -126,6 +127,7 @@ class MesaSummary(BaseModel):
     id_zona: Optional[str] = Field(description="ID de la zona donde se encuentra la mesa.")
     nota: Optional[str] = Field(description="Notas adicionales sobre la mesa.")
     estado: EstadoMesa = Field(description="Estado actual de la mesa.")
+    local: Optional[LocalResponse] = Field(default=None, description="Información del local al que pertenece esta mesa (via zona).")
 
 class MesaList(BaseModel):
     """Schema para respuestas paginadas que contienen una lista de mesas."""
