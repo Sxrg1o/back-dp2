@@ -5,12 +5,16 @@ Implementa la estructura de datos para las opciones/personalizaciones aplicadas
 a cada item del pedido, adaptado para coincidir con el esquema de MySQL restaurant_dp2.pedido_opcion.
 """
 
-from typing import Any, Dict, Optional, Type, TypeVar
+from typing import Any, Dict, Optional, Type, TypeVar, TYPE_CHECKING
 from decimal import Decimal
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy import String, DECIMAL, TIMESTAMP, ForeignKey
 from datetime import datetime
 from src.models.base_model import BaseModel
+
+if TYPE_CHECKING:
+    from src.models.pedidos.pedido_producto_model import PedidoProductoModel
+    from src.models.pedidos.producto_opcion_model import ProductoOpcionModel
 
 # Definimos un TypeVar para el tipado genérico
 T = TypeVar("T", bound="PedidoOpcionModel")
@@ -78,6 +82,18 @@ class PedidoOpcionModel(BaseModel):
     modificado_por: Mapped[Optional[str]] = mapped_column(
         String(36),
         nullable=True
+    )
+
+    # Relaciones
+    pedido_producto: Mapped["PedidoProductoModel"] = relationship(
+        "PedidoProductoModel",
+        back_populates="pedidos_opciones",
+        lazy="selectin"
+    )
+
+    producto_opcion: Mapped["ProductoOpcionModel"] = relationship(
+        "ProductoOpcionModel",
+        lazy="selectin"
     )
 
     # Métodos comunes para todos los modelos

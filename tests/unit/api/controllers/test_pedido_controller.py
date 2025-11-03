@@ -109,6 +109,7 @@ def sample_pedido_data():
     return {
         "id": str(ULID()),
         "id_mesa": str(ULID()),
+        "id_usuario": str(ULID()),
         "numero_pedido": "20251026-M001-001",
         "estado": EstadoPedido.PENDIENTE,
         "subtotal": Decimal("100.00"),
@@ -146,6 +147,7 @@ def test_create_pedido_success(
     # Arrange
     pedido_data = {
         "id_mesa": sample_pedido_data["id_mesa"],
+        "id_usuario": sample_pedido_data["id_usuario"],
         "subtotal": float(sample_pedido_data["subtotal"]),
         "total": float(sample_pedido_data["total"]),
     }
@@ -182,6 +184,7 @@ def test_create_pedido_conflict(test_client, mock_db_session_dependency, mock_pe
     # Arrange
     pedido_data = {
         "id_mesa": str(ULID()),
+        "id_usuario": str(ULID()),
         "total": 100.00,
     }
     mock_pedido_service.create_pedido.side_effect = PedidoConflictError(
@@ -345,7 +348,7 @@ def test_list_pedidos_success(
     assert response.status_code == 200
     assert response.json()["total"] == 2
     assert len(response.json()["items"]) == 2
-    mock_pedido_service.get_pedidos.assert_awaited_once_with(0, 10, None, None)
+    mock_pedido_service.get_pedidos.assert_awaited_once_with(0, 10, None, None, None)
 
 
 def test_update_pedido_success(

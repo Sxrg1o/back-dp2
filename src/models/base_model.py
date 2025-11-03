@@ -11,7 +11,7 @@ from sqlalchemy.orm import (
     Mapped,
     mapped_column,
 )
-from sqlalchemy import inspect, String
+from sqlalchemy import inspect, String, event
 from ulid import ULID
 
 T = TypeVar("T", bound="BaseModel")
@@ -41,6 +41,25 @@ class BaseModel(DeclarativeBase):
         primary_key=True,
         default=lambda: str(ULID())
     )
+
+    def __init__(self, **kwargs):
+        """Inicializa el modelo generando automáticamente el ID si no se proporciona.
+
+        En SQLAlchemy 2.0, los defaults de Python solo se ejecutan durante el INSERT
+        a la base de datos. Para que el ID esté disponible inmediatamente después de
+        crear la instancia (sin necesidad de flush), lo generamos en __init__.
+
+        Parameters
+        ----------
+        **kwargs : dict
+            Argumentos para inicializar el modelo.
+        """
+        # Auto-generar ID si no se proporciona
+        if 'id' not in kwargs or kwargs.get('id') is None:
+            kwargs['id'] = str(ULID())
+        # Asignar todos los atributos usando setattr para evitar problemas con SQLAlchemy
+        for key, value in kwargs.items():
+            setattr(self, key, value)
 
     # Métodos comunes para todos los modelos
     def to_dict(self) -> Dict[str, Any]:

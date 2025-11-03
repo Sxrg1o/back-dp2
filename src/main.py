@@ -143,7 +143,7 @@ def register_routers(app: FastAPI) -> None:
         ("src.api.controllers.tipo_opciones_controller", "Tipos de Opciones"),
         ("src.api.controllers.producto_opcion_controller", "Producto Opciones"),
         ("src.api.controllers.sync_controller", "Sincronización"),
-        # ("src.api.controllers.usuarios_controller", "Usuarios"),
+        #("src.api.controllers.auth_controller", "Usuarios"),
         ("src.api.controllers.mesa_controller", "Mesas"),
         ("src.api.controllers.pedido_controller", "Pedidos"),
         ("src.api.controllers.pedido_producto_controller", "Pedidos Productos"),
@@ -151,6 +151,12 @@ def register_routers(app: FastAPI) -> None:
         # ("src.api.controllers.division_cuenta_controller", "Divisiones de Cuenta"),
         # ("src.api.controllers.division_cuenta_detalle_controller", "Detalles de División"),
         # ("src.api.controllers.pagos_controller", "Pagos"),
+
+        # Controladores de catálogo multi-local
+        ("src.api.controllers.locales_categorias_controller", "Local - Categorías"),
+        ("src.api.controllers.locales_productos_controller", "Local - Productos"),
+        ("src.api.controllers.locales_tipos_opciones_controller", "Local - Tipos de Opciones"),
+        ("src.api.controllers.locales_productos_opciones_controller", "Local - Opciones de Productos"),
     ]
 
     # Prefijo API común para todas las rutas

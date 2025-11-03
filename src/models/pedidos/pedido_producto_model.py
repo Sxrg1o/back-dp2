@@ -14,6 +14,9 @@ from src.models.base_model import BaseModel
 
 if TYPE_CHECKING:
     from src.models.pagos.division_cuenta_detalle_model import DivisionCuentaDetalleModel
+    from src.models.pedidos.pedido_model import PedidoModel
+    from src.models.menu.producto_model import ProductoModel
+    from src.models.pedidos.pedido_opcion_model import PedidoOpcionModel
 
 # Definimos un TypeVar para el tipado genérico
 T = TypeVar("T", bound="PedidoProductoModel")
@@ -110,6 +113,24 @@ class PedidoProductoModel(BaseModel):
         )
 
     # Relaciones
+    pedido: Mapped["PedidoModel"] = relationship(
+        "PedidoModel",
+        back_populates="pedidos_productos",
+        lazy="selectin"
+    )
+
+    producto: Mapped["ProductoModel"] = relationship(
+        "ProductoModel",
+        lazy="selectin"
+    )
+
+    pedidos_opciones: Mapped[List["PedidoOpcionModel"]] = relationship(
+        "PedidoOpcionModel",
+        back_populates="pedido_producto",
+        cascade="all, delete-orphan",
+        lazy="select"
+    )
+
     divisiones_detalle: Mapped[List["DivisionCuentaDetalleModel"]] = relationship(
         "DivisionCuentaDetalleModel",
         back_populates="pedido_producto",

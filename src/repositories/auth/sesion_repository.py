@@ -300,3 +300,12 @@ class SesionRepository:
         except SQLAlchemyError as e:
             await self.session.rollback()
             raise e
+
+    async def get_by_local_ordered(self, local_id: str) -> List[SesionModel]:
+        query = (
+            select(SesionModel)
+            .where(SesionModel.id_local == local_id)
+            .order_by(SesionModel.orden.asc())
+        )
+        result = await self.session.execute(query)
+        return list(result.scalars().all())

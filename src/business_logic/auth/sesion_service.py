@@ -87,6 +87,7 @@ class SesionService:
                 id_domotica=sesion_data.id_domotica,
                 id_local=sesion_data.id_local,
                 estado=sesion_data.estado,
+                orden=sesion_data.orden,
             )
 
             # Persistir en la base de datos
