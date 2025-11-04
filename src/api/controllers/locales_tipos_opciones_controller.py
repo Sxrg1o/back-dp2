@@ -21,7 +21,7 @@ from src.api.schemas.locales_tipos_opciones_schema import (
     ActivarTiposOpcionesLoteRequest,
     OperacionLoteResponse,
 )
-from src.business_logic.exceptions.tipo_opcion_exceptions import TipoOpcionNotFoundError
+from src.business_logic.exceptions.tipo_opciones_exceptions import TipoOpcionNotFoundError
 from src.business_logic.exceptions.local_exceptions import LocalNotFoundError
 
 router = APIRouter(
