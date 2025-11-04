@@ -155,7 +155,10 @@ class DataEnricher:
         if count_productos == 0:
             print("\n ERROR: No hay productos en la BD.")
             print("   Ejecuta primero el scrapper para cargar productos.")
-            sys.exit(1)
+            raise RuntimeError(
+                "No hay productos en la base de datos. "
+                "Ejecuta primero el endpoint /api/v1/sync/platos para sincronizar productos."
+            )
         
         # Cargar TODOS los productos (274)
         result = await self.session.execute(select(ProductoModel))
