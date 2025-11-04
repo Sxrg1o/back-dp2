@@ -10,7 +10,7 @@ from sqlalchemy.exc import IntegrityError
 from src.repositories.mesas.locales_productos_opciones_repository import (
     LocalesProductosOpcionesRepository,
 )
-from src.repositories.menu.producto_opcion_repository import ProductoOpcionRepository
+from src.repositories.pedidos.producto_opcion_repository import ProductoOpcionRepository
 from src.repositories.mesas.local_repository import LocalRepository
 from src.models.mesas.locales_productos_opciones_model import (
     LocalesProductosOpcionesModel,
