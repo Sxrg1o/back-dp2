@@ -171,8 +171,8 @@ class PedidoModel(BaseModel, AuditMixin):
 
     # Constraints
     __table_args__ = (
-        CheckConstraint("subtotal >= 0", name="chk_pedido_subtotal_positivo"),
-        CheckConstraint("total >= 0", name="chk_pedido_total_positivo"),
+        CheckConstraint("subtotal >= 0", name="chk_pedidos_subtotal_positivo"),
+        CheckConstraint("total >= 0", name="chk_pedidos_total_positivo"),
     )
 
     # Métodos comunes para todos los modelos

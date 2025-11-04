@@ -140,10 +140,10 @@ class PedidoProductoModel(BaseModel):
 
     # Constraints
     __table_args__ = (
-        CheckConstraint("cantidad >= 1", name="chk_pedido_producto_cantidad_minima"),
-        CheckConstraint("precio_unitario > 0", name="chk_pedido_producto_precio_unitario_positivo"),
-        CheckConstraint("precio_opciones >= 0", name="chk_pedido_producto_precio_opciones_positivo"),
-        CheckConstraint("subtotal >= 0", name="chk_pedido_producto_subtotal_positivo"),
+        CheckConstraint("cantidad >= 1", name="chk_pedidos_producto_cantidad_minima"),
+        CheckConstraint("precio_unitario > 0", name="chk_pedidos_producto_precio_unitario_positivo"),
+        CheckConstraint("precio_opciones >= 0", name="chk_pedidos_producto_precio_opciones_positivo"),
+        CheckConstraint("subtotal >= 0", name="chk_pedidos_producto_subtotal_positivo"),
     )
 
     # Métodos
