@@ -106,6 +106,8 @@ class LoginRequest(BaseModel):
 class LoginResponse(BaseModel):
     """Schema para respuesta de login."""
 
+    status: int = Field(default=200, description="Código de estado HTTP")
+    code: str = Field(default="SUCCESS", description="Código de respuesta")
     access_token: str = Field(description="JWT access token")
     refresh_token: str = Field(description="JWT refresh token")
     token_type: str = Field(default="bearer", description="Tipo de token")
@@ -121,6 +123,8 @@ class RefreshTokenRequest(BaseModel):
 class RefreshTokenResponse(BaseModel):
     """Schema para respuesta de refresh token."""
 
+    status: int = Field(default=200, description="Código de estado HTTP")
+    code: str = Field(default="SUCCESS", description="Código de respuesta")
     access_token: str = Field(description="Nuevo JWT access token")
     token_type: str = Field(default="bearer", description="Tipo de token")
 
@@ -134,6 +138,8 @@ class RegisterRequest(UsuarioCreate):
 class RegisterResponse(BaseModel):
     """Schema para respuesta de registro."""
 
+    status: int = Field(default=201, description="Código de estado HTTP")
+    code: str = Field(default="SUCCESS", description="Código de respuesta")
     usuario: UsuarioResponse = Field(description="Usuario creado")
     message: str = Field(default="Usuario registrado exitosamente")
 
