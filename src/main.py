@@ -143,7 +143,6 @@ def register_routers(app: FastAPI) -> None:
         ("src.api.controllers.tipo_opciones_controller", "Tipos de Opciones"),
         ("src.api.controllers.producto_opcion_controller", "Producto Opciones"),
         ("src.api.controllers.sync_controller", "Sincronización"),
-        ("src.api.controllers.auth_controller", "Usuarios"),
         ("src.api.controllers.mesa_controller", "Mesas"),
         ("src.api.controllers.pedido_controller", "Pedidos"),
         ("src.api.controllers.pedido_producto_controller", "Pedidos Productos"),
@@ -170,12 +169,15 @@ def register_routers(app: FastAPI) -> None:
 
             if router and isinstance(router, APIRouter):
                 # Registrar el router con la aplicación
-                app.include_router(router, prefix=api_prefix, tags=[tag])
+                # No pasamos tags aquí porque los routers ya tienen sus tags definidos
+                app.include_router(router, prefix=api_prefix)
                 logger.info(f"Router '{tag}' registrado correctamente")
             else:
                 logger.warning(f"No se encontró un router válido en {module_name}")
         except Exception as e:
+            import traceback
             logger.error(f"Error al cargar el controlador {module_name}: {e}")
+            logger.error(f"Traceback completo:\n{traceback.format_exc()}")
 
 
 def create_app() -> FastAPI:

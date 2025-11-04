@@ -2,6 +2,7 @@
 Controlador para gestión de autenticación y usuarios.
 """
 
+from typing import Optional
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -32,11 +33,12 @@ from src.business_logic.exceptions.usuario_exceptions import (
 router = APIRouter(prefix="/auth", tags=["Autenticación"])
 
 # OAuth2 scheme para extraer el token del header Authorization
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/v1/auth/login")
+# Usamos auto_error=False para evitar errores durante la inicialización
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/v1/auth/login", auto_error=False)
 
 
 async def get_current_user(
-    token: str = Depends(oauth2_scheme),
+    token: Optional[str] = Depends(oauth2_scheme),
     session: AsyncSession = Depends(get_database_session),
 ) -> UsuarioResponse:
     """
@@ -44,7 +46,7 @@ async def get_current_user(
 
     Parameters
     ----------
-    token : str
+    token : Optional[str]
         Token JWT del header Authorization.
     session : AsyncSession
         Sesión de base de datos.
@@ -59,6 +61,18 @@ async def get_current_user(
     HTTPException
         401 si el token es inválido o el usuario no existe.
     """
+    # Verificar que el token existe (necesario con auto_error=False)
+    if not token:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail={
+                "status": 401,
+                "code": "UNAUTHORIZED",
+                "detail": "Token de autenticación requerido"
+            },
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    
     # Verificar el token
     payload = security.verify_token(token)
     if not payload:
