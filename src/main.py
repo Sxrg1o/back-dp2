@@ -14,6 +14,44 @@ from src.core.config import get_settings
 from src.core.logging import configure_logging
 from src.core.dependencies import ErrorHandlerMiddleware
 
+# ======================= SOLUCION AL ERROR DE MAPPER =======================
+# Importar TODOS los modelos aqui para registrarlos en SQLAlchemy
+# ANTES de que cualquier controlador sea importado.
+# Esto resuelve el error: failed to locate a name DivisionCuentaModel
+
+# Auth models
+from src.models.auth.rol_model import RolModel  # noqa: F401
+from src.models.auth.usuario_model import UsuarioModel  # noqa: F401
+from src.models.auth.sesion_model import SesionModel  # noqa: F401
+
+# Menu models
+from src.models.menu.categoria_model import CategoriaModel  # noqa: F401
+from src.models.menu.alergeno_model import AlergenoModel  # noqa: F401
+from src.models.menu.producto_model import ProductoModel  # noqa: F401
+from src.models.menu.producto_alergeno_model import ProductoAlergenoModel  # noqa: F401
+
+# Mesas models
+from src.models.mesas.local_model import LocalModel  # noqa: F401
+from src.models.mesas.zona_model import ZonaModel  # noqa: F401
+from src.models.mesas.mesa_model import MesaModel  # noqa: F401
+from src.models.mesas.sesion_mesa_model import SesionMesaModel  # noqa: F401
+from src.models.mesas.locales_categorias_model import LocalesCategoriasModel  # noqa: F401
+from src.models.mesas.locales_productos_model import LocalesProductosModel  # noqa: F401
+from src.models.mesas.locales_productos_opciones_model import LocalesProductosOpcionesModel  # noqa: F401
+from src.models.mesas.locales_tipos_opciones_model import LocalesTiposOpcionesModel  # noqa: F401
+
+# Pedidos models - CRITICO: importar ANTES de pagos
+from src.models.pedidos.tipo_opciones_model import TipoOpcionModel  # noqa: F401
+from src.models.pedidos.producto_opcion_model import ProductoOpcionModel  # noqa: F401
+from src.models.pedidos.pedido_model import PedidoModel  # noqa: F401
+from src.models.pedidos.pedido_producto_model import PedidoProductoModel  # noqa: F401
+from src.models.pedidos.pedido_opcion_model import PedidoOpcionModel  # noqa: F401
+
+# Pagos models - DESPUES de pedidos (por la relacion bidireccional)
+from src.models.pagos.division_cuenta_model import DivisionCuentaModel  # noqa: F401
+from src.models.pagos.division_cuenta_detalle_model import DivisionCuentaDetalleModel  # noqa: F401
+# ===========================================================================
+
 
 # Configurar logger para este módulo
 logger = logging.getLogger(__name__)
@@ -95,16 +133,16 @@ async def lifespan(app: FastAPI):
     # Configurar sistema de logging
     configure_logging()
 
-    # Crear tablas en la base de datos si no existen (solo en desarrollo)
-    # import os
-    # if os.getenv("INIT_DB", "false").lower() == "true":
-    #     logger.info("INIT_DB=true: Creando tablas en la base de datos...")
-    await create_tables()
-    # Pequeña espera para asegurar que las tablas estén completamente creadas
-    import asyncio
-    await asyncio.sleep(0.5)
-    # else:
-    #     logger.info("INIT_DB no está activado, omitiendo creación de tablas")
+    # Crear tablas en la base de datos si no existen
+    import os
+    if os.getenv("INIT_DB", "false").lower() == "true":
+        logger.info("INIT_DB=true: Creando tablas en la base de datos...")
+        await create_tables()
+        # Pequeña espera para asegurar que las tablas estén completamente creadas
+        import asyncio
+        await asyncio.sleep(0.5)
+    else:
+        logger.info("INIT_DB no está activado, omitiendo creación de tablas")
 
     # Ejecutar seed automáticamente si la BD está vacía
     # await auto_seed_database()
