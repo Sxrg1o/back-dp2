@@ -55,6 +55,12 @@ class SesionModel(BaseModel, AuditMixin):
     id_local: Mapped[str] = mapped_column(
         String(36), ForeignKey("locales.id", ondelete="CASCADE"), nullable=False, index=True, comment="Identificador del local donde se registró la sesión"
     )
+    orden: Mapped[int] = mapped_column(
+        nullable=False,
+        default=1,
+        index=True,
+        comment="Jerarquía de la sesión, 1 es la más alta"
+    )
     estado: Mapped[EstadoSesion] = mapped_column(
         SQLEnum(EstadoSesion), nullable=False, default=EstadoSesion.ACTIVO, index=True, comment="Estado actual de la sesión"
     )

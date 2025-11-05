@@ -64,9 +64,33 @@ class ProductoAlergenoRepository:
             await self.session.rollback()
             raise
 
-    async def get_by_id(self, id_producto: str, id_alergeno: str) -> Optional[ProductoAlergenoModel]:
+    async def get_by_id(self, id: str) -> Optional[ProductoAlergenoModel]:
         """
-        Obtiene una relación producto-alérgeno por su clave primaria compuesta.
+        Obtiene una relación producto-alérgeno por su ID simple (ULID).
+
+        Parameters
+        ----------
+        id : str
+            Identificador único ULID de la relación.
+
+        Returns
+        -------
+        Optional[ProductoAlergenoModel]
+            La relación encontrada o None si no existe.
+        """
+        query = select(ProductoAlergenoModel).where(
+            ProductoAlergenoModel.id == id
+        )
+        result = await self.session.execute(query)
+        return result.scalars().first()
+
+    async def get_by_producto_alergeno(
+        self, id_producto: str, id_alergeno: str
+    ) -> Optional[ProductoAlergenoModel]:
+        """
+        Obtiene una relación producto-alérgeno por su combinación (backward compatibility).
+
+        LEGACY METHOD: Usar get_by_id() para nuevas implementaciones.
 
         Parameters
         ----------
@@ -87,9 +111,43 @@ class ProductoAlergenoRepository:
         result = await self.session.execute(query)
         return result.scalars().first()
 
-    async def delete(self, id_producto: str, id_alergeno: str) -> bool:
+    async def delete(self, id: str) -> bool:
         """
-        Elimina una relación producto-alérgeno de la base de datos.
+        Elimina una relación producto-alérgeno de la base de datos por su ID.
+
+        Parameters
+        ----------
+        id : str
+            Identificador único ULID de la relación.
+
+        Returns
+        -------
+        bool
+            True si la relación fue eliminada, False si no existía.
+
+        Raises
+        ------
+        SQLAlchemyError
+            Si ocurre un error durante la operación en la base de datos.
+        """
+        try:
+            stmt = delete(ProductoAlergenoModel).where(
+                ProductoAlergenoModel.id == id
+            )
+            result = await self.session.execute(stmt)
+            await self.session.commit()
+            return result.rowcount > 0
+        except SQLAlchemyError:
+            await self.session.rollback()
+            raise
+
+    async def delete_by_producto_alergeno(
+        self, id_producto: str, id_alergeno: str
+    ) -> bool:
+        """
+        Elimina una relación por combinación producto-alérgeno (backward compatibility).
+
+        LEGACY METHOD: Usar delete() para nuevas implementaciones.
 
         Parameters
         ----------
@@ -120,11 +178,72 @@ class ProductoAlergenoRepository:
             await self.session.rollback()
             raise
 
-    async def update(
+    async def update(self, id: str, **kwargs) -> Optional[ProductoAlergenoModel]:
+        """
+        Actualiza una relación producto-alérgeno existente por su ID.
+
+        Parameters
+        ----------
+        id : str
+            Identificador único ULID de la relación.
+        **kwargs
+            Campos y valores a actualizar.
+
+        Returns
+        -------
+        Optional[ProductoAlergenoModel]
+            La relación actualizada o None si no existe.
+
+        Raises
+        ------
+        SQLAlchemyError
+            Si ocurre un error durante la operación en la base de datos.
+        """
+        try:
+            # Filtrar solo los campos que pertenecen al modelo
+            # Excluir las claves primarias (id, id_producto, id_alergeno)
+            valid_fields = {
+                k: v for k, v in kwargs.items()
+                if hasattr(ProductoAlergenoModel, k) and k not in ("id", "id_producto", "id_alergeno")
+            }
+
+            if not valid_fields:
+                # No hay campos válidos para actualizar
+                return await self.get_by_id(id)
+
+            # Construir y ejecutar la sentencia de actualización
+            stmt = (
+                update(ProductoAlergenoModel)
+                .where(ProductoAlergenoModel.id == id)
+                .values(**valid_fields)
+                .returning(ProductoAlergenoModel)
+            )
+
+            result = await self.session.execute(stmt)
+            await self.session.commit()
+
+            # Obtener el resultado actualizado
+            updated_producto_alergeno = result.scalars().first()
+
+            # Si no se encontró la relación, retornar None
+            if not updated_producto_alergeno:
+                return None
+
+            # Refrescar el objeto desde la base de datos
+            await self.session.refresh(updated_producto_alergeno)
+
+            return updated_producto_alergeno
+        except SQLAlchemyError:
+            await self.session.rollback()
+            raise
+
+    async def update_by_producto_alergeno(
         self, id_producto: str, id_alergeno: str, **kwargs
     ) -> Optional[ProductoAlergenoModel]:
         """
-        Actualiza una relación producto-alérgeno existente con los valores proporcionados.
+        Actualiza una relación por combinación producto-alérgeno (backward compatibility).
+
+        LEGACY METHOD: Usar update() para nuevas implementaciones.
 
         Parameters
         ----------
@@ -147,15 +266,15 @@ class ProductoAlergenoRepository:
         """
         try:
             # Filtrar solo los campos que pertenecen al modelo
-            # Excluir las claves primarias (id_producto, id_alergeno)
+            # Excluir las claves primarias
             valid_fields = {
                 k: v for k, v in kwargs.items()
-                if hasattr(ProductoAlergenoModel, k) and k not in ("id_producto", "id_alergeno", "id")
+                if hasattr(ProductoAlergenoModel, k) and k not in ("id", "id_producto", "id_alergeno")
             }
 
             if not valid_fields:
                 # No hay campos válidos para actualizar
-                return await self.get_by_id(id_producto, id_alergeno)
+                return await self.get_by_producto_alergeno(id_producto, id_alergeno)
 
             # Construir y ejecutar la sentencia de actualización
             stmt = (

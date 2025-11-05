@@ -8,8 +8,11 @@ from datetime import datetime
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, delete, update, func, and_, extract
+from sqlalchemy.orm import selectinload
 
 from src.models.pedidos.pedido_model import PedidoModel
+from src.models.pedidos.pedido_producto_model import PedidoProductoModel
+from src.models.pedidos.pedido_opcion_model import PedidoOpcionModel
 from src.core.enums.pedido_enums import EstadoPedido
 
 
@@ -187,7 +190,8 @@ class PedidoRepository:
         skip: int = 0,
         limit: int = 100,
         estado: Optional[EstadoPedido] = None,
-        id_mesa: Optional[str] = None
+        id_mesa: Optional[str] = None,
+        id_usuario: Optional[str] = None
     ) -> Tuple[List[PedidoModel], int]:
         """
         Obtiene una lista paginada de pedidos y el total de registros.
@@ -202,6 +206,8 @@ class PedidoRepository:
             Filtrar por estado del pedido.
         id_mesa : str, optional
             Filtrar por ID de mesa.
+        id_usuario : str, optional
+            Filtrar por ID de usuario.
 
         Returns
         -------
@@ -218,6 +224,8 @@ class PedidoRepository:
             filters.append(PedidoModel.estado == estado)
         if id_mesa is not None:
             filters.append(PedidoModel.id_mesa == id_mesa)
+        if id_usuario is not None:
+            filters.append(PedidoModel.id_usuario == id_usuario)
 
         if filters:
             query = query.where(and_(*filters))
@@ -287,5 +295,78 @@ class PedidoRepository:
                         return 0
 
             return 0
+        except SQLAlchemyError:
+            raise
+
+    async def get_all_detallado(
+        self,
+        skip: int = 0,
+        limit: int = 100,
+        estado: Optional[EstadoPedido] = None,
+        id_mesa: Optional[str] = None,
+        id_usuario: Optional[str] = None
+    ) -> Tuple[List[PedidoModel], int]:
+        """
+        Obtiene una lista paginada de pedidos con productos y opciones eager-loaded.
+
+        Parameters
+        ----------
+        skip : int, optional
+            Número de registros a omitir (offset), por defecto 0.
+        limit : int, optional
+            Número máximo de registros a retornar, por defecto 100.
+        estado : EstadoPedido, optional
+            Filtrar por estado del pedido.
+        id_mesa : str, optional
+            Filtrar por ID de mesa.
+        id_usuario : str, optional
+            Filtrar por ID de usuario.
+
+        Returns
+        -------
+        Tuple[List[PedidoModel], int]
+            Tupla con la lista de pedidos (con relaciones cargadas) y el número total de registros.
+        """
+        # Construir la consulta base con eager loading
+        query = (
+            select(PedidoModel)
+            .outerjoin(PedidoModel.pedidos_productos)
+            .outerjoin(PedidoProductoModel.pedidos_opciones)
+            .options(
+                selectinload(PedidoModel.pedidos_productos)
+                .selectinload(PedidoProductoModel.producto),
+                selectinload(PedidoModel.pedidos_productos)
+                .selectinload(PedidoProductoModel.pedidos_opciones)
+                .selectinload(PedidoOpcionModel.producto_opcion)
+            )
+        )
+        count_query = select(func.count(PedidoModel.id.distinct()))
+
+        # Aplicar filtros si están presentes
+        filters = []
+        if estado is not None:
+            filters.append(PedidoModel.estado == estado)
+        if id_mesa is not None:
+            filters.append(PedidoModel.id_mesa == id_mesa)
+        if id_usuario is not None:
+            filters.append(PedidoModel.id_usuario == id_usuario)
+
+        if filters:
+            query = query.where(and_(*filters))
+            count_query = count_query.where(and_(*filters))
+
+        # Aplicar paginación y ordenamiento
+        query = query.order_by(PedidoModel.fecha_creacion.desc()).offset(skip).limit(limit)
+
+        try:
+            # Ejecutar ambas consultas
+            result = await self.session.execute(query)
+            count_result = await self.session.execute(count_query)
+
+            # Obtener los resultados con unique() para evitar duplicados por los joins
+            pedidos = result.unique().scalars().all()
+            total = count_result.scalar() or 0
+
+            return list(pedidos), total
         except SQLAlchemyError:
             raise

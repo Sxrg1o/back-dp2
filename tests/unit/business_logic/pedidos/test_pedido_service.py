@@ -68,6 +68,7 @@ def sample_pedido_data():
     return {
         "id": str(ULID()),
         "id_mesa": str(ULID()),
+        "id_usuario": str(ULID()),
         "numero_pedido": "20251026-M001-001",
         "estado": EstadoPedido.PENDIENTE,
         "subtotal": Decimal("100.00"),
@@ -119,6 +120,7 @@ async def test_create_pedido_success(
     # Arrange
     pedido_create = PedidoCreate(
         id_mesa=sample_pedido_data["id_mesa"],
+        id_usuario=sample_pedido_data["id_usuario"],
         subtotal=sample_pedido_data["subtotal"],
         total=sample_pedido_data["total"],
     )
@@ -166,6 +168,7 @@ async def test_create_pedido_mesa_not_found(
     # Arrange
     pedido_create = PedidoCreate(
         id_mesa=str(ULID()),
+        id_usuario=str(ULID()),
         total=Decimal("100.00"),
     )
     mock_mesa_repository.get_by_id.return_value = None
@@ -335,7 +338,7 @@ async def test_get_pedidos_success(
     # Assert
     assert result.total == 2
     assert len(result.items) == 2
-    mock_repository.get_all.assert_called_once_with(0, 10, None, None)
+    mock_repository.get_all.assert_called_once_with(0, 10, None, None, None)
 
 
 @pytest.mark.asyncio
@@ -587,6 +590,7 @@ async def test_create_pedido_completo_success(
 
     pedido_completo_data = PedidoCompletoCreate(
         id_mesa=mesa.id,
+        id_usuario=str(ULID()),
         items=items,
         notas_cliente="Mesa para evento",
         notas_cocina="Urgente",
@@ -605,6 +609,7 @@ async def test_create_pedido_completo_success(
     created_pedido = PedidoModel(
         id=str(ULID()),
         id_mesa=mesa.id,
+        id_usuario=pedido_completo_data.id_usuario,
         numero_pedido="20251026-M001-001",
         estado=EstadoPedido.PENDIENTE,
         subtotal=Decimal("57.00"),  # (25.50 + 3.00) * 2
@@ -679,7 +684,9 @@ async def test_create_pedido_completo_mesa_not_found(
     ]
 
     pedido_completo_data = PedidoCompletoCreate(
-        id_mesa=str(ULID()), items=items
+        id_mesa=str(ULID()),
+        id_usuario=str(ULID()),
+        items=items
     )
 
     mock_mesa_repository.get_by_id.return_value = None
@@ -727,7 +734,9 @@ async def test_create_pedido_completo_producto_not_found(
     ]
 
     pedido_completo_data = PedidoCompletoCreate(
-        id_mesa=mesa.id, items=items
+        id_mesa=mesa.id,
+        id_usuario=str(ULID()),
+        items=items
     )
 
     mock_mesa_repository.get_by_id.return_value = mesa
@@ -782,7 +791,9 @@ async def test_create_pedido_completo_producto_not_available(
     ]
 
     pedido_completo_data = PedidoCompletoCreate(
-        id_mesa=mesa.id, items=items
+        id_mesa=mesa.id,
+        id_usuario=str(ULID()),
+        items=items
     )
 
     mock_mesa_repository.get_by_id.return_value = mesa

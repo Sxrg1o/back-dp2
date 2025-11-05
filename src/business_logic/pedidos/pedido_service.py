@@ -31,6 +31,13 @@ from src.api.schemas.pedido_schema import (
 from src.api.schemas.pedido_producto_schema import PedidoProductoResponse
 from src.api.schemas.pedido_opcion_schema import PedidoOpcionResponse
 from src.api.schemas.pedido_schema import PedidoProductoWithOpcionesResponse
+from src.api.schemas.pedido_detallado_schema import (
+    PedidoDetalladoResponse,
+    PedidoDetalladoList,
+    PedidoProductoDetalladoResponse,
+    ProductoDetalleResponse,
+    OpcionDetalleResponse,
+)
 from src.business_logic.exceptions.pedido_exceptions import (
     PedidoValidationError,
     PedidoNotFoundError,
@@ -149,6 +156,7 @@ class PedidoService:
             # Crear modelo de pedido desde los datos
             pedido = PedidoModel(
                 id_mesa=pedido_data.id_mesa,
+                id_usuario=pedido_data.id_usuario,
                 numero_pedido=numero_pedido,
                 estado=EstadoPedido.PENDIENTE,
                 subtotal=pedido_data.subtotal or Decimal("0.00"),
@@ -264,6 +272,7 @@ class PedidoService:
         limit: int = 100,
         estado: Optional[EstadoPedido] = None,
         id_mesa: Optional[str] = None,
+        id_usuario: Optional[str] = None,
     ) -> PedidoList:
         """
         Obtiene una lista paginada de pedidos.
@@ -278,6 +287,8 @@ class PedidoService:
             Filtrar por estado del pedido.
         id_mesa : str, optional
             Filtrar por ID de mesa.
+        id_usuario : str, optional
+            Filtrar por ID de usuario.
 
         Returns
         -------
@@ -293,13 +304,129 @@ class PedidoService:
             raise PedidoValidationError("El parámetro 'limit' debe ser mayor a cero")
 
         # Obtener pedidos desde el repositorio
-        pedidos, total = await self.repository.get_all(skip, limit, estado, id_mesa)
+        pedidos, total = await self.repository.get_all(skip, limit, estado, id_mesa, id_usuario)
 
         # Convertir modelos a esquemas de resumen
         pedido_summaries = [PedidoSummary.model_validate(pedido) for pedido in pedidos]
 
         # Retornar esquema de lista
         return PedidoList(items=pedido_summaries, total=total)
+
+    async def get_pedidos_detallado(
+        self,
+        skip: int = 0,
+        limit: int = 100,
+        estado: Optional[EstadoPedido] = None,
+        id_mesa: Optional[str] = None,
+        id_usuario: Optional[str] = None,
+    ) -> PedidoDetalladoList:
+        """
+        Obtiene una lista paginada de pedidos con información detallada de productos y opciones.
+
+        Parameters
+        ----------
+        skip : int, optional
+            Número de registros a omitir (offset), por defecto 0.
+        limit : int, optional
+            Número máximo de registros a retornar, por defecto 100.
+        estado : EstadoPedido, optional
+            Filtrar por estado del pedido.
+        id_mesa : str, optional
+            Filtrar por ID de mesa.
+        id_usuario : str, optional
+            Filtrar por ID de usuario.
+
+        Returns
+        -------
+        PedidoDetalladoList
+            Esquema con la lista de pedidos detallados y el total.
+        """
+        # Validar parámetros de entrada
+        if skip < 0:
+            raise PedidoValidationError(
+                "El parámetro 'skip' debe ser mayor o igual a cero"
+            )
+        if limit < 1:
+            raise PedidoValidationError("El parámetro 'limit' debe ser mayor a cero")
+
+        # Obtener pedidos con relaciones eager-loaded desde el repositorio
+        pedidos, total = await self.repository.get_all_detallado(skip, limit, estado, id_mesa, id_usuario)
+
+        # Convertir modelos a esquemas detallados
+        pedidos_detallados = []
+        for pedido in pedidos:
+            # Construir datos básicos del pedido
+            pedido_dict = pedido.to_dict()
+
+            # Procesar productos del pedido con sus opciones
+            productos_detallados = []
+            for pedido_producto in pedido.pedidos_productos:
+                # Datos del producto
+                producto_data = None
+                if pedido_producto.producto:
+                    producto_data = ProductoDetalleResponse(
+                        id=pedido_producto.producto.id,
+                        nombre=pedido_producto.producto.nombre,
+                        descripcion=pedido_producto.producto.descripcion,
+                        precio_base=pedido_producto.producto.precio_base,
+                        disponible=pedido_producto.producto.disponible,
+                        id_categoria=pedido_producto.producto.id_categoria
+                    )
+
+                # Procesar opciones del producto
+                opciones_detalladas = []
+                for pedido_opcion in pedido_producto.pedidos_opciones:
+                    opcion_data = OpcionDetalleResponse(
+                        id=pedido_opcion.id,
+                        id_pedido_producto=pedido_opcion.id_pedido_producto,
+                        id_producto_opcion=pedido_opcion.id_producto_opcion,
+                        precio_adicional=pedido_opcion.precio_adicional,
+                        nombre_opcion=pedido_opcion.producto_opcion.nombre if pedido_opcion.producto_opcion else None,
+                        descripcion_opcion=None  # ProductoOpcion no tiene descripción
+                    )
+                    opciones_detalladas.append(opcion_data)
+
+                # Construir el producto detallado con sus opciones
+                producto_detallado = PedidoProductoDetalladoResponse(
+                    id=pedido_producto.id,
+                    id_pedido=pedido_producto.id_pedido,
+                    id_producto=pedido_producto.id_producto,
+                    cantidad=pedido_producto.cantidad,
+                    precio_unitario=pedido_producto.precio_unitario,
+                    precio_opciones=pedido_producto.precio_opciones,
+                    subtotal=pedido_producto.subtotal,
+                    notas_personalizacion=pedido_producto.notas_personalizacion,
+                    producto=producto_data,
+                    opciones=opciones_detalladas
+                )
+                productos_detallados.append(producto_detallado)
+
+            # Construir el pedido detallado completo
+            pedido_detallado = PedidoDetalladoResponse(
+                id=pedido.id,
+                id_mesa=pedido.id_mesa,
+                id_usuario=pedido.id_usuario,
+                numero_pedido=pedido.numero_pedido,
+                estado=pedido.estado,
+                subtotal=pedido.subtotal,
+                impuestos=pedido.impuestos,
+                descuentos=pedido.descuentos,
+                total=pedido.total,
+                notas_cliente=pedido.notas_cliente,
+                notas_cocina=pedido.notas_cocina,
+                fecha_creacion=pedido.fecha_creacion,
+                fecha_modificacion=pedido.fecha_modificacion,
+                fecha_confirmado=pedido.fecha_confirmado,
+                fecha_en_preparacion=pedido.fecha_en_preparacion,
+                fecha_listo=pedido.fecha_listo,
+                fecha_entregado=pedido.fecha_entregado,
+                fecha_cancelado=pedido.fecha_cancelado,
+                productos=productos_detallados
+            )
+            pedidos_detallados.append(pedido_detallado)
+
+        # Retornar esquema de lista
+        return PedidoDetalladoList(items=pedidos_detallados, total=total)
 
     async def update_pedido(
         self, pedido_id: str, pedido_data: PedidoUpdate
@@ -490,6 +617,7 @@ class PedidoService:
             # Crear el pedido
             pedido = PedidoModel(
                 id_mesa=pedido_data.id_mesa,
+                id_usuario=pedido_data.id_usuario,
                 numero_pedido=numero_pedido,
                 estado=EstadoPedido.PENDIENTE,
                 subtotal=subtotal,

@@ -114,6 +114,8 @@ class UsuarioService:
         usuario_response = UsuarioResponse.model_validate(usuario)
 
         return LoginResponse(
+            status=200,
+            code="SUCCESS",
             access_token=access_token,
             refresh_token=refresh_token,
             token_type="bearer",
@@ -180,6 +182,8 @@ class UsuarioService:
             usuario_response = UsuarioResponse.model_validate(created_usuario)
 
             return RegisterResponse(
+                status=201,
+                code="SUCCESS",
                 usuario=usuario_response,
                 message="Usuario registrado exitosamente",
             )
@@ -237,6 +241,8 @@ class UsuarioService:
         access_token = security.create_access_token(token_data)
 
         return RefreshTokenResponse(
+            status=200,
+            code="SUCCESS",
             access_token=access_token,
             token_type="bearer",
         )

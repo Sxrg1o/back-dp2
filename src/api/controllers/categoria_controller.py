@@ -2,6 +2,7 @@
 Endpoints para gestión de categorías.
 """
 
+from typing import Optional
 from src.business_logic.menu.categoria_service import CategoriaService
 from fastapi import APIRouter, Depends, HTTPException, status, Query
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -72,15 +73,24 @@ async def list_categorias(
         100, gt=0, le=500, description="Número máximo de registros a retornar"
     ),
     activas_only: bool = Query(False, description="Mostrar solo categorías activas"),
+    id_mesa: Optional[str] = Query(None, description="ID de mesa (filtra por local de la mesa)"),
+    id_local: Optional[str] = Query(None, description="ID de local (filtro directo)"),
     session: AsyncSession = Depends(get_database_session),
 ) -> CategoriaList:
     """
     Obtiene una lista paginada de categorías.
-    
+
+    Ejemplos:
+    - GET /categorias → Todas las categorías
+    - GET /categorias?id_mesa=abc123 → Categorías del local de la mesa
+    - GET /categorias?id_local=xyz789 → Categorías del local específico
+
     Args:
         skip: Número de registros a omitir (offset), por defecto 0.
         limit: Número máximo de registros a retornar, por defecto 100.
         activas_only: Si True, solo muestra categorías activas.
+        id_mesa: ID de mesa para filtrar por su local (el backend resuelve local automáticamente).
+        id_local: ID de local para filtrar directamente.
         session: Sesión de base de datos.
 
     Returns:
@@ -88,7 +98,7 @@ async def list_categorias(
 
     Raises:
         HTTPException:
-            - 400: Si los parámetros de paginación son inválidos.
+            - 400: Si los parámetros de paginación son inválidos o la mesa no tiene local.
             - 500: Si ocurre un error interno del servidor.
     """
     try:
@@ -96,7 +106,7 @@ async def list_categorias(
         if activas_only:
             return await categoria_service.get_categorias_activas(skip, limit)
         else:
-            return await categoria_service.get_categorias(skip, limit)
+            return await categoria_service.get_categorias(skip, limit, id_mesa, id_local)
     except CategoriaValidationError as e:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
     except Exception as e:

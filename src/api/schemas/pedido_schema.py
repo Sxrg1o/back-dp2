@@ -13,6 +13,9 @@ class PedidoBase(BaseModel):
     """Base schema for Pedido."""
 
     id_mesa: str = Field(description="Mesa ID (ULID)", min_length=1, max_length=36)
+    id_usuario: str = Field(
+        description="Usuario/Cliente ID (ULID)", min_length=1, max_length=36
+    )
     notas_cliente: Optional[str] = Field(
         default=None, description="Cliente notes"
     )
@@ -239,6 +242,9 @@ class PedidoCompletoCreate(BaseModel):
     """Schema for creating a complete order with items in one transaction."""
 
     id_mesa: str = Field(description="Mesa ID (ULID)", min_length=1, max_length=36)
+    id_usuario: str = Field(
+        description="Usuario/Cliente ID (ULID)", min_length=1, max_length=36
+    )
     items: List[PedidoItemCreate] = Field(description="List of order items", min_length=1)
     notas_cliente: Optional[str] = Field(
         default=None, description="Cliente notes"

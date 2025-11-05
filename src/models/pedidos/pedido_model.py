@@ -16,6 +16,8 @@ from src.core.enums.pedido_enums import EstadoPedido
 
 if TYPE_CHECKING:
     from src.models.pagos.division_cuenta_model import DivisionCuentaModel
+    from src.models.mesas.sesion_mesa_model import SesionMesaModel
+    from src.models.pedidos.pedido_producto_model import PedidoProductoModel
 
 # Definimos un TypeVar para el tipado genérico
 T = TypeVar("T", bound="PedidoModel")
@@ -33,6 +35,10 @@ class PedidoModel(BaseModel, AuditMixin):
         Identificador único ULID del pedido (heredado de BaseModel).
     id_mesa : str
         Identificador ULID de la mesa asociada al pedido.
+    id_usuario : str
+        Identificador ULID del cliente/usuario que realizó el pedido.
+    # id_sesion_mesa : str
+    #     Identificador ULID de la sesión de mesa a la que pertenece este pedido.
     numero_pedido : str
         Número único del pedido, generado automáticamente con formato YYYYMMDD-M{numero}-{seq}.
     estado : EstadoPedido
@@ -77,6 +83,20 @@ class PedidoModel(BaseModel, AuditMixin):
         ForeignKey("mesas.id", ondelete="RESTRICT"),
         nullable=False
     )
+
+    id_usuario: Mapped[str] = mapped_column(
+        String(36),
+        ForeignKey("usuarios.id", ondelete="RESTRICT"),
+        nullable=False,
+        comment="Cliente/usuario que realizó el pedido"
+    )
+
+    # id_sesion_mesa: Mapped[str] = mapped_column(
+    #     String(36),
+    #     ForeignKey("sesiones_mesas.id", ondelete="RESTRICT"),
+    #     nullable=False,
+    #     comment="Sesión de mesa a la que pertenece este pedido"
+    # )
 
     # Campos específicos del modelo de pedido
     numero_pedido: Mapped[str] = mapped_column(
@@ -129,6 +149,19 @@ class PedidoModel(BaseModel, AuditMixin):
     fecha_cancelado: Mapped[Optional[datetime]] = mapped_column(TIMESTAMP, nullable=True)
 
     # Relaciones
+    # sesion_mesa: Mapped["SesionMesaModel"] = relationship(
+    #     "SesionMesaModel",
+    #     back_populates="pedidos",
+    #     lazy="selectin"
+    # )
+
+    pedidos_productos: Mapped[List["PedidoProductoModel"]] = relationship(
+        "PedidoProductoModel",
+        back_populates="pedido",
+        cascade="all, delete-orphan",
+        lazy="select"
+    )
+
     divisiones_cuenta: Mapped[List["DivisionCuentaModel"]] = relationship(
         "DivisionCuentaModel",
         back_populates="pedido",
@@ -138,8 +171,8 @@ class PedidoModel(BaseModel, AuditMixin):
 
     # Constraints
     __table_args__ = (
-        CheckConstraint("subtotal >= 0", name="chk_pedido_subtotal_positivo"),
-        CheckConstraint("total >= 0", name="chk_pedido_total_positivo"),
+        CheckConstraint("subtotal >= 0", name="chk_pedidos_subtotal_positivo"),
+        CheckConstraint("total >= 0", name="chk_pedidos_total_positivo"),
     )
 
     # Métodos comunes para todos los modelos

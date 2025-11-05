@@ -2,6 +2,7 @@
 Controlador para gestión de autenticación y usuarios.
 """
 
+from typing import Optional
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -32,11 +33,12 @@ from src.business_logic.exceptions.usuario_exceptions import (
 router = APIRouter(prefix="/auth", tags=["Autenticación"])
 
 # OAuth2 scheme para extraer el token del header Authorization
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/v1/auth/login")
+# Usamos auto_error=False para evitar errores durante la inicialización
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/v1/auth/login", auto_error=False)
 
 
 async def get_current_user(
-    token: str = Depends(oauth2_scheme),
+    token: Optional[str] = Depends(oauth2_scheme),
     session: AsyncSession = Depends(get_database_session),
 ) -> UsuarioResponse:
     """
@@ -44,7 +46,7 @@ async def get_current_user(
 
     Parameters
     ----------
-    token : str
+    token : Optional[str]
         Token JWT del header Authorization.
     session : AsyncSession
         Sesión de base de datos.
@@ -59,12 +61,28 @@ async def get_current_user(
     HTTPException
         401 si el token es inválido o el usuario no existe.
     """
+    # Verificar que el token existe (necesario con auto_error=False)
+    if not token:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail={
+                "status": 401,
+                "code": "UNAUTHORIZED",
+                "detail": "Token de autenticación requerido"
+            },
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    
     # Verificar el token
     payload = security.verify_token(token)
     if not payload:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Token inválido o expirado",
+            detail={
+                "status": 401,
+                "code": "UNAUTHORIZED",
+                "detail": "Token inválido o expirado"
+            },
             headers={"WWW-Authenticate": "Bearer"},
         )
 
@@ -72,7 +90,11 @@ async def get_current_user(
     if payload.get("type") != "access":
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Token no es un access token válido",
+            detail={
+                "status": 401,
+                "code": "UNAUTHORIZED",
+                "detail": "Token no es un access token válido"
+            },
             headers={"WWW-Authenticate": "Bearer"},
         )
 
@@ -81,7 +103,11 @@ async def get_current_user(
     if not usuario_id:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Token inválido: falta información del usuario",
+            detail={
+                "status": 401,
+                "code": "UNAUTHORIZED",
+                "detail": "Token inválido: falta información del usuario"
+            },
             headers={"WWW-Authenticate": "Bearer"},
         )
 
@@ -95,7 +121,11 @@ async def get_current_user(
         if not usuario.activo:
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Usuario inactivo",
+                detail={
+                    "status": 401,
+                    "code": "INACTIVE_USER",
+                    "detail": "Usuario inactivo"
+                },
                 headers={"WWW-Authenticate": "Bearer"},
             )
         
@@ -103,7 +133,11 @@ async def get_current_user(
     except UsuarioNotFoundError:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Usuario no encontrado",
+            detail={
+                "status": 401,
+                "code": "UNAUTHORIZED",
+                "detail": "Usuario no encontrado"
+            },
             headers={"WWW-Authenticate": "Bearer"},
         )
 
@@ -149,19 +183,31 @@ async def login(
         await session.rollback()
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail=str(e),
+            detail={
+                "status": 401,
+                "code": "INVALID_CREDENTIALS",
+                "detail": str(e)
+            },
         )
     except InactiveUserError as e:
         await session.rollback()
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail=str(e),
+            detail={
+                "status": 401,
+                "code": "INACTIVE_USER",
+                "detail": str(e)
+            },
         )
     except Exception as e:
         await session.rollback()
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Error inesperado: {str(e)}",
+            detail={
+                "status": 500,
+                "code": "INTERNAL_ERROR",
+                "detail": f"Error inesperado: {str(e)}"
+            },
         )
 
 
@@ -205,15 +251,33 @@ async def register(
         return result
     except UsuarioValidationError as e:
         await session.rollback()
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail={
+                "status": 400,
+                "code": "VALIDATION_ERROR",
+                "detail": str(e)
+            }
+        )
     except UsuarioConflictError as e:
         await session.rollback()
-        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=str(e))
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail={
+                "status": 409,
+                "code": "USUARIO_CONFLICT",
+                "detail": str(e)
+            }
+        )
     except Exception as e:
         await session.rollback()
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Error inesperado: {str(e)}",
+            detail={
+                "status": 500,
+                "code": "INTERNAL_ERROR",
+                "detail": f"Error inesperado: {str(e)}"
+            },
         )
 
 
@@ -255,17 +319,29 @@ async def refresh_token(
     except InvalidCredentialsError as e:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail=str(e),
+            detail={
+                "status": 401,
+                "code": "INVALID_CREDENTIALS",
+                "detail": str(e)
+            },
         )
     except InactiveUserError as e:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail=str(e),
+            detail={
+                "status": 401,
+                "code": "INACTIVE_USER",
+                "detail": str(e)
+            },
         )
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Error inesperado: {str(e)}",
+            detail={
+                "status": 500,
+                "code": "INTERNAL_ERROR",
+                "detail": f"Error inesperado: {str(e)}"
+            },
         )
 
 
