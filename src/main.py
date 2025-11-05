@@ -96,15 +96,15 @@ async def lifespan(app: FastAPI):
     configure_logging()
 
     # Crear tablas en la base de datos si no existen (solo en desarrollo)
-    import os
-    if os.getenv("INIT_DB", "false").lower() == "true":
-        logger.info("INIT_DB=true: Creando tablas en la base de datos...")
-        await create_tables()
-        # Pequeña espera para asegurar que las tablas estén completamente creadas
-        import asyncio
-        await asyncio.sleep(0.5)
-    else:
-        logger.info("INIT_DB no está activado, omitiendo creación de tablas")
+    # import os
+    # if os.getenv("INIT_DB", "false").lower() == "true":
+    #     logger.info("INIT_DB=true: Creando tablas en la base de datos...")
+    await create_tables()
+    # Pequeña espera para asegurar que las tablas estén completamente creadas
+    import asyncio
+    await asyncio.sleep(0.5)
+    # else:
+    #     logger.info("INIT_DB no está activado, omitiendo creación de tablas")
 
     # Ejecutar seed automáticamente si la BD está vacía
     # await auto_seed_database()
