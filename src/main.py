@@ -261,13 +261,18 @@ def create_app() -> FastAPI:
 # Crear la instancia de la aplicación
 app = create_app()
 
+# añadir en src/main.py para prueba rápida
+@app.get("/debug/error")
+def debug_error():
+    raise RuntimeError("error de prueba")
 
-# Middleware: bind request_id, optional user/session ids and log access as JSON
+# Middleware: generar request_id, asociar contexto y registrar accesos en JSON
 @app.middleware("http")
 async def request_logging_middleware(request: Request, call_next):
+    # Generar identificador único de la petición para trazabilidad
     settings_local = get_settings()
     request_id = str(uuid4())
-    # bind request-specific context (available for structlog)
+    # Bind de contexto (request_id, app, user, session) para structlog
     structlog.contextvars.bind_contextvars(request_id=request_id, app=settings_local.app_name)
     # optional headers that carry user/session identifiers (adapt to your auth)
     user_id = request.headers.get("X-User-Id")

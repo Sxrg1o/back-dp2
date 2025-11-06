@@ -15,9 +15,11 @@ from src.core.config import get_settings
 
 def configure_logging() -> None:
     """
-    Configure stdlib logging handlers and structlog to emit JSON logs.
-    Handlers: console + rotating files (app.log, access.log, error.log).
+    Configuración de logging para la aplicación.
+    Produce logs estructurados en JSON con request_id y contexto adicional.
     """
+    """Configura los handlers de la librería logging y structlog."""
+    
     settings = get_settings()
     level = getattr(logging, settings.log_level.upper(), logging.INFO)
 
@@ -124,6 +126,5 @@ def configure_logging() -> None:
     )
 
 def get_logger(name: str):
-    """Return a structlog logger bound to `name`."""
+    """Devuelve un logger estructurado (structlog) con el nombre indicado."""
     return structlog.get_logger(name)
-# ...existing code...
