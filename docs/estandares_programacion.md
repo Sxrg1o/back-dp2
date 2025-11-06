@@ -1,12 +1,7 @@
-# Estándares de Programación del Repositorio
+# Estándares de Programación 
 
-Este documento define los estándares de programación y convenciones de código que **DEBEN** seguirse estrictamente en el repositorio.
 
----
-
-## ⚠️ ESTÁNDARES CRÍTICOS - ORDEN OBLIGATORIO
-
-### 📋 Resumen Rápido de Orden
+### Indice
 
 #### **Modelos (Models)**
 1. `__tablename__`
@@ -772,6 +767,3 @@ async def delete_producto(
 
 ---
 
-## 📌 Recordatorio Final
-
-**TODOS los archivos del repositorio DEBEN seguir estos estándares estrictamente. El orden de atributos, métodos y endpoints es OBLIGATORIO y no negociable.**
