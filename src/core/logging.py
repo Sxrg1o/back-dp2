@@ -1,46 +1,121 @@
+# ...existing code...
 """
 Logging configuration for the application.
+Produces structured JSON logs with request_id and other context.
 """
-
+import os
+import sys
 import logging
-import logging.config
-import structlog
+from logging.handlers import TimedRotatingFileHandler
 from typing import Dict, Any
+
+import structlog
 
 from src.core.config import get_settings
 
-
 def configure_logging() -> None:
-    """Configure structured logging for the application."""
+    """
+    Configure stdlib logging handlers and structlog to emit JSON logs.
+    Handlers: console + rotating files (app.log, access.log, error.log).
+    """
     settings = get_settings()
+    level = getattr(logging, settings.log_level.upper(), logging.INFO)
 
-    # Configurar explícitamente los niveles de log para SQLAlchemy
-    logging.getLogger("sqlalchemy").setLevel(logging.ERROR)
-    logging.getLogger("sqlalchemy.engine").setLevel(logging.ERROR)
-    logging.getLogger("sqlalchemy.pool").setLevel(logging.ERROR)
-    logging.getLogger("sqlalchemy.dialects").setLevel(logging.ERROR)
-    logging.getLogger("sqlalchemy.orm").setLevel(logging.ERROR)
-    
-    # Configure standard library logging
-    logging.basicConfig(
-        level=getattr(logging, settings.log_level.upper()),
-        format="%(message)s",
+    # build log dir
+    log_dir = os.path.join(os.getcwd(), "logs")
+    os.makedirs(log_dir, exist_ok=True)
+
+    # ProcessorFormatter will run structlog processors and render JSON
+    processor_formatter = structlog.stdlib.ProcessorFormatter(
+        processor=structlog.processors.JSONRenderer(),
+        foreign_pre_chain=[
+            structlog.processors.TimeStamper(fmt="iso", utc=True),
+            structlog.stdlib.add_log_level,
+            structlog.stdlib.add_logger_name,
+        ],
     )
 
-    # Configure structlog
+    # Console handler (JSON)
+    console = logging.StreamHandler(stream=sys.stdout)
+    console.setLevel(level)
+    console.setFormatter(processor_formatter)
+
+    # File handlers (Timed rotating)
+    app_file = TimedRotatingFileHandler(
+        filename=os.path.join(log_dir, "app.log"),
+        when="midnight",
+        backupCount=14,
+        utc=True,
+    )
+    app_file.setLevel(level)
+    app_file.setFormatter(processor_formatter)
+
+    access_file = TimedRotatingFileHandler(
+        filename=os.path.join(log_dir, "access.log"),
+        when="midnight",
+        backupCount=14,
+        utc=True,
+    )
+    access_file.setLevel(level)
+    access_file.setFormatter(processor_formatter)
+
+    error_file = TimedRotatingFileHandler(
+        filename=os.path.join(log_dir, "error.log"),
+        when="midnight",
+        backupCount=30,
+        utc=True,
+    )
+    error_file.setLevel(logging.ERROR)
+    error_file.setFormatter(processor_formatter)
+
+    # Root logger
+    root_logger = logging.getLogger()
+    root_logger.setLevel(level)
+    # Remove existing handlers to avoid duplicates (safe on startup)
+    for h in list(root_logger.handlers):
+        root_logger.removeHandler(h)
+    root_logger.addHandler(console)
+    root_logger.addHandler(app_file)
+
+    # Specific loggers for categories
+    uvicorn_access = logging.getLogger("uvicorn.access")
+    uvicorn_access.setLevel(level)
+    uvicorn_access.propagate = False
+    # remove handlers to avoid duplicates
+    for h in list(uvicorn_access.handlers):
+        uvicorn_access.removeHandler(h)
+    uvicorn_access.addHandler(access_file)
+    uvicorn_access.addHandler(console)
+
+    uvicorn_error = logging.getLogger("uvicorn.error")
+    uvicorn_error.setLevel(level)
+    uvicorn_error.propagate = False
+    for h in list(uvicorn_error.handlers):
+        uvicorn_error.removeHandler(h)
+    uvicorn_error.addHandler(error_file)
+    uvicorn_error.addHandler(console)
+
+    # SQLAlchemy errors go to error_file (and console)
+    sa_logger = logging.getLogger("sqlalchemy")
+    sa_logger.setLevel(logging.ERROR)
+    sa_logger.propagate = False
+    for h in list(sa_logger.handlers):
+        sa_logger.removeHandler(h)
+    sa_logger.addHandler(error_file)
+    sa_logger.addHandler(console)
+
+    # Configure structlog (processors do NOT include JSONRenderer here,
+    # ProcessorFormatter will call JSONRenderer)
     structlog.configure(
         processors=[
-            # Add the log level and a timestamp to the event_dict if the log entry is not from structlog.
+            structlog.stdlib.filter_by_level,
             structlog.stdlib.add_logger_name,
             structlog.stdlib.add_log_level,
-            structlog.stdlib.PositionalArgumentsFormatter(),
-            structlog.processors.TimeStamper(fmt="iso"),
+            structlog.processors.TimeStamper(fmt="iso", utc=True),
             structlog.processors.StackInfoRenderer(),
             structlog.processors.format_exc_info,
             structlog.processors.UnicodeDecoder(),
-            # Render in JSON format for production
-            structlog.processors.JSONRenderer() if settings.log_format == "json"
-            else structlog.dev.ConsoleRenderer(colors=True),
+            structlog.stdlib.ProcessorFormatter.wrap_for_formatter,
         ],
         context_class=dict,
         logger_factory=structlog.stdlib.LoggerFactory(),
@@ -48,75 +123,7 @@ def configure_logging() -> None:
         cache_logger_on_first_use=True,
     )
 
-
-def get_logger(name: str) -> structlog.stdlib.BoundLogger:
-    """
-    Get a configured logger instance.
-
-    Args:
-        name: Logger name
-
-    Returns:
-        Configured logger instance
-    """
+def get_logger(name: str):
+    """Return a structlog logger bound to `name`."""
     return structlog.get_logger(name)
-
-
-# Request logging configuration
-def get_logging_config() -> Dict[str, Any]:
-    """Get logging configuration dictionary."""
-    settings = get_settings()
-
-    config = {
-        "version": 1,
-        "disable_existing_loggers": False,
-        "formatters": {
-            "default": {
-                "format": "%(asctime)s - %(name)s - %(levelname)s - %(message)s",
-            },
-            "json": {
-                "()": "pythonjsonlogger.jsonlogger.JsonFormatter",
-                "format": "%(asctime)s %(name)s %(levelname)s %(message)s",
-            },
-        },
-        "handlers": {
-            "default": {
-                "formatter": "json" if settings.log_format == "json" else "default",
-                "class": "logging.StreamHandler",
-                "stream": "ext://sys.stdout",
-            },
-        },
-        "root": {
-            "level": settings.log_level.upper(),
-            "handlers": ["default"],
-        },
-        "loggers": {
-            "uvicorn": {
-                "level": "INFO",
-                "handlers": ["default"],
-                "propagate": False,
-            },
-            "uvicorn.error": {
-                "level": "INFO",
-                "handlers": ["default"],
-                "propagate": False,
-            },
-            "uvicorn.access": {
-                "level": "INFO",
-                "handlers": ["default"],
-                "propagate": False,
-            },
-            "sqlalchemy": {
-                "level": "ERROR",
-                "handlers": ["default"],
-                "propagate": False,
-            },
-            "sqlalchemy.engine": {
-                "level": "ERROR",
-                "handlers": ["default"],
-                "propagate": False,
-            },
-        },
-    }
-
-    return config
+# ...existing code...

@@ -5,8 +5,11 @@ Punto de entrada principal de la aplicación FastAPI.
 import importlib
 import logging
 from contextlib import asynccontextmanager
+from uuid import uuid4
+import time
+import structlog
 
-from fastapi import FastAPI, APIRouter
+from fastapi import FastAPI, APIRouter, Request
 from fastapi.middleware.cors import CORSMiddleware
 
 from src.core.database import create_tables, close_database
@@ -17,6 +20,8 @@ from src.core.dependencies import ErrorHandlerMiddleware
 
 # Configurar logger para este módulo
 logger = logging.getLogger(__name__)
+
+
 
 
 async def auto_seed_database():
@@ -255,6 +260,50 @@ def create_app() -> FastAPI:
 
 # Crear la instancia de la aplicación
 app = create_app()
+
+
+# Middleware: bind request_id, optional user/session ids and log access as JSON
+@app.middleware("http")
+async def request_logging_middleware(request: Request, call_next):
+    settings_local = get_settings()
+    request_id = str(uuid4())
+    # bind request-specific context (available for structlog)
+    structlog.contextvars.bind_contextvars(request_id=request_id, app=settings_local.app_name)
+    # optional headers that carry user/session identifiers (adapt to your auth)
+    user_id = request.headers.get("X-User-Id")
+    session_id = request.headers.get("X-Session-Id")
+    if user_id:
+        structlog.contextvars.bind_contextvars(user_id=user_id)
+    if session_id:
+        structlog.contextvars.bind_contextvars(session_id=session_id)
+    # bind the endpoint/function name if available
+    endpoint = request.scope.get("endpoint")
+    func_name = getattr(endpoint, "__name__", None)
+    if func_name:
+        structlog.contextvars.bind_contextvars(func=func_name)
+
+    start = time.time()
+    try:
+        response = await call_next(request)
+    except Exception:
+        # exception will be logged by error handlers, include request_id here too
+        structlog.get_logger("uvicorn.error").exception("unhandled_exception")
+        structlog.contextvars.clear_contextvars()
+        raise
+    elapsed_ms = (time.time() - start) * 1000.0
+    # log structured access event
+    structlog.get_logger("uvicorn.access").info(
+        "request_completed",
+        method=request.method,
+        path=str(request.url.path),
+        status_code=response.status_code,
+        duration_ms=round(elapsed_ms, 2),
+    )
+    # expose request id to clients
+    response.headers["X-Request-Id"] = request_id
+    # clear contextvars to avoid leaking into other requests
+    structlog.contextvars.clear_contextvars()
+    return response
 
 # Punto de entrada para ejecución directa del script
 if __name__ == "__main__":
