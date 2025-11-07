@@ -14,11 +14,18 @@ NC='\033[0m'
 API_URL="${API_URL:-https://back-dp2.onrender.com}"
 VERBOSE="${VERBOSE:-false}"
 
+# Cargar funciones comunes
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "$SCRIPT_DIR/test_common.sh"
+
 echo "=========================================="
 echo "  CU-04: Cambiar Estado de Pedido"
 echo "=========================================="
 echo ""
 echo "API Base URL: $API_URL"
+COMMIT_HASH=$(git rev-parse --short HEAD 2>/dev/null || echo "N/A")
+echo "Commit: $COMMIT_HASH"
+echo "Fecha: $(date '+%Y-%m-%d %H:%M:%S')"
 echo ""
 
 TOTAL_TESTS=0
@@ -31,19 +38,19 @@ run_test() {
     shift 2
 
     TOTAL_TESTS=$((TOTAL_TESTS + 1))
-    echo -n "TC-$TOTAL_TESTS: $test_name... "
+    echo -n "TC-$TOTAL_TESTS: $test_name... " >&2
 
     response=$("$@")
     status_code=$(echo "$response" | tail -n1)
     body=$(echo "$response" | sed '$d')
 
     if [ "$status_code" = "$expected_status" ]; then
-        echo -e "${GREEN}✓ PASS${NC} (Status: $status_code)"
+        echo -e "${GREEN}✓ PASS${NC} (Status: $status_code)" >&2
         PASSED_TESTS=$((PASSED_TESTS + 1))
         echo "$body"
         return 0
     else
-        echo -e "${RED}✗ FAIL${NC} (Expected: $expected_status, Got: $status_code)"
+        echo -e "${RED}✗ FAIL${NC} (Expected: $expected_status, Got: $status_code)" >&2
         FAILED_TESTS=$((FAILED_TESTS + 1))
         echo "$body"
         return 1
@@ -52,6 +59,14 @@ run_test() {
 
 echo "=== Preparación: Crear pedido de prueba ==="
 echo ""
+
+# Obtener token de autenticación
+get_auth_token || exit 1
+
+# Obtener ID de usuario
+echo -n "Obteniendo ID de usuario... "
+USER_ID=$(curl -s "$API_URL/api/v1/auth/me" -H "Authorization: Bearer $ACCESS_TOKEN" | python3 -c "import sys, json; data = json.load(sys.stdin); print(data.get('id', ''))" 2>/dev/null)
+echo -e "${GREEN}✓${NC} $USER_ID"
 
 # Obtener IDs necesarios
 echo -n "Obteniendo ID de mesa... "
@@ -68,6 +83,7 @@ echo -e "${GREEN}✓${NC} $PRODUCTO_ID"
 echo -n "Creando pedido de prueba... "
 PAYLOAD=$(cat <<EOF
 {
+  "id_usuario": "$USER_ID",
   "id_mesa": "$MESA_ID",
   "items": [
     {
@@ -84,6 +100,7 @@ EOF
 
 PEDIDO_RESPONSE=$(curl -s -X POST "$API_URL/api/v1/pedidos/completo" \
     -H "Content-Type: application/json" \
+    -H "Authorization: Bearer $ACCESS_TOKEN" \
     -d "$PAYLOAD")
 
 PEDIDO_ID=$(echo "$PEDIDO_RESPONSE" | python3 -c "import sys, json; data = json.load(sys.stdin); print(data.get('id', ''))" 2>/dev/null)
@@ -100,7 +117,7 @@ echo "=== Tests de Cambio de Estado ==="
 echo ""
 
 # TC-001: Cambiar estado a CONFIRMADO
-PAYLOAD_CONFIRMADO='{"estado": "CONFIRMADO"}'
+PAYLOAD_CONFIRMADO='{"estado": "confirmado"}'
 ESTADO_RESPONSE=$(run_test "Cambiar estado a CONFIRMADO" "200" \
     curl -s -w "\n%{http_code}" -X PATCH "$API_URL/api/v1/pedidos/$PEDIDO_ID/estado" \
     -H "Content-Type: application/json" \
@@ -113,11 +130,11 @@ TOTAL_TESTS=$((TOTAL_TESTS + 1))
 echo -n "TC-$TOTAL_TESTS: Validar que estado es CONFIRMADO... "
 ESTADO_ACTUAL=$(echo "$ESTADO_RESPONSE" | python3 -c "import sys, json; data = json.load(sys.stdin); print(data.get('estado', ''))" 2>/dev/null)
 
-if [ "$ESTADO_ACTUAL" = "CONFIRMADO" ]; then
+if [ "$ESTADO_ACTUAL" = "confirmado" ]; then
     echo -e "${GREEN}✓ PASS${NC} (Estado: $ESTADO_ACTUAL)"
     PASSED_TESTS=$((PASSED_TESTS + 1))
 else
-    echo -e "${RED}✗ FAIL${NC} (Esperado: CONFIRMADO, Obtenido: $ESTADO_ACTUAL)"
+    echo -e "${RED}✗ FAIL${NC} (Esperado: confirmado, Obtenido: $ESTADO_ACTUAL)"
     FAILED_TESTS=$((FAILED_TESTS + 1))
 fi
 
@@ -137,7 +154,7 @@ fi
 echo ""
 
 # TC-004: Cambiar estado a EN_PREPARACION
-PAYLOAD_EN_PREP='{"estado": "EN_PREPARACION"}'
+PAYLOAD_EN_PREP='{"estado": "en_preparacion"}'
 ESTADO_RESPONSE2=$(run_test "Cambiar estado a EN_PREPARACION" "200" \
     curl -s -w "\n%{http_code}" -X PATCH "$API_URL/api/v1/pedidos/$PEDIDO_ID/estado" \
     -H "Content-Type: application/json" \
@@ -161,7 +178,7 @@ fi
 echo ""
 
 # TC-006: Cambiar estado a LISTO
-PAYLOAD_LISTO='{"estado": "LISTO"}'
+PAYLOAD_LISTO='{"estado": "listo"}'
 ESTADO_RESPONSE3=$(run_test "Cambiar estado a LISTO" "200" \
     curl -s -w "\n%{http_code}" -X PATCH "$API_URL/api/v1/pedidos/$PEDIDO_ID/estado" \
     -H "Content-Type: application/json" \
@@ -185,7 +202,7 @@ fi
 echo ""
 
 # TC-008: Cambiar estado a ENTREGADO
-PAYLOAD_ENTREGADO='{"estado": "ENTREGADO"}'
+PAYLOAD_ENTREGADO='{"estado": "entregado"}'
 ESTADO_RESPONSE4=$(run_test "Cambiar estado a ENTREGADO" "200" \
     curl -s -w "\n%{http_code}" -X PATCH "$API_URL/api/v1/pedidos/$PEDIDO_ID/estado" \
     -H "Content-Type: application/json" \
@@ -222,7 +239,7 @@ echo -e "${GREEN}✓${NC} $PEDIDO_ID2"
 echo ""
 
 # TC-010: Cambiar estado a CANCELADO
-PAYLOAD_CANCELADO='{"estado": "CANCELADO"}'
+PAYLOAD_CANCELADO='{"estado": "cancelado"}'
 ESTADO_RESPONSE5=$(run_test "Cambiar estado a CANCELADO" "200" \
     curl -s -w "\n%{http_code}" -X PATCH "$API_URL/api/v1/pedidos/$PEDIDO_ID2/estado" \
     -H "Content-Type: application/json" \

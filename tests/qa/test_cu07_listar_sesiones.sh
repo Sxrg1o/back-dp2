@@ -19,6 +19,9 @@ echo "  CU-07: Listar Sesiones"
 echo "=========================================="
 echo ""
 echo "API Base URL: $API_URL"
+COMMIT_HASH=$(git rev-parse --short HEAD 2>/dev/null || echo "N/A")
+echo "Commit: $COMMIT_HASH"
+echo "Fecha: $(date '+%Y-%m-%d %H:%M:%S')"
 echo ""
 
 TOTAL_TESTS=0
@@ -31,19 +34,19 @@ run_test() {
     shift 2
 
     TOTAL_TESTS=$((TOTAL_TESTS + 1))
-    echo -n "TC-$TOTAL_TESTS: $test_name... "
+    echo -n "TC-$TOTAL_TESTS: $test_name... " >&2
 
     response=$("$@")
     status_code=$(echo "$response" | tail -n1)
     body=$(echo "$response" | sed '$d')
 
     if [ "$status_code" = "$expected_status" ]; then
-        echo -e "${GREEN}✓ PASS${NC} (Status: $status_code)"
+        echo -e "${GREEN}✓ PASS${NC} (Status: $status_code)" >&2
         PASSED_TESTS=$((PASSED_TESTS + 1))
         echo "$body"
         return 0
     else
-        echo -e "${RED}✗ FAIL${NC} (Expected: $expected_status, Got: $status_code)"
+        echo -e "${RED}✗ FAIL${NC} (Expected: $expected_status, Got: $status_code)" >&2
         FAILED_TESTS=$((FAILED_TESTS + 1))
         echo "$body"
         return 1
@@ -97,17 +100,17 @@ echo ""
 echo "=== Tests de Filtros por Estado ==="
 echo ""
 
-# TC-005: Filtrar sesiones por estado ACTIVO
-run_test "Filtrar por estado ACTIVO" "200" \
-    curl -s -w "\n%{http_code}" "$API_URL/api/v1/sesiones/estado/ACTIVO"
+# TC-005: Filtrar sesiones por estado activo
+run_test "Filtrar por estado activo" "200" \
+    curl -s -w "\n%{http_code}" "$API_URL/api/v1/sesiones/estado/activo"
 
-# TC-006: Filtrar sesiones por estado INACTIVO
-run_test "Filtrar por estado INACTIVO" "200" \
-    curl -s -w "\n%{http_code}" "$API_URL/api/v1/sesiones/estado/INACTIVO"
+# TC-006: Filtrar sesiones por estado inactivo
+run_test "Filtrar por estado inactivo" "200" \
+    curl -s -w "\n%{http_code}" "$API_URL/api/v1/sesiones/estado/inactivo"
 
-# TC-007: Filtrar sesiones por estado CERRADO
-run_test "Filtrar por estado CERRADO" "200" \
-    curl -s -w "\n%{http_code}" "$API_URL/api/v1/sesiones/estado/CERRADO"
+# TC-007: Filtrar sesiones por estado cerrado
+run_test "Filtrar por estado cerrado" "200" \
+    curl -s -w "\n%{http_code}" "$API_URL/api/v1/sesiones/estado/cerrado"
 
 echo ""
 echo "=== Tests de Filtros por Local ==="

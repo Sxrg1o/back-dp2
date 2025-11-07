@@ -19,6 +19,9 @@ echo "  CU-06: Crear Sesión"
 echo "=========================================="
 echo ""
 echo "API Base URL: $API_URL"
+COMMIT_HASH=$(git rev-parse --short HEAD 2>/dev/null || echo "N/A")
+echo "Commit: $COMMIT_HASH"
+echo "Fecha: $(date '+%Y-%m-%d %H:%M:%S')"
 echo ""
 
 TOTAL_TESTS=0
@@ -31,19 +34,19 @@ run_test() {
     shift 2
 
     TOTAL_TESTS=$((TOTAL_TESTS + 1))
-    echo -n "TC-$TOTAL_TESTS: $test_name... "
+    echo -n "TC-$TOTAL_TESTS: $test_name... " >&2
 
     response=$("$@")
     status_code=$(echo "$response" | tail -n1)
     body=$(echo "$response" | sed '$d')
 
     if [ "$status_code" = "$expected_status" ]; then
-        echo -e "${GREEN}✓ PASS${NC} (Status: $status_code)"
+        echo -e "${GREEN}✓ PASS${NC} (Status: $status_code)" >&2
         PASSED_TESTS=$((PASSED_TESTS + 1))
         echo "$body"
         return 0
     else
-        echo -e "${RED}✗ FAIL${NC} (Expected: $expected_status, Got: $status_code)"
+        echo -e "${RED}✗ FAIL${NC} (Expected: $expected_status, Got: $status_code)" >&2
         FAILED_TESTS=$((FAILED_TESTS + 1))
         if [ "$VERBOSE" = "true" ]; then
             echo "Response: $body"
@@ -76,7 +79,7 @@ echo ""
 PAYLOAD=$(cat <<EOF
 {
   "id_local": "$LOCAL_ID",
-  "estado": "ACTIVO"
+  "estado": "activo", "id_domotica": "TEST-DOM-001"
 }
 EOF
 )
@@ -103,14 +106,14 @@ fi
 
 # TC-003: Validar estado inicial es ACTIVO
 TOTAL_TESTS=$((TOTAL_TESTS + 1))
-echo -n "TC-$TOTAL_TESTS: Validar que estado es ACTIVO... "
+echo -n "TC-$TOTAL_TESTS: Validar que estado es activo... "
 ESTADO=$(echo "$SESION_RESPONSE" | python3 -c "import sys, json; data = json.load(sys.stdin); print(data.get('estado', ''))" 2>/dev/null)
 
-if [ "$ESTADO" = "ACTIVO" ]; then
+if [ "$ESTADO" = "activo" ]; then
     echo -e "${GREEN}✓ PASS${NC} (Estado: $ESTADO)"
     PASSED_TESTS=$((PASSED_TESTS + 1))
 else
-    echo -e "${RED}✗ FAIL${NC} (Esperado: ACTIVO, Obtenido: $ESTADO)"
+    echo -e "${RED}✗ FAIL${NC} (Esperado: activo, Obtenido: $ESTADO)"
     FAILED_TESTS=$((FAILED_TESTS + 1))
 fi
 
@@ -173,7 +176,7 @@ echo ""
 PAYLOAD_LOCAL_INVALIDO=$(cat <<EOF
 {
   "id_local": "01INVALID000000000000000000",
-  "estado": "ACTIVO"
+  "estado": "activo", "id_domotica": "TEST-DOM-001"
 }
 EOF
 )

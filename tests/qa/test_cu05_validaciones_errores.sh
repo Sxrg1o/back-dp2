@@ -19,6 +19,9 @@ echo "  CU-05: Validaciones y Errores"
 echo "=========================================="
 echo ""
 echo "API Base URL: $API_URL"
+COMMIT_HASH=$(git rev-parse --short HEAD 2>/dev/null || echo "N/A")
+echo "Commit: $COMMIT_HASH"
+echo "Fecha: $(date '+%Y-%m-%d %H:%M:%S')"
 echo ""
 
 TOTAL_TESTS=0
@@ -31,18 +34,18 @@ run_test() {
     shift 2
 
     TOTAL_TESTS=$((TOTAL_TESTS + 1))
-    echo -n "TC-$TOTAL_TESTS: $test_name... "
+    echo -n "TC-$TOTAL_TESTS: $test_name... " >&2
 
     response=$("$@")
     status_code=$(echo "$response" | tail -n1)
     body=$(echo "$response" | sed '$d')
 
     if [ "$status_code" = "$expected_status" ]; then
-        echo -e "${GREEN}✓ PASS${NC} (Status: $status_code)"
+        echo -e "${GREEN}✓ PASS${NC} (Status: $status_code)" >&2
         PASSED_TESTS=$((PASSED_TESTS + 1))
         return 0
     else
-        echo -e "${RED}✗ FAIL${NC} (Expected: $expected_status, Got: $status_code)"
+        echo -e "${RED}✗ FAIL${NC} (Expected: $expected_status, Got: $status_code)" >&2
         FAILED_TESTS=$((FAILED_TESTS + 1))
         if [ "$VERBOSE" = "true" ]; then
             echo "Response: $body"

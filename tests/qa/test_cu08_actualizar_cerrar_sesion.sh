@@ -19,6 +19,9 @@ echo "  CU-08: Actualizar y Cerrar Sesión"
 echo "=========================================="
 echo ""
 echo "API Base URL: $API_URL"
+COMMIT_HASH=$(git rev-parse --short HEAD 2>/dev/null || echo "N/A")
+echo "Commit: $COMMIT_HASH"
+echo "Fecha: $(date '+%Y-%m-%d %H:%M:%S')"
 echo ""
 
 TOTAL_TESTS=0
@@ -31,19 +34,19 @@ run_test() {
     shift 2
 
     TOTAL_TESTS=$((TOTAL_TESTS + 1))
-    echo -n "TC-$TOTAL_TESTS: $test_name... "
+    echo -n "TC-$TOTAL_TESTS: $test_name... " >&2
 
     response=$("$@")
     status_code=$(echo "$response" | tail -n1)
     body=$(echo "$response" | sed '$d')
 
     if [ "$status_code" = "$expected_status" ]; then
-        echo -e "${GREEN}✓ PASS${NC} (Status: $status_code)"
+        echo -e "${GREEN}✓ PASS${NC} (Status: $status_code)" >&2
         PASSED_TESTS=$((PASSED_TESTS + 1))
         echo "$body"
         return 0
     else
-        echo -e "${RED}✗ FAIL${NC} (Expected: $expected_status, Got: $status_code)"
+        echo -e "${RED}✗ FAIL${NC} (Expected: $expected_status, Got: $status_code)" >&2
         FAILED_TESTS=$((FAILED_TESTS + 1))
         echo "$body"
         return 1
@@ -63,7 +66,7 @@ echo -n "Creando sesión de prueba... "
 PAYLOAD_CREATE=$(cat <<EOF
 {
   "id_local": "$LOCAL_ID",
-  "estado": "ACTIVO"
+  "estado": "activo", "id_domotica": "TEST-DOM-002"
 }
 EOF
 )
@@ -86,7 +89,7 @@ echo "=== Tests de Actualización de Sesión ==="
 echo ""
 
 # TC-001: Cambiar estado a INACTIVO
-PAYLOAD_INACTIVO='{"estado": "INACTIVO"}'
+PAYLOAD_INACTIVO='{"estado": "inactivo"}'
 SESION_UPDATE=$(run_test "Cambiar estado a INACTIVO" "200" \
     curl -s -w "\n%{http_code}" -X PATCH "$API_URL/api/v1/sesiones/$SESION_ID" \
     -H "Content-Type: application/json" \
@@ -99,16 +102,16 @@ TOTAL_TESTS=$((TOTAL_TESTS + 1))
 echo -n "TC-$TOTAL_TESTS: Validar que estado es INACTIVO... "
 ESTADO=$(echo "$SESION_UPDATE" | python3 -c "import sys, json; data = json.load(sys.stdin); print(data.get('estado', ''))" 2>/dev/null)
 
-if [ "$ESTADO" = "INACTIVO" ]; then
+if [ "$ESTADO" = "inactivo" ]; then
     echo -e "${GREEN}✓ PASS${NC} (Estado: $ESTADO)"
     PASSED_TESTS=$((PASSED_TESTS + 1))
 else
-    echo -e "${RED}✗ FAIL${NC} (Esperado: INACTIVO, Obtenido: $ESTADO)"
+    echo -e "${RED}✗ FAIL${NC} (Esperado: inactivo, Obtenido: $ESTADO)"
     FAILED_TESTS=$((FAILED_TESTS + 1))
 fi
 
 # TC-003: Cambiar estado a ACTIVO nuevamente
-PAYLOAD_ACTIVO='{"estado": "ACTIVO"}'
+PAYLOAD_ACTIVO='{"estado": "activo", "id_domotica": "TEST-DOM-002"}'
 run_test "Cambiar estado a ACTIVO" "200" \
     curl -s -w "\n%{http_code}" -X PATCH "$API_URL/api/v1/sesiones/$SESION_ID" \
     -H "Content-Type: application/json" \
@@ -119,8 +122,8 @@ echo "=== Tests de Cerrar Sesión ==="
 echo ""
 
 # TC-004: Cambiar estado a CERRADO
-PAYLOAD_CERRADO='{"estado": "CERRADO"}'
-SESION_CERRADO=$(run_test "Cerrar sesión (estado CERRADO)" "200" \
+PAYLOAD_CERRADO='{"estado": "cerrado"}'
+SESION_CERRADO=$(run_test "Cerrar sesión (estado cerrado)" "200" \
     curl -s -w "\n%{http_code}" -X PATCH "$API_URL/api/v1/sesiones/$SESION_ID" \
     -H "Content-Type: application/json" \
     -d "$PAYLOAD_CERRADO")
@@ -132,11 +135,11 @@ TOTAL_TESTS=$((TOTAL_TESTS + 1))
 echo -n "TC-$TOTAL_TESTS: Validar que estado es CERRADO... "
 ESTADO_CERRADO=$(echo "$SESION_CERRADO" | python3 -c "import sys, json; data = json.load(sys.stdin); print(data.get('estado', ''))" 2>/dev/null)
 
-if [ "$ESTADO_CERRADO" = "CERRADO" ]; then
+if [ "$ESTADO_CERRADO" = "cerrado" ]; then
     echo -e "${GREEN}✓ PASS${NC} (Estado: $ESTADO_CERRADO)"
     PASSED_TESTS=$((PASSED_TESTS + 1))
 else
-    echo -e "${RED}✗ FAIL${NC} (Esperado: CERRADO, Obtenido: $ESTADO_CERRADO)"
+    echo -e "${RED}✗ FAIL${NC} (Esperado: cerrado, Obtenido: $ESTADO_CERRADO)"
     FAILED_TESTS=$((FAILED_TESTS + 1))
 fi
 

@@ -16,11 +16,18 @@ NC='\033[0m' # No Color
 API_URL="${API_URL:-https://back-dp2.onrender.com}"
 VERBOSE="${VERBOSE:-false}"
 
+# Cargar funciones comunes
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "$SCRIPT_DIR/test_common.sh"
+
 echo "=========================================="
 echo "  CU-01: Crear Pedido Completo Simple"
 echo "=========================================="
 echo ""
 echo "API Base URL: $API_URL"
+COMMIT_HASH=$(git rev-parse --short HEAD 2>/dev/null || echo "N/A")
+echo "Commit: $COMMIT_HASH"
+echo "Fecha: $(date '+%Y-%m-%d %H:%M:%S')"
 echo ""
 
 # Contador de tests
@@ -35,7 +42,7 @@ run_test() {
     shift 2
 
     TOTAL_TESTS=$((TOTAL_TESTS + 1))
-    echo -n "TC-$TOTAL_TESTS: $test_name... "
+    echo -n "TC-$TOTAL_TESTS: $test_name... " >&2
 
     # Ejecutar comando pasado como argumentos restantes
     response=$("$@")
@@ -43,22 +50,20 @@ run_test() {
     body=$(echo "$response" | sed '$d')
 
     if [ "$VERBOSE" = "true" ]; then
-        echo ""
-        echo "Response: $body"
-        echo "Status: $status_code"
+        echo "" >&2
+        echo "Response: $body" >&2
+        echo "Status: $status_code" >&2
     fi
 
     if [ "$status_code" = "$expected_status" ]; then
-        echo -e "${GREEN}✓ PASS${NC} (Status: $status_code)"
+        echo -e "${GREEN}✓ PASS${NC} (Status: $status_code)" >&2
         PASSED_TESTS=$((PASSED_TESTS + 1))
         echo "$body"
         return 0
     else
-        echo -e "${RED}✗ FAIL${NC} (Expected: $expected_status, Got: $status_code)"
+        echo -e "${RED}✗ FAIL${NC} (Expected: $expected_status, Got: $status_code)" >&2
         FAILED_TESTS=$((FAILED_TESTS + 1))
-        if [ "$VERBOSE" = "true" ]; then
-            echo "Response body: $body"
-        fi
+        echo "Response body: $body" >&2
         echo "$body"
         return 1
     fi
@@ -66,6 +71,21 @@ run_test() {
 
 echo "=== Preparación: Obtener IDs necesarios ==="
 echo ""
+
+# Obtener token de autenticación
+get_auth_token || exit 1
+
+# Obtener ID de usuario del token
+echo -n "Obteniendo ID de usuario... "
+USER_RESPONSE=$(curl -s "$API_URL/api/v1/auth/me" -H "Authorization: Bearer $ACCESS_TOKEN")
+USER_ID=$(echo "$USER_RESPONSE" | python3 -c "import sys, json; data = json.load(sys.stdin); print(data.get('id', ''))" 2>/dev/null)
+
+if [ -n "$USER_ID" ]; then
+    echo -e "${GREEN}✓${NC} User ID: $USER_ID"
+else
+    echo -e "${RED}✗ No se pudo obtener ID de usuario${NC}"
+    exit 1
+fi
 
 # Obtener ID de una mesa
 echo -n "Obteniendo ID de mesa... "
@@ -100,6 +120,7 @@ echo ""
 # TC-001: Crear pedido simple con 1 item sin opciones
 PAYLOAD=$(cat <<EOF
 {
+  "id_usuario": "$USER_ID",
   "id_mesa": "$MESA_ID",
   "items": [
     {
@@ -119,6 +140,7 @@ EOF
 PEDIDO_RESPONSE=$(run_test "Crear pedido simple (1 item, sin opciones)" "201" \
     curl -s -w "\n%{http_code}" -X POST "$API_URL/api/v1/pedidos/completo" \
     -H "Content-Type: application/json" \
+    -H "Authorization: Bearer $ACCESS_TOKEN" \
     -d "$PAYLOAD")
 
 PEDIDO_ID=$(echo "$PEDIDO_RESPONSE" | python3 -c "import sys, json; data = json.load(sys.stdin); print(data.get('id', ''))" 2>/dev/null)
@@ -202,12 +224,21 @@ echo -n "TC-$TOTAL_TESTS: Validar estructura completa del item... "
 ITEM_ID=$(echo "$PEDIDO_RESPONSE" | python3 -c "import sys, json; data = json.load(sys.stdin); print(data['items'][0].get('id', '') if data.get('items') else '')" 2>/dev/null)
 ITEM_CANTIDAD=$(echo "$PEDIDO_RESPONSE" | python3 -c "import sys, json; data = json.load(sys.stdin); print(data['items'][0].get('cantidad', 0) if data.get('items') else 0)" 2>/dev/null)
 ITEM_PRECIO_OPCIONES=$(echo "$PEDIDO_RESPONSE" | python3 -c "import sys, json; data = json.load(sys.stdin); print(data['items'][0].get('precio_opciones', -1) if data.get('items') else -1)" 2>/dev/null)
+ITEM_ID_PRODUCTO=$(echo "$PEDIDO_RESPONSE" | python3 -c "import sys, json; data = json.load(sys.stdin); print(data['items'][0].get('id_producto', '') if data.get('items') else '')" 2>/dev/null)
 
-if [ -n "$ITEM_ID" ] && [ "$ITEM_CANTIDAD" = "1" ] && [ "$ITEM_PRECIO_OPCIONES" = "0.0" ]; then
+# Validar cada campo
+ERRORS=""
+if [ -z "$ITEM_ID" ]; then ERRORS="${ERRORS}item.id vacío; "; fi
+if [ "$ITEM_CANTIDAD" != "1" ]; then ERRORS="${ERRORS}cantidad=$ITEM_CANTIDAD (esperado: 1); "; fi
+if [ -z "$ITEM_ID_PRODUCTO" ]; then ERRORS="${ERRORS}id_producto vacío; "; fi
+if [ "$ITEM_PRECIO_OPCIONES" != "0.0" ] && [ "$ITEM_PRECIO_OPCIONES" != "0.00" ]; then ERRORS="${ERRORS}precio_opciones=$ITEM_PRECIO_OPCIONES (esperado: 0.00); "; fi
+
+if [ -z "$ERRORS" ]; then
     echo -e "${GREEN}✓ PASS${NC} (ID: OK, Cantidad: $ITEM_CANTIDAD, Precio opciones: S/$ITEM_PRECIO_OPCIONES)"
     PASSED_TESTS=$((PASSED_TESTS + 1))
 else
-    echo -e "${RED}✗ FAIL${NC} (Estructura incompleta o incorrecta)"
+    echo -e "${RED}✗ FAIL${NC}"
+    echo "  Errores: $ERRORS"
     FAILED_TESTS=$((FAILED_TESTS + 1))
 fi
 
@@ -218,12 +249,14 @@ echo ""
 if [ -n "$PEDIDO_ID" ]; then
     # TC-009: Obtener pedido por ID
     PEDIDO_GET=$(run_test "Obtener pedido por ID (GET /pedidos/{id})" "200" \
-        curl -s -w "\n%{http_code}" "$API_URL/api/v1/pedidos/$PEDIDO_ID")
+        curl -s -w "\n%{http_code}" "$API_URL/api/v1/pedidos/$PEDIDO_ID" \
+        -H "Authorization: Bearer $ACCESS_TOKEN")
 
     # TC-010: Obtener pedido por número
     if [ -n "$NUMERO_PEDIDO" ]; then
         run_test "Obtener pedido por número (GET /pedidos/numero/{numero})" "200" \
-            curl -s -w "\n%{http_code}" "$API_URL/api/v1/pedidos/numero/$NUMERO_PEDIDO"
+            curl -s -w "\n%{http_code}" "$API_URL/api/v1/pedidos/numero/$NUMERO_PEDIDO" \
+            -H "Authorization: Bearer $ACCESS_TOKEN"
     fi
 else
     echo -e "${YELLOW}⚠ SKIP${NC} - No se pudo crear pedido, tests de consulta omitidos"

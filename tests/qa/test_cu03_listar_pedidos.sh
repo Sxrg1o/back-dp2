@@ -19,6 +19,9 @@ echo "  CU-03: Listar Pedidos"
 echo "=========================================="
 echo ""
 echo "API Base URL: $API_URL"
+COMMIT_HASH=$(git rev-parse --short HEAD 2>/dev/null || echo "N/A")
+echo "Commit: $COMMIT_HASH"
+echo "Fecha: $(date '+%Y-%m-%d %H:%M:%S')"
 echo ""
 
 TOTAL_TESTS=0
@@ -31,19 +34,19 @@ run_test() {
     shift 2
 
     TOTAL_TESTS=$((TOTAL_TESTS + 1))
-    echo -n "TC-$TOTAL_TESTS: $test_name... "
+    echo -n "TC-$TOTAL_TESTS: $test_name... " >&2
 
     response=$("$@")
     status_code=$(echo "$response" | tail -n1)
     body=$(echo "$response" | sed '$d')
 
     if [ "$status_code" = "$expected_status" ]; then
-        echo -e "${GREEN}✓ PASS${NC} (Status: $status_code)"
+        echo -e "${GREEN}✓ PASS${NC} (Status: $status_code)" >&2
         PASSED_TESTS=$((PASSED_TESTS + 1))
         echo "$body"
         return 0
     else
-        echo -e "${RED}✗ FAIL${NC} (Expected: $expected_status, Got: $status_code)"
+        echo -e "${RED}✗ FAIL${NC} (Expected: $expected_status, Got: $status_code)" >&2
         FAILED_TESTS=$((FAILED_TESTS + 1))
         echo "$body"
         return 1
@@ -97,17 +100,17 @@ echo ""
 echo "=== Tests de Filtros de Pedidos ==="
 echo ""
 
-# TC-005: Filtrar pedidos por estado PENDIENTE
-run_test "Filtrar por estado PENDIENTE" "200" \
-    curl -s -w "\n%{http_code}" "$API_URL/api/v1/pedidos?estado=PENDIENTE"
+# TC-005: Filtrar pedidos por estado pendiente
+run_test "Filtrar por estado pendiente" "200" \
+    curl -s -w "\n%{http_code}" "$API_URL/api/v1/pedidos?estado=pendiente"
 
-# TC-006: Filtrar pedidos por estado CONFIRMADO
-run_test "Filtrar por estado CONFIRMADO" "200" \
-    curl -s -w "\n%{http_code}" "$API_URL/api/v1/pedidos?estado=CONFIRMADO"
+# TC-006: Filtrar pedidos por estado confirmado
+run_test "Filtrar por estado confirmado" "200" \
+    curl -s -w "\n%{http_code}" "$API_URL/api/v1/pedidos?estado=confirmado"
 
-# TC-007: Filtrar pedidos por estado EN_PREPARACION
-run_test "Filtrar por estado EN_PREPARACION" "200" \
-    curl -s -w "\n%{http_code}" "$API_URL/api/v1/pedidos?estado=EN_PREPARACION"
+# TC-007: Filtrar pedidos por estado en_preparacion
+run_test "Filtrar por estado en_preparacion" "200" \
+    curl -s -w "\n%{http_code}" "$API_URL/api/v1/pedidos?estado=en_preparacion"
 
 echo ""
 
