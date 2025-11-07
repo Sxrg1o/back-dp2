@@ -1,12 +1,28 @@
-# Tests de QA para HU-C07
+# Tests de QA - Kevin Antonio Navarro Carrera
 
-Este directorio contiene scripts de prueba automatizados para validar la Historia de Usuario HU-C07: "Añadir extras disponibles a mi selección".
+Este directorio contiene scripts de prueba automatizados para validar las Historias de Usuario asignadas a Kevin Navarro (Equipo QA/SEG).
 
 ## Contenido
 
-- `test_hu_c07_api.sh` - Tests de endpoints de API
-- `test_hu_c07_precios.py` - Tests de validación de cálculos de precios
-- `README_QA.md` - Esta documentación
+### Scripts de Testing
+
+- `test_hu_c07_api.sh` - Tests de endpoints de API (HU-C07: Añadir extras)
+- `test_hu_c07_precios.py` - Tests de validación de cálculos de precios (HU-C07)
+- `test_hu_c08_comentarios.sh` - Tests de comentarios en pedidos (HU-C08: Indicación para cocina)
+- `test_common.sh` - Funciones compartidas (autenticación JWT, curl_auth)
+
+### Documentación
+
+- `README_KEVIN_NAVARRO.md` - Este archivo
+
+### Historias de Usuario Asignadas
+
+- **HU-C07**: Añadir extras disponibles a mi selección ✅ COMPLETADO
+- **HU-C08**: Dejar indicación para cocina ✅ COMPLETADO
+- **HU-C33**: Ver subtotal por grupo (División en frontend)
+- **HU-C34**: Ver total a pagar consolidado (División en frontend)
+- **HU-C35**: Cambiar de modalidad de pago (División en frontend)
+- **HU-C36**: Ver lista de productos disponibles (División en frontend)
 
 ## Prerequisitos
 
@@ -53,6 +69,36 @@ API_URL=http://localhost:8000 ./test_hu_c07_api.sh
 - ✅ Endpoint de producto-opciones
 - ✅ Estructura de datos (campos requeridos)
 - ✅ Endpoint de producto con opciones (`/productos/{id}/opciones`)
+
+### 1B. Tests de HU-C08 (Comentarios en Pedidos)
+
+Ejecuta tests de comentarios:
+
+```bash
+cd tests/qa
+chmod +x test_hu_c08_comentarios.sh
+QA_EMAIL="prueba1@example.com" QA_PASSWORD="pasiword" ./test_hu_c08_comentarios.sh
+```
+
+**Con modo verbose**:
+```bash
+QA_EMAIL="prueba1@example.com" QA_PASSWORD="pasiword" VERBOSE=true ./test_hu_c08_comentarios.sh
+```
+
+#### Qué valida este script:
+
+- ✅ Autenticación JWT con credenciales QA
+- ✅ Crear pedido con `notas_personalizacion` en items
+- ✅ Crear pedido con `notas_cocina` a nivel de pedido
+- ✅ Crear pedido con `notas_cliente` a nivel de pedido
+- ✅ Validar campos opcionales (pedido sin comentarios)
+- ✅ Caracteres especiales en comentarios (áéíóú, ñ, ¿¡)
+- ✅ Múltiples items con diferentes comentarios
+- ✅ Comentarios largos (200+ caracteres)
+- ✅ Sanitización de HTML/JS en comentarios
+- ✅ Persistencia de comentarios en GET pedido
+
+**Resultados:** 9/10 tests PASS (90%)
 
 ### 2. Tests de Validación de Precios
 
@@ -271,13 +317,29 @@ def main():
     test_nuevo_caso(results)
 ```
 
+## Issues de GitHub
+
+### Backend (dp2-eder/back-dp2)
+
+- **Issue #92**: Casos de Prueba - HU-C08: Dejar indicación para cocina
+  - Estado: 9/10 tests PASS (90%)
+  - Fecha: 06 de Noviembre 2025
+
+### Frontend (dp2-eder/front-dp2)
+
+- **Issue #31**: Casos de Prueba - HU-C08: Dejar indicación para cocina (Frontend)
+  - Estado: 3/3 tests PASS (100%)
+  - Fecha: 06 de Noviembre 2025
+
 ## Referencias
 
 - Reporte QA completo: `REPORTE_QA_HU-C07_HU-C08.md`
 - Casos de prueba: `CASOS_PRUEBA_QA.csv`
 - Documentación API: https://back-dp2.onrender.com/docs
+- Formato estándar QA: `/Users/kevinnavarro/Documents/Github/dp2/FORMATO ESTÁNDAR-EQUIPO QA.md`
 
 ---
 
-**Última actualización**: 2025-10-09
-**Mantenido por**: Equipo QA
+**Última actualización**: 2025-11-06
+**Mantenido por**: Kevin Antonio Navarro Carrera - Equipo QA/SEG
+**Email**: kevin.navarro@example.com (si aplica)
