@@ -6,9 +6,9 @@ usuarios con mesas, permitiendo trackear los pedidos realizados durante la visit
 """
 
 from typing import Any, Dict, Type, TypeVar, List, TYPE_CHECKING, Optional
-from datetime import datetime
+from datetime import datetime, timedelta
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from sqlalchemy import String, TIMESTAMP, Enum as SQLEnum, ForeignKey, CheckConstraint, Index, inspect
+from sqlalchemy import String, TIMESTAMP, Enum as SQLEnum, ForeignKey, CheckConstraint, Index, inspect, Integer
 from src.models.base_model import BaseModel
 from src.models.mixins.audit_mixin import AuditMixin
 from src.core.enums.sesion_mesa_enums import EstadoSesionMesa
@@ -101,6 +101,13 @@ class SesionMesaModel(BaseModel, AuditMixin):
         comment="Fecha y hora de finalización de la sesión"
     )
 
+    duracion_minutos: Mapped[int] = mapped_column(
+        Integer,
+        nullable=False,
+        default=120,
+        comment="Duración de la sesión en minutos (por defecto 120 minutos = 2 horas)"
+    )
+
     # Relaciones
     usuario: Mapped["UsuarioModel"] = relationship(
         "UsuarioModel",
@@ -128,6 +135,43 @@ class SesionMesaModel(BaseModel, AuditMixin):
         ),
         Index("idx_sesion_mesa_usuario_mesa", "id_usuario", "id_mesa"),
     )
+
+    # Métodos de utilidad
+    def calcular_fecha_expiracion(self) -> datetime:
+        """
+        Calcula la fecha de expiración de la sesión basándose en fecha_inicio y duracion_minutos.
+
+        Returns
+        -------
+        datetime
+            Fecha y hora de expiración de la sesión.
+        """
+        return self.fecha_inicio + timedelta(minutes=self.duracion_minutos)
+
+    def esta_expirada(self) -> bool:
+        """
+        Verifica si la sesión ha expirado.
+
+        Returns
+        -------
+        bool
+            True si la sesión ha expirado, False en caso contrario.
+        """
+        if self.estado == EstadoSesionMesa.FINALIZADA:
+            return True
+
+        return datetime.now() > self.calcular_fecha_expiracion()
+
+    def es_valida(self) -> bool:
+        """
+        Verifica si la sesión es válida (activa y no expirada).
+
+        Returns
+        -------
+        bool
+            True si la sesión es válida, False en caso contrario.
+        """
+        return self.estado == EstadoSesionMesa.ACTIVA and not self.esta_expirada()
 
     # Métodos comunes para todos los modelos
     def to_dict(self) -> Dict[str, Any]:

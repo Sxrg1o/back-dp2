@@ -77,11 +77,7 @@ class UsuarioRepository:
         Optional[UsuarioModel]
             El usuario encontrado o None si no existe.
         """
-        query = (
-            select(UsuarioModel)
-            .where(UsuarioModel.id == usuario_id)
-            .options(selectinload(UsuarioModel.rol))
-        )
+        query = select(UsuarioModel).where(UsuarioModel.id == usuario_id)
         result = await self.session.execute(query)
         return result.scalars().first()
 
@@ -99,11 +95,7 @@ class UsuarioRepository:
         Optional[UsuarioModel]
             El usuario encontrado o None si no existe.
         """
-        query = (
-            select(UsuarioModel)
-            .where(UsuarioModel.email == email)
-            .options(selectinload(UsuarioModel.rol))
-        )
+        query = select(UsuarioModel).where(UsuarioModel.email == email)
         result = await self.session.execute(query)
         return result.scalars().first()
 
@@ -207,12 +199,7 @@ class UsuarioRepository:
             Tupla con la lista de usuarios y el número total de registros.
         """
         # Consulta para obtener los usuarios paginados
-        query = (
-            select(UsuarioModel)
-            .offset(skip)
-            .limit(limit)
-            .options(selectinload(UsuarioModel.rol))
-        )
+        query = select(UsuarioModel).offset(skip).limit(limit)
 
         # Consulta para obtener el total de registros
         count_query = select(func.count(UsuarioModel.id))

@@ -1,51 +1,60 @@
-from typing import Any, Dict, Optional, Type, TypeVar, TYPE_CHECKING
-from sqlalchemy.orm import Mapped, mapped_column, relationship
-from sqlalchemy import String, Boolean, Index, TIMESTAMP, ForeignKey
+from typing import Any, Dict, Optional, Type, TypeVar
+from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy import String, Index, TIMESTAMP
 from datetime import datetime
 from src.models.base_model import BaseModel
 from src.models.mixins.audit_mixin import AuditMixin
-
-if TYPE_CHECKING:
-    from src.models.auth.rol_model import RolModel
 
 T = TypeVar("T", bound="UsuarioModel")
 
 class UsuarioModel(BaseModel, AuditMixin):
     """
-    User model for authentication and user management.
-    Adapted to match existing MySQL schema restaurant_dp2.usuario
+    Modelo simplificado de usuario para clientes temporales del restaurante.
+    Solo almacena información básica: ID, nombre, correo y último acceso.
     """
 
     __tablename__ = "usuarios"
     __table_args__ = (
         Index("idx_email", "email"),
-        Index("idx_rol", "id_rol"),
-        Index("idx_activo", "activo"),
-        {'comment': 'Usuarios del sistema (staff y clientes registrados)'}
+        {'comment': 'Usuarios temporales del restaurante'}
     )
 
     # Campos específicos del usuario
-    email: Mapped[Optional[str]] = mapped_column(String(255), nullable=True, unique=True)
-    password_hash: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
-    nombre: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
-    telefono: Mapped[Optional[str]] = mapped_column(String(20), nullable=True)
-    activo: Mapped[bool] = mapped_column(Boolean, default=True, nullable=True)
-    id_rol: Mapped[str] = mapped_column(String(36), ForeignKey("roles.id", ondelete="RESTRICT"), nullable=False, index=True)
+    email: Mapped[str] = mapped_column(
+        String(255),
+        nullable=False,
+        unique=True,
+        comment="Email o correo del usuario"
+    )
+    nombre: Mapped[str] = mapped_column(
+        String(255),
+        nullable=False,
+        comment="Nombre del usuario"
+    )
     ultimo_acceso: Mapped[Optional[datetime]] = mapped_column(
-        TIMESTAMP, 
-        nullable=True, 
+        TIMESTAMP,
+        nullable=True,
         default=None,
         comment="Última vez que el usuario accedió al sistema"
     )
-    
-    # Relación con Rol
-    rol: Mapped["RolModel"] = relationship(
-        "RolModel",
-        lazy="selectin"
-    )
 
-    # Métodos comunes heredados de BaseModel y AuditMixin
-    # Si necesitas métodos personalizados, agrégalos aquí
+    @staticmethod
+    def validar_formato_email(email: str) -> bool:
+        """
+        Valida que el email contenga 'correo' o 'mail' o '@' en su formato.
+
+        Parameters
+        ----------
+        email : str
+            Email a validar
+
+        Returns
+        -------
+        bool
+            True si el email es válido
+        """
+        email_lower = email.lower()
+        return 'correo' in email_lower or 'mail' in email_lower or '@' in email_lower
 
     def to_dict(self) -> Dict[str, Any]:
         """Convert to dictionary."""
@@ -59,3 +68,6 @@ class UsuarioModel(BaseModel, AuditMixin):
 
     def update_from_dict(self, data: Dict[str, Any]) -> None:
         super().update_from_dict(data)
+
+    def __repr__(self):
+        return f"<Usuario(id={self.id}, email={self.email}, nombre={self.nombre})>"
