@@ -2,7 +2,7 @@
 Servicio para el sistema de login simplificado (temporal).
 """
 
-from datetime import datetime
+from datetime import datetime, timezone
 from ulid import ULID
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.exc import IntegrityError
@@ -85,7 +85,7 @@ class LoginService:
             usuario = UsuarioModel(
                 email=login_data.email,
                 nombre=login_data.nombre,
-                ultimo_acceso=datetime.utcnow()
+                ultimo_acceso=datetime.now(timezone.utc)
             )
             try:
                 usuario = await self.usuario_repository.create(usuario)
@@ -98,22 +98,19 @@ class LoginService:
                 usuario = await self.usuario_repository.update(
                     usuario.id,
                     nombre=login_data.nombre,
-                    ultimo_acceso=datetime.utcnow()
+                    ultimo_acceso=datetime.now(timezone.utc)
                 )
             else:
                 # Nombre coincide: solo actualizar ultimo_acceso
                 usuario = await self.usuario_repository.update_ultimo_acceso(usuario.id)
 
-        # Buscar o crear sesión de mesa activa
-        sesion_mesa = await self.sesion_mesa_repository.get_active_by_usuario_and_mesa(
-            usuario.id, id_mesa
-        )
+        # Buscar sesión activa de la mesa (sin importar el usuario)
+        sesion_mesa = await self.sesion_mesa_repository.get_active_by_mesa(id_mesa)
 
         if sesion_mesa is None:
-            # No existe sesión activa: crear nueva
+            # No existe sesión activa para esta mesa: crear nueva
             token_sesion = str(ULID())
             sesion_mesa = SesionMesaModel(
-                id_usuario=usuario.id,
                 id_mesa=id_mesa,
                 token_sesion=token_sesion,
                 estado=EstadoSesionMesa.ACTIVA,
@@ -122,23 +119,54 @@ class LoginService:
             try:
                 sesion_mesa = await self.sesion_mesa_repository.create(sesion_mesa)
             except IntegrityError:
-                raise ValueError(f"Error al crear sesión de mesa para usuario '{usuario.id}'")
+                raise ValueError(f"Error al crear sesión de mesa para mesa '{id_mesa}'")
 
-        # Verificar si la sesión ha expirado
-        if sesion_mesa.esta_expirada():
-            # Si está expirada, crear una nueva sesión
-            token_sesion = str(ULID())
-            sesion_mesa = SesionMesaModel(
-                id_usuario=usuario.id,
-                id_mesa=id_mesa,
-                token_sesion=token_sesion,
-                estado=EstadoSesionMesa.ACTIVA,
-                duracion_minutos=120
-            )
+            # Agregar usuario a la sesión
             try:
-                sesion_mesa = await self.sesion_mesa_repository.create(sesion_mesa)
+                await self.sesion_mesa_repository.add_usuario_to_sesion(
+                    sesion_mesa.id, usuario.id
+                )
             except IntegrityError:
-                raise ValueError(f"Error al crear nueva sesión de mesa")
+                raise ValueError(f"Error al asociar usuario '{usuario.id}' a sesión")
+
+        else:
+            # Existe sesión activa: verificar si está expirada
+            if sesion_mesa.esta_expirada():
+                # Si está expirada, crear una nueva sesión
+                token_sesion = str(ULID())
+                sesion_mesa = SesionMesaModel(
+                    id_mesa=id_mesa,
+                    token_sesion=token_sesion,
+                    estado=EstadoSesionMesa.ACTIVA,
+                    duracion_minutos=120
+                )
+                try:
+                    sesion_mesa = await self.sesion_mesa_repository.create(sesion_mesa)
+                except IntegrityError:
+                    raise ValueError(f"Error al crear nueva sesión de mesa")
+
+                # Agregar usuario a la nueva sesión
+                try:
+                    await self.sesion_mesa_repository.add_usuario_to_sesion(
+                        sesion_mesa.id, usuario.id
+                    )
+                except IntegrityError:
+                    raise ValueError(f"Error al asociar usuario '{usuario.id}' a nueva sesión")
+            else:
+                # Sesión activa y válida: verificar si el usuario ya está en ella
+                usuario_in_sesion = await self.sesion_mesa_repository.usuario_in_sesion(
+                    sesion_mesa.id, usuario.id
+                )
+
+                if not usuario_in_sesion:
+                    # Usuario NO está en la sesión: agregarlo
+                    try:
+                        await self.sesion_mesa_repository.add_usuario_to_sesion(
+                            sesion_mesa.id, usuario.id
+                        )
+                    except IntegrityError:
+                        raise ValueError(f"Error al asociar usuario '{usuario.id}' a sesión existente")
+                # Si el usuario YA está en la sesión, no hacer nada (reutilizar)
 
         # Calcular fecha de expiración
         fecha_expiracion = sesion_mesa.calcular_fecha_expiracion()

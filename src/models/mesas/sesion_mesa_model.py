@@ -17,6 +17,7 @@ if TYPE_CHECKING:
     from src.models.auth.usuario_model import UsuarioModel
     from src.models.mesas.mesa_model import MesaModel
     from src.models.pedidos.pedido_model import PedidoModel
+    from src.models.mesas.usuario_sesion_mesa_model import UsuarioSesionMesaModel
 
 # Definimos un TypeVar para el tipado genérico
 T = TypeVar("T", bound="SesionMesaModel")
@@ -25,26 +26,27 @@ T = TypeVar("T", bound="SesionMesaModel")
 class SesionMesaModel(BaseModel, AuditMixin):
     """Modelo para representar sesiones de mesa en el sistema.
 
-    Una sesión de mesa es una asociación temporal entre un usuario y una mesa
-    que se crea cuando el usuario se loguea/registra. Permite agrupar todos
-    los pedidos que el usuario realiza durante su visita a esa mesa.
+    Una sesión de mesa es una asociación temporal entre una mesa y múltiples usuarios
+    que se crea cuando el primer usuario se loguea/registra. Permite agrupar todos
+    los pedidos que los usuarios realizan durante su visita a esa mesa.
+    Varios usuarios pueden compartir la misma sesión y token.
 
     Attributes
     ----------
     id : str
         Identificador único ULID de la sesión (heredado de BaseModel).
-    id_usuario : str
-        Identificador ULID del usuario asociado a la sesión.
     id_mesa : str
         Identificador ULID de la mesa donde se realiza la sesión.
     token_sesion : str
-        Token único generado para identificar la sesión.
+        Token único generado para identificar la sesión (compartido por todos los usuarios).
     estado : EstadoSesionMesa
         Estado actual de la sesión (activa, finalizada).
     fecha_inicio : datetime
         Fecha y hora de inicio de la sesión.
     fecha_fin : datetime, optional
         Fecha y hora de finalización de la sesión.
+    duracion_minutos : int
+        Duración de la sesión en minutos (por defecto 120 minutos = 2 horas).
     fecha_creacion : datetime
         Fecha y hora de creación del registro (heredado de AuditMixin).
     fecha_modificacion : datetime
@@ -58,13 +60,6 @@ class SesionMesaModel(BaseModel, AuditMixin):
     __tablename__ = "sesiones_mesas"
 
     # Foreign Keys
-    id_usuario: Mapped[str] = mapped_column(
-        String(36),
-        ForeignKey("usuarios.id", ondelete="RESTRICT"),
-        nullable=False,
-        comment="Usuario asociado a la sesión"
-    )
-
     id_mesa: Mapped[str] = mapped_column(
         String(36),
         ForeignKey("mesas.id", ondelete="RESTRICT"),
@@ -109,14 +104,17 @@ class SesionMesaModel(BaseModel, AuditMixin):
     )
 
     # Relaciones
-    usuario: Mapped["UsuarioModel"] = relationship(
-        "UsuarioModel",
-        lazy="selectin"
-    )
-
     mesa: Mapped["MesaModel"] = relationship(
         "MesaModel",
         lazy="selectin"
+    )
+
+    # Relación many-to-many con usuarios a través de la tabla intermedia
+    usuarios_sesiones: Mapped[List["UsuarioSesionMesaModel"]] = relationship(
+        "UsuarioSesionMesaModel",
+        back_populates="sesion_mesa",
+        cascade="all, delete-orphan",
+        lazy="select"
     )
 
     # Relación comentada temporalmente hasta que se active id_sesion_mesa en PedidoModel
@@ -133,7 +131,7 @@ class SesionMesaModel(BaseModel, AuditMixin):
             "fecha_fin IS NULL OR fecha_fin >= fecha_inicio",
             name="chk_sesion_mesa_fecha_fin_valida"
         ),
-        Index("idx_sesion_mesa_usuario_mesa", "id_usuario", "id_mesa"),
+        Index("idx_sesion_mesa_mesa", "id_mesa"),
     )
 
     # Métodos de utilidad
@@ -225,4 +223,4 @@ class SesionMesaModel(BaseModel, AuditMixin):
                 setattr(self, key, value)
 
     def __repr__(self):
-        return f"<SesionMesa(id={self.id}, token={self.token_sesion}, usuario={self.id_usuario}, mesa={self.id_mesa}, estado={self.estado.value})>"
+        return f"<SesionMesa(id={self.id}, token={self.token_sesion}, mesa={self.id_mesa}, estado={self.estado.value})>"

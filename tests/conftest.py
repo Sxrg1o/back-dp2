@@ -71,6 +71,12 @@ async def test_db_manager():
     # from src.models.auth.rol_model import RolModel  # noqa: F401  # ELIMINADO: Ya no existe RolModel
     from src.models.pagos.division_cuenta_model import DivisionCuentaModel  # noqa: F401
     from src.models.pagos.division_cuenta_detalle_model import DivisionCuentaDetalleModel  # noqa: F401
+    from src.models.auth.usuario_model import UsuarioModel  # noqa: F401
+    from src.models.mesas.mesa_model import MesaModel  # noqa: F401
+    from src.models.mesas.local_model import LocalModel  # noqa: F401
+    from src.models.mesas.zona_model import ZonaModel  # noqa: F401
+    from src.models.mesas.sesion_mesa_model import SesionMesaModel  # noqa: F401
+    from src.models.mesas.usuario_sesion_mesa_model import UsuarioSesionMesaModel  # noqa: F401
 
     # Creamos las tablas
     async with test_db.engine.begin() as conn:

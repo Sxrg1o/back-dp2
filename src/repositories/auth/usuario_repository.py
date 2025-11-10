@@ -3,6 +3,7 @@ Repositorio para la gestión de usuarios en el sistema.
 """
 
 from typing import Optional, List, Tuple
+from datetime import datetime, timezone
 
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -234,13 +235,11 @@ class UsuarioRepository:
         Optional[UsuarioModel]
             El usuario actualizado o None si no existe.
         """
-        from datetime import datetime
-        
         try:
             stmt = (
                 update(UsuarioModel)
                 .where(UsuarioModel.id == usuario_id)
-                .values(ultimo_acceso=datetime.utcnow())
+                .values(ultimo_acceso=datetime.now(timezone.utc))
             )
             await self.session.execute(stmt)
             await self.session.flush()

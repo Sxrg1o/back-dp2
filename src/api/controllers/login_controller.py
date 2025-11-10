@@ -21,6 +21,10 @@ router = APIRouter(prefix="/login", tags=["Login"])
     description="""
     Endpoint para login simplificado de usuarios temporales del restaurante.
 
+    **IMPORTANTE:** Múltiples usuarios pueden compartir la misma sesión de mesa.
+    Cuando varios usuarios se loguean a la misma mesa, todos comparten el mismo
+    token_sesion, permitiendo colaboración en pedidos.
+
     **Flujo:**
     1. Valida formato del email (debe contener 'correo', 'mail' o '@')
     2. Si el correo NO existe: crea nuevo usuario
@@ -28,19 +32,32 @@ router = APIRouter(prefix="/login", tags=["Login"])
        - Si el nombre NO coincide: actualiza el nombre
        - Si coincide: no hace nada
     4. Actualiza ultimo_acceso
-    5. Crea o reutiliza sesión de mesa temporal activa
-    6. Retorna id_usuario, id_sesion_mesa, token_sesion y fecha_expiracion
+    5. Busca sesión activa de la mesa:
+       - Si NO existe: crea nueva sesión y asocia al usuario
+       - Si existe y NO está expirada: asocia al usuario a la sesión existente (comparte token)
+       - Si existe y está expirada: crea nueva sesión y asocia al usuario
+    6. Retorna id_usuario, id_sesion_mesa, token_sesion (compartido) y fecha_expiracion
 
     **Parámetros de consulta:**
     - `id_mesa`: ID de la mesa donde se realiza el login (requerido)
 
-    **Ejemplo de uso:**
+    **Ejemplo de uso (Sesión Compartida):**
     ```
+    # Usuario 1 crea la sesión
     POST /api/v1/login?id_mesa=01HXXX...
     {
-        "email": "usuario@correo.com",
+        "email": "juan@correo.com",
         "nombre": "Juan Pérez"
     }
+    # Respuesta: token_sesion = "01HYYY..."
+
+    # Usuario 2 se une a la misma mesa → comparte el mismo token
+    POST /api/v1/login?id_mesa=01HXXX...
+    {
+        "email": "maria@correo.com",
+        "nombre": "María García"
+    }
+    # Respuesta: token_sesion = "01HYYY..." (MISMO TOKEN)
     ```
     """,
     responses={
