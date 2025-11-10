@@ -20,7 +20,7 @@ from src.core.dependencies import ErrorHandlerMiddleware
 # Esto resuelve el error: failed to locate a name DivisionCuentaModel
 
 # Auth models
-from src.models.auth.rol_model import RolModel  # noqa: F401
+# from src.models.auth.rol_model import RolModel  # noqa: F401  # ELIMINADO: Ya no se usa RolModel
 from src.models.auth.usuario_model import UsuarioModel  # noqa: F401
 from src.models.auth.sesion_model import SesionModel  # noqa: F401
 
