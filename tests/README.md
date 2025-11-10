@@ -7,7 +7,7 @@ Los tests están organizados siguiendo la arquitectura Clean Architecture del pr
 ```
 tests/
 ├── conftest.py              # Fixtures globales
-├── unit/                    # Tests unitarios
+├── unit/                    # Tests unitarios (NO requieren backend corriendo)
 │   ├── models/             # Capa 1: Tests de modelos SQLAlchemy
 │   │   ├── auth/
 │   │   ├── menu/
@@ -27,6 +27,10 @@ tests/
 │   │   └── exceptions/
 │   └── api/               # Capa 4: Tests de endpoints (mock services)
 │       └── controllers/
+├── qa/                    # Tests QA - ⚠️ REQUIEREN BACKEND CORRIENDO
+│   ├── test_cu05_validaciones_errores.py  # Python (RECOMENDADO)
+│   ├── test_cu05_validaciones_errores.bat # Windows BAT
+│   └── test_cu05_validaciones_errores.sh  # Linux/Mac Bash
 ├── integration/           # Tests de integración (próximamente)
 └── e2e/                  # Tests end-to-end (próximamente)
 ```
@@ -80,14 +84,18 @@ asyncio_mode = auto
 
 ## Ejecutar Tests
 
-### Todos los tests
+### Tests Unitarios (sin backend)
+
+Los tests unitarios **NO requieren** que el backend esté corriendo:
+
 ```bash
-pytest
+# Todos los tests unitarios
+pytest tests/unit/
 ```
 
 ### Con cobertura
 ```bash
-pytest --cov=src --cov-report=term-missing
+pytest tests/unit/ --cov=src --cov-report=term-missing
 ```
 
 ### Por capa específica
@@ -97,6 +105,62 @@ pytest tests/unit/repositories/
 pytest tests/unit/business_logic/
 pytest tests/unit/api/
 ```
+
+---
+
+### Tests QA (requieren backend corriendo) ⚠️
+
+Los tests QA **SÍ requieren** que el backend esté corriendo en el puerto especificado.
+
+#### Paso 1: Iniciar el Backend
+
+**Terminal 1:**
+```bash
+cd back-dp2
+venv\Scripts\activate          # Windows
+# source venv/bin/activate     # Linux/Mac
+python -m uvicorn src.main:app --reload --port 8000
+```
+
+Verifica que el servidor esté corriendo en: http://localhost:8000/docs
+
+#### Paso 2: Ejecutar Tests QA
+
+**Terminal 2:**
+```bash
+cd back-dp2
+venv\Scripts\activate          # Windows
+# source venv/bin/activate     # Linux/Mac
+
+# Opción A: Python (RECOMENDADO - multiplataforma)
+python tests/qa/test_cu05_validaciones_errores.py
+
+# Opción B: BAT (solo Windows, requiere curl)
+tests\qa\test_cu05_validaciones_errores.bat
+
+# Opción C: Bash (Linux/Mac o Git Bash)
+bash tests/qa/test_cu05_validaciones_errores.sh
+```
+
+#### Opciones Avanzadas para Tests QA
+
+```bash
+# Puerto personalizado
+python tests/qa/test_cu05_validaciones_errores.py --port 8001
+
+# URL completa
+python tests/qa/test_cu05_validaciones_errores.py --url http://localhost:8001
+
+# Modo verbose (muestra respuestas en fallos)
+python tests/qa/test_cu05_validaciones_errores.py --verbose
+
+# Ver todas las opciones
+python tests/qa/test_cu05_validaciones_errores.py --help
+```
+
+**Nota:** Ver `tests/qa/GUIA_EJECUCION_TESTS_CU05.md` para más detalles.
+
+---
 
 ### Un archivo específico
 ```bash

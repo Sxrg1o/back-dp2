@@ -14,7 +14,7 @@ class PedidoBase(BaseModel):
 
     id_mesa: str = Field(description="Mesa ID (ULID)", min_length=1, max_length=36)
     id_usuario: str = Field(
-        description="Usuario/Cliente ID (ULID)", min_length=1, max_length=36
+        description="Usuario/Cliente ID (ULID)", min_length=1
     )
     notas_cliente: Optional[str] = Field(
         default=None, description="Cliente notes"
@@ -75,7 +75,7 @@ class PedidoUpdate(BaseModel):
     """
 
     id_mesa: Optional[str] = Field(
-        default=None, description="Mesa ID (ULID)", min_length=1, max_length=36
+        default=None, description="Mesa ID (ULID)", min_length=1
     )
     subtotal: Optional[Decimal] = Field(
         default=None,
@@ -195,7 +195,7 @@ class PedidoList(BaseModel):
 class PedidoOpcionItemCreate(BaseModel):
     """Schema for an option within an order item."""
 
-    id_producto_opcion: str = Field(description="Producto Opcion ID (ULID)", min_length=1, max_length=36)
+    id_producto_opcion: str = Field(description="Producto Opcion ID (ULID)", min_length=1)
     precio_adicional: Decimal = Field(
         description="Additional price at order time",
         ge=0,
@@ -216,7 +216,7 @@ class PedidoOpcionItemCreate(BaseModel):
 class PedidoItemCreate(BaseModel):
     """Schema for an item within a complete order creation."""
 
-    id_producto: str = Field(description="Producto ID (ULID)", min_length=1, max_length=36)
+    id_producto: str = Field(description="Producto ID (ULID)", min_length=1)
     cantidad: int = Field(default=1, description="Quantity", ge=1)
     precio_unitario: Decimal = Field(description="Unit price", gt=0, decimal_places=2)
     opciones: List[PedidoOpcionItemCreate] = Field(
@@ -241,9 +241,9 @@ class PedidoItemCreate(BaseModel):
 class PedidoCompletoCreate(BaseModel):
     """Schema for creating a complete order with items in one transaction."""
 
-    id_mesa: str = Field(description="Mesa ID (ULID)", min_length=1, max_length=36)
+    id_mesa: str = Field(description="Mesa ID (ULID)", min_length=1)
     id_usuario: str = Field(
-        description="Usuario/Cliente ID (ULID)", min_length=1, max_length=36
+        description="Usuario/Cliente ID (ULID)", min_length=1
     )
     items: List[PedidoItemCreate] = Field(description="List of order items", min_length=1)
     notas_cliente: Optional[str] = Field(
