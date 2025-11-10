@@ -117,13 +117,13 @@ class SesionMesaModel(BaseModel, AuditMixin):
         lazy="select"
     )
 
-    # Relación comentada temporalmente hasta que se active id_sesion_mesa en PedidoModel
-    # pedidos: Mapped[List["PedidoModel"]] = relationship(
-    #     "PedidoModel",
-    #     back_populates="sesion_mesa",
-    #     cascade="all",
-    #     lazy="select"
-    # )
+    # Relación con pedidos (sin cascade delete para preservar historial)
+    pedidos: Mapped[List["PedidoModel"]] = relationship(
+        "PedidoModel",
+        back_populates="sesion_mesa",
+        cascade="",  # Sin cascade: los pedidos son registros históricos
+        lazy="select"
+    )
 
     # Constraints e índices
     __table_args__ = (

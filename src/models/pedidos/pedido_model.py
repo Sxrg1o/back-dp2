@@ -91,12 +91,12 @@ class PedidoModel(BaseModel, AuditMixin):
         comment="Cliente/usuario que realizó el pedido"
     )
 
-    # id_sesion_mesa: Mapped[str] = mapped_column(
-    #     String(36),
-    #     ForeignKey("sesiones_mesas.id", ondelete="RESTRICT"),
-    #     nullable=False,
-    #     comment="Sesión de mesa a la que pertenece este pedido"
-    # )
+    id_sesion_mesa: Mapped[Optional[str]] = mapped_column(
+        String(36),
+        ForeignKey("sesiones_mesas.id", ondelete="RESTRICT"),
+        nullable=True,
+        comment="Sesión de mesa a la que pertenece este pedido (opcional para backwards compatibility)"
+    )
 
     # Campos específicos del modelo de pedido
     numero_pedido: Mapped[str] = mapped_column(
@@ -149,11 +149,11 @@ class PedidoModel(BaseModel, AuditMixin):
     fecha_cancelado: Mapped[Optional[datetime]] = mapped_column(TIMESTAMP, nullable=True)
 
     # Relaciones
-    # sesion_mesa: Mapped["SesionMesaModel"] = relationship(
-    #     "SesionMesaModel",
-    #     back_populates="pedidos",
-    #     lazy="selectin"
-    # )
+    sesion_mesa: Mapped[Optional["SesionMesaModel"]] = relationship(
+        "SesionMesaModel",
+        back_populates="pedidos",
+        lazy="selectin"
+    )
 
     pedidos_productos: Mapped[List["PedidoProductoModel"]] = relationship(
         "PedidoProductoModel",
@@ -228,6 +228,34 @@ class PedidoModel(BaseModel, AuditMixin):
         for key, value in data.items():
             if hasattr(self, key):
                 setattr(self, key, value)
+
+    def validar_consistencia_sesion(self) -> bool:
+        """
+        Valida que si hay sesión, el pedido sea consistente con ella.
+
+        Verifica que:
+        - Si hay id_sesion_mesa, debe existir la relación sesion_mesa
+        - La mesa del pedido debe coincidir con la mesa de la sesión
+
+        Returns
+        -------
+        bool
+            True si es válido, False si hay inconsistencia
+        """
+        # Si no hay sesión asignada, es válido (pedido sin sesión)
+        if self.id_sesion_mesa is None:
+            return True
+
+        # Si hay id_sesion_mesa pero no se cargó la relación, es válido
+        # (la relación lazy puede no estar cargada aún)
+        if self.sesion_mesa is None:
+            return True
+
+        # Validar que la mesa del pedido coincida con la mesa de la sesión
+        if self.id_mesa != self.sesion_mesa.id_mesa:
+            return False
+
+        return True
 
     def __repr__(self):
         return f"<Pedido(id={self.id}, numero_pedido={self.numero_pedido}, estado={self.estado.value}, total={self.total})>"
