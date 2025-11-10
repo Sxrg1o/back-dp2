@@ -15,6 +15,7 @@ from src.models.auth.usuario_model import UsuarioModel
 class UsuarioRepository:
     """Repositorio para gestionar operaciones CRUD del modelo de usuarios.
 
+    
     Proporciona acceso a la capa de persistencia para las operaciones
     relacionadas con los usuarios en el sistema, siguiendo el patrón Repository.
 
