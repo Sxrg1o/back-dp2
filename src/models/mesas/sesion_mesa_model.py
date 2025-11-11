@@ -37,6 +37,8 @@ class SesionMesaModel(BaseModel, AuditMixin):
         Identificador único ULID de la sesión (heredado de BaseModel).
     id_mesa : str
         Identificador ULID de la mesa donde se realiza la sesión.
+    id_usuario_creador : str
+        Identificador ULID del usuario que creó la sesión.
     token_sesion : str
         Token único generado para identificar la sesión (compartido por todos los usuarios).
     estado : EstadoSesionMesa
@@ -65,6 +67,13 @@ class SesionMesaModel(BaseModel, AuditMixin):
         ForeignKey("mesas.id", ondelete="RESTRICT"),
         nullable=False,
         comment="Mesa donde se realiza la sesión"
+    )
+
+    id_usuario_creador: Mapped[str] = mapped_column(
+        String(36),
+        ForeignKey("usuarios.id", ondelete="RESTRICT"),
+        nullable=False,
+        comment="Usuario que creó la sesión de mesa"
     )
 
     # Campos específicos del modelo de sesión mesa
@@ -106,6 +115,12 @@ class SesionMesaModel(BaseModel, AuditMixin):
     # Relaciones
     mesa: Mapped["MesaModel"] = relationship(
         "MesaModel",
+        lazy="selectin"
+    )
+
+    usuario_creador: Mapped["UsuarioModel"] = relationship(
+        "UsuarioModel",
+        foreign_keys=[id_usuario_creador],
         lazy="selectin"
     )
 

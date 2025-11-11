@@ -112,6 +112,7 @@ class LoginService:
             token_sesion = str(ULID())
             sesion_mesa = SesionMesaModel(
                 id_mesa=id_mesa,
+                id_usuario_creador=usuario.id,
                 token_sesion=token_sesion,
                 estado=EstadoSesionMesa.ACTIVA,
                 duracion_minutos=120  # 2 horas por defecto
@@ -136,6 +137,7 @@ class LoginService:
                 token_sesion = str(ULID())
                 sesion_mesa = SesionMesaModel(
                     id_mesa=id_mesa,
+                    id_usuario_creador=usuario.id,
                     token_sesion=token_sesion,
                     estado=EstadoSesionMesa.ACTIVA,
                     duracion_minutos=120
