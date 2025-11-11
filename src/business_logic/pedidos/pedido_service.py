@@ -15,6 +15,7 @@ from src.repositories.pedidos.pedido_producto_repository import PedidoProductoRe
 from src.repositories.pedidos.pedido_opcion_repository import PedidoOpcionRepository
 from src.repositories.menu.producto_repository import ProductoRepository
 from src.repositories.pedidos.producto_opcion_repository import ProductoOpcionRepository
+from src.repositories.mesas.sesion_mesa_repository import SesionMesaRepository
 from src.models.pedidos.pedido_model import PedidoModel
 from src.models.pedidos.pedido_producto_model import PedidoProductoModel
 from src.models.pedidos.pedido_opcion_model import PedidoOpcionModel
@@ -38,6 +39,14 @@ from src.api.schemas.pedido_detallado_schema import (
     ProductoDetalleResponse,
     OpcionDetalleResponse,
 )
+from src.api.schemas.pedido_sesion_schema import (
+    PedidoEnviarRequest,
+    PedidoEnviarResponse,
+    PedidoHistorialResponse,
+    PedidoHistorialDetalle,
+    ProductoPedidoDetalle,
+    ProductoOpcionDetalle,
+)
 from src.business_logic.exceptions.pedido_exceptions import (
     PedidoValidationError,
     PedidoNotFoundError,
@@ -45,6 +54,7 @@ from src.business_logic.exceptions.pedido_exceptions import (
     PedidoStateTransitionError,
 )
 from src.core.enums.pedido_enums import EstadoPedido
+from src.core.enums.sesion_mesa_enums import EstadoSesionMesa
 
 
 class PedidoService:
@@ -87,6 +97,7 @@ class PedidoService:
         self.pedido_opcion_repository = PedidoOpcionRepository(session)
         self.producto_repository = ProductoRepository(session)
         self.producto_opcion_repository = ProductoOpcionRepository(session)
+        self.sesion_mesa_repository = SesionMesaRepository(session)
         self.session = session
 
     async def _generate_numero_pedido(self, id_mesa: str) -> str:
@@ -273,6 +284,7 @@ class PedidoService:
         estado: Optional[EstadoPedido] = None,
         id_mesa: Optional[str] = None,
         id_usuario: Optional[str] = None,
+        id_sesion_mesa: Optional[str] = None,
     ) -> PedidoList:
         """
         Obtiene una lista paginada de pedidos.
@@ -289,6 +301,8 @@ class PedidoService:
             Filtrar por ID de mesa.
         id_usuario : str, optional
             Filtrar por ID de usuario.
+        id_sesion_mesa : str, optional
+            Filtrar por ID de sesión de mesa.
 
         Returns
         -------
@@ -304,7 +318,7 @@ class PedidoService:
             raise PedidoValidationError("El parámetro 'limit' debe ser mayor a cero")
 
         # Obtener pedidos desde el repositorio
-        pedidos, total = await self.repository.get_all(skip, limit, estado, id_mesa, id_usuario)
+        pedidos, total = await self.repository.get_all(skip, limit, estado, id_mesa, id_usuario, id_sesion_mesa)
 
         # Convertir modelos a esquemas de resumen
         pedido_summaries = [PedidoSummary.model_validate(pedido) for pedido in pedidos]
@@ -319,6 +333,7 @@ class PedidoService:
         estado: Optional[EstadoPedido] = None,
         id_mesa: Optional[str] = None,
         id_usuario: Optional[str] = None,
+        id_sesion_mesa: Optional[str] = None,
     ) -> PedidoDetalladoList:
         """
         Obtiene una lista paginada de pedidos con información detallada de productos y opciones.
@@ -335,6 +350,8 @@ class PedidoService:
             Filtrar por ID de mesa.
         id_usuario : str, optional
             Filtrar por ID de usuario.
+        id_sesion_mesa : str, optional
+            Filtrar por ID de sesión de mesa.
 
         Returns
         -------
@@ -350,7 +367,7 @@ class PedidoService:
             raise PedidoValidationError("El parámetro 'limit' debe ser mayor a cero")
 
         # Obtener pedidos con relaciones eager-loaded desde el repositorio
-        pedidos, total = await self.repository.get_all_detallado(skip, limit, estado, id_mesa, id_usuario)
+        pedidos, total = await self.repository.get_all_detallado(skip, limit, estado, id_mesa, id_usuario, id_sesion_mesa)
 
         # Convertir modelos a esquemas detallados
         pedidos_detallados = []
@@ -703,3 +720,320 @@ class PedidoService:
             raise PedidoConflictError(
                 f"Error al crear el pedido completo. Conflicto de integridad: {str(e)}"
             )
+
+    async def enviar_pedido_por_token(
+        self, pedido_data: PedidoEnviarRequest
+    ) -> PedidoEnviarResponse:
+        """
+        Crea un pedido usando el token de sesión de mesa compartido.
+
+        Este método obtiene los precios automáticamente desde la base de datos,
+        sin necesidad de que el frontend los envíe. Valida la sesión de mesa
+        y crea el pedido asociándolo a la sesión.
+
+        Parameters
+        ----------
+        pedido_data : PedidoEnviarRequest
+            Datos del pedido con token de sesión e items (sin precios).
+
+        Returns
+        -------
+        PedidoEnviarResponse
+            Respuesta con el pedido creado y todos los cálculos.
+
+        Raises
+        ------
+        PedidoValidationError
+            Si el token no existe, la sesión no está activa, o algún producto
+            no existe o no está disponible.
+        PedidoConflictError
+            Si hay un conflicto de integridad en la base de datos.
+        """
+        try:
+            # 1. Validar que la sesión existe y está activa
+            sesion = await self.sesion_mesa_repository.get_by_token(
+                pedido_data.token_sesion
+            )
+            if not sesion:
+                raise PedidoValidationError(
+                    f"No se encontró una sesión con el token {pedido_data.token_sesion}"
+                )
+            if sesion.estado != EstadoSesionMesa.ACTIVA:
+                raise PedidoValidationError(
+                    f"La sesión de mesa no está activa. Estado actual: {sesion.estado.value}"
+                )
+
+            # 2. Validar que la mesa existe (aunque debería existir si hay sesión)
+            mesa = await self.mesa_repository.get_by_id(sesion.id_mesa)
+            if not mesa:
+                raise PedidoValidationError(
+                    f"No se encontró la mesa con ID {sesion.id_mesa}"
+                )
+
+            # 3. Validar productos y calcular precios
+            subtotal = Decimal("0.00")
+            items_validados = []
+
+            for item in pedido_data.items:
+                # Obtener producto desde BD
+                producto = await self.producto_repository.get_by_id(item.id_producto)
+                if not producto:
+                    raise PedidoValidationError(
+                        f"No se encontró el producto con ID {item.id_producto}"
+                    )
+                if not producto.disponible:
+                    raise PedidoValidationError(
+                        f"El producto '{producto.nombre}' no está disponible actualmente"
+                    )
+
+                # Calcular precio de opciones
+                precio_opciones = Decimal("0.00")
+                opciones_validadas = []
+                for opcion in item.opciones:
+                    producto_opcion = await self.producto_opcion_repository.get_by_id(
+                        opcion.id_producto_opcion
+                    )
+                    if not producto_opcion:
+                        raise PedidoValidationError(
+                            f"No se encontró la opción con ID {opcion.id_producto_opcion}"
+                        )
+                    precio_opciones += producto_opcion.precio_adicional
+                    opciones_validadas.append(producto_opcion)
+
+                # Calcular subtotal del item
+                precio_total_unitario = producto.precio_base + precio_opciones
+                item_subtotal = Decimal(str(item.cantidad)) * precio_total_unitario
+                subtotal += item_subtotal
+
+                # Guardar datos validados
+                items_validados.append({
+                    "item": item,
+                    "producto": producto,
+                    "opciones": opciones_validadas,
+                    "precio_opciones": precio_opciones,
+                    "item_subtotal": item_subtotal
+                })
+
+            # 4. Calcular totales (por ahora sin impuestos ni descuentos)
+            impuestos = Decimal("0.00")
+            descuentos = Decimal("0.00")
+            total = subtotal
+
+            # 5. Generar número de pedido
+            numero_pedido = await self._generate_numero_pedido(sesion.id_mesa)
+
+            # 6. Crear el pedido con id_sesion_mesa
+            pedido = PedidoModel(
+                id_mesa=sesion.id_mesa,
+                id_usuario=sesion.id_usuario_creador,  # Usuario que creó la sesión
+                id_sesion_mesa=sesion.id,  # ✅ Asociar a la sesión
+                numero_pedido=numero_pedido,
+                estado=EstadoPedido.PENDIENTE,
+                subtotal=subtotal,
+                impuestos=impuestos,
+                descuentos=descuentos,
+                total=total,
+                notas_cliente=pedido_data.notas_cliente,
+                notas_cocina=pedido_data.notas_cocina,
+            )
+
+            # Persistir el pedido
+            created_pedido = await self.repository.create(pedido)
+
+            # 7. Crear todos los items con sus opciones
+            productos_detalle = []
+            for item_data in items_validados:
+                item = item_data["item"]
+                producto = item_data["producto"]
+                opciones = item_data["opciones"]
+                precio_opciones = item_data["precio_opciones"]
+                item_subtotal = item_data["item_subtotal"]
+
+                # Crear el item
+                pedido_producto = PedidoProductoModel(
+                    id_pedido=created_pedido.id,
+                    id_producto=producto.id,
+                    cantidad=item.cantidad,
+                    precio_unitario=producto.precio_base,
+                    precio_opciones=precio_opciones,
+                    subtotal=item_subtotal,
+                    notas_personalizacion=item.notas_personalizacion,
+                )
+                created_item = await self.pedido_producto_repository.create(pedido_producto)
+
+                # Crear opciones del item
+                opciones_detalle = []
+                for idx, opcion in enumerate(opciones):
+                    pedido_opcion = PedidoOpcionModel(
+                        id_pedido_producto=created_item.id,
+                        id_producto_opcion=opcion.id,
+                        precio_adicional=opcion.precio_adicional,
+                    )
+                    created_opcion = await self.pedido_opcion_repository.create(pedido_opcion)
+
+                    # Construir detalle de opción
+                    opciones_detalle.append(
+                        ProductoOpcionDetalle(
+                            id=created_opcion.id,
+                            id_producto_opcion=opcion.id,
+                            nombre_opcion=opcion.nombre,
+                            precio_adicional=opcion.precio_adicional,
+                        )
+                    )
+
+                # Construir detalle de producto
+                productos_detalle.append(
+                    ProductoPedidoDetalle(
+                        id=created_item.id,
+                        id_producto=producto.id,
+                        nombre_producto=producto.nombre,
+                        cantidad=item.cantidad,
+                        precio_unitario=producto.precio_base,
+                        precio_opciones=precio_opciones,
+                        subtotal=item_subtotal,
+                        notas_personalizacion=item.notas_personalizacion,
+                        opciones=opciones_detalle,
+                    )
+                )
+
+            # 8. Commit de la transacción
+            await self.session.flush()
+
+            # 9. Construir respuesta completa
+            pedido_detalle = PedidoHistorialDetalle(
+                id=created_pedido.id,
+                numero_pedido=created_pedido.numero_pedido,
+                estado=created_pedido.estado,
+                subtotal=created_pedido.subtotal,
+                impuestos=created_pedido.impuestos,
+                descuentos=created_pedido.descuentos,
+                total=created_pedido.total,
+                notas_cliente=created_pedido.notas_cliente,
+                notas_cocina=created_pedido.notas_cocina,
+                fecha_creacion=created_pedido.fecha_creacion,
+                fecha_confirmado=created_pedido.fecha_confirmado,
+                fecha_en_preparacion=created_pedido.fecha_en_preparacion,
+                fecha_listo=created_pedido.fecha_listo,
+                fecha_entregado=created_pedido.fecha_entregado,
+                productos=productos_detalle,
+            )
+
+            return PedidoEnviarResponse(
+                status=201,
+                message="Pedido creado exitosamente",
+                pedido=pedido_detalle,
+            )
+
+        except IntegrityError as e:
+            # Rollback implícito por SQLAlchemy
+            raise PedidoConflictError(
+                f"Error al crear el pedido con token de sesión. Conflicto de integridad: {str(e)}"
+            )
+
+    async def obtener_historial_por_token(
+        self, token_sesion: str
+    ) -> PedidoHistorialResponse:
+        """
+        Obtiene el historial completo de pedidos para un token de sesión.
+
+        Lista todos los pedidos realizados en una sesión de mesa compartida,
+        con información detallada de productos y opciones.
+
+        Parameters
+        ----------
+        token_sesion : str
+            Token de sesión de mesa (ULID de 26 caracteres).
+
+        Returns
+        -------
+        PedidoHistorialResponse
+            Respuesta con metadatos de la sesión y lista completa de pedidos.
+
+        Raises
+        ------
+        PedidoValidationError
+            Si el token no existe.
+        """
+        # 1. Validar que la sesión existe
+        sesion = await self.sesion_mesa_repository.get_by_token(token_sesion)
+        if not sesion:
+            raise PedidoValidationError(
+                f"No se encontró una sesión con el token {token_sesion}"
+            )
+
+        # 2. Obtener todos los pedidos de esta sesión (detallado)
+        pedidos, total = await self.repository.get_all_detallado(
+            skip=0,
+            limit=1000,  # Límite alto para obtener todos los pedidos de la sesión
+            id_sesion_mesa=sesion.id
+        )
+
+        # 3. Construir lista de pedidos detallados
+        pedidos_detalle = []
+        for pedido in pedidos:
+            # Procesar productos del pedido con sus opciones
+            productos_detalle = []
+            for pedido_producto in pedido.pedidos_productos:
+                # Procesar opciones del producto
+                opciones_detalle = []
+                for pedido_opcion in pedido_producto.pedidos_opciones:
+                    opciones_detalle.append(
+                        ProductoOpcionDetalle(
+                            id=pedido_opcion.id,
+                            id_producto_opcion=pedido_opcion.id_producto_opcion,
+                            nombre_opcion=(
+                                pedido_opcion.producto_opcion.nombre
+                                if pedido_opcion.producto_opcion
+                                else "Opción"
+                            ),
+                            precio_adicional=pedido_opcion.precio_adicional,
+                        )
+                    )
+
+                # Construir el producto detallado
+                productos_detalle.append(
+                    ProductoPedidoDetalle(
+                        id=pedido_producto.id,
+                        id_producto=pedido_producto.id_producto,
+                        nombre_producto=(
+                            pedido_producto.producto.nombre
+                            if pedido_producto.producto
+                            else "Producto"
+                        ),
+                        cantidad=pedido_producto.cantidad,
+                        precio_unitario=pedido_producto.precio_unitario,
+                        precio_opciones=pedido_producto.precio_opciones,
+                        subtotal=pedido_producto.subtotal,
+                        notas_personalizacion=pedido_producto.notas_personalizacion,
+                        opciones=opciones_detalle,
+                    )
+                )
+
+            # Construir el pedido detallado
+            pedidos_detalle.append(
+                PedidoHistorialDetalle(
+                    id=pedido.id,
+                    numero_pedido=pedido.numero_pedido,
+                    estado=pedido.estado,
+                    subtotal=pedido.subtotal,
+                    impuestos=pedido.impuestos,
+                    descuentos=pedido.descuentos,
+                    total=pedido.total,
+                    notas_cliente=pedido.notas_cliente,
+                    notas_cocina=pedido.notas_cocina,
+                    fecha_creacion=pedido.fecha_creacion,
+                    fecha_confirmado=pedido.fecha_confirmado,
+                    fecha_en_preparacion=pedido.fecha_en_preparacion,
+                    fecha_listo=pedido.fecha_listo,
+                    fecha_entregado=pedido.fecha_entregado,
+                    productos=productos_detalle,
+                )
+            )
+
+        # 4. Construir respuesta completa
+        return PedidoHistorialResponse(
+            token_sesion=token_sesion,
+            id_mesa=sesion.id_mesa,
+            total_pedidos=total,
+            pedidos=pedidos_detalle,
+        )
