@@ -30,7 +30,7 @@ from src.models.menu.producto_model import ProductoModel
 from src.models.menu.producto_alergeno_model import ProductoAlergenoModel
 from src.models.pedidos.tipo_opciones_model import TipoOpcionModel
 from src.models.pedidos.producto_opcion_model import ProductoOpcionModel
-from src.models.auth.rol_model import RolModel
+# from src.models.auth.rol_model import RolModel  # ELIMINADO: Ya no se usa RolModel
 from src.models.mesas.local_model import LocalModel
 from src.models.mesas.zona_model import ZonaModel
 from src.models.mesas.mesa_model import MesaModel
@@ -659,62 +659,9 @@ class DataEnricher:
             )
             self.session.add(opcion)
     
-    async def create_roles_if_not_exist(self):
-        """
-         PASO 6: Crear roles si no existen.
-        """
-        print("\n" + "="*70)
-        print(" VERIFICANDO ROLES")
-        print("="*70)
-        
-        # Verificar si ya existen roles
-        result = await self.session.execute(select(func.count(RolModel.id)))
-        count_roles = result.scalar()
-        
-        if count_roles and count_roles > 0:
-            print(f"     Ya existen {count_roles} roles en la BD. Skip creacin.")
-            print("="*70 + "\n")
-            return
-        
-        print("   Creando roles bsicos...")
-        
-        roles_data = [
-            {
-                "nombre": "Administrador",
-                "descripcion": "Acceso total al sistema",
-                "activo": True
-            },
-            {
-                "nombre": "Cliente",
-                "descripcion": "Acceso a funciones de cliente",
-                "activo": True
-            },
-            {
-                "nombre": "Mesero",
-                "descripcion": "Atencin de mesas y pedidos",
-                "activo": True
-            },
-            {
-                "nombre": "Cocina",
-                "descripcion": "Preparacin de platos",
-                "activo": True
-            },
-            {
-                "nombre": "Caja",
-                "descripcion": "Gestin de pagos",
-                "activo": True
-            }
-        ]
-        
-        for data in roles_data:
-            rol = RolModel(**data)
-            self.session.add(rol)
-            print(f"    {data['nombre']:<20} - {data['descripcion']}")
-        
-        await self.session.commit()
-        
-        print(f"\n    {len(roles_data)} roles creados exitosamente")
-        print("="*70 + "\n")
+    # MÉTODO ELIMINADO: create_roles_if_not_exist()
+    # Ya no se crean roles porque RolModel fue eliminado del sistema.
+    # El nuevo sistema de login simplificado no usa roles.
     
     async def update_images_from_seed(self):
         """
@@ -1209,10 +1156,10 @@ class DataEnricher:
         
         # PASO 5: Crear opciones para productos
         await self.create_opciones_for_productos()
-        
-        # PASO 6: Crear roles si no existen
-        await self.create_roles_if_not_exist()
-        
+
+        # PASO 6: Crear roles si no existen (ELIMINADO - Ya no se usan roles)
+        # await self.create_roles_if_not_exist()
+
         # PASO 7: Actualizar imgenes desde seed (NUEVO)
         await self.update_images_from_seed()
 

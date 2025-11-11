@@ -3,6 +3,7 @@ Repositorio para la gestión de usuarios en el sistema.
 """
 
 from typing import Optional, List, Tuple
+from datetime import datetime, timezone
 
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -15,6 +16,7 @@ from src.models.auth.usuario_model import UsuarioModel
 class UsuarioRepository:
     """Repositorio para gestionar operaciones CRUD del modelo de usuarios.
 
+    
     Proporciona acceso a la capa de persistencia para las operaciones
     relacionadas con los usuarios en el sistema, siguiendo el patrón Repository.
 
@@ -77,11 +79,7 @@ class UsuarioRepository:
         Optional[UsuarioModel]
             El usuario encontrado o None si no existe.
         """
-        query = (
-            select(UsuarioModel)
-            .where(UsuarioModel.id == usuario_id)
-            .options(selectinload(UsuarioModel.rol))
-        )
+        query = select(UsuarioModel).where(UsuarioModel.id == usuario_id)
         result = await self.session.execute(query)
         return result.scalars().first()
 
@@ -99,11 +97,7 @@ class UsuarioRepository:
         Optional[UsuarioModel]
             El usuario encontrado o None si no existe.
         """
-        query = (
-            select(UsuarioModel)
-            .where(UsuarioModel.email == email)
-            .options(selectinload(UsuarioModel.rol))
-        )
+        query = select(UsuarioModel).where(UsuarioModel.email == email)
         result = await self.session.execute(query)
         return result.scalars().first()
 
@@ -207,12 +201,7 @@ class UsuarioRepository:
             Tupla con la lista de usuarios y el número total de registros.
         """
         # Consulta para obtener los usuarios paginados
-        query = (
-            select(UsuarioModel)
-            .offset(skip)
-            .limit(limit)
-            .options(selectinload(UsuarioModel.rol))
-        )
+        query = select(UsuarioModel).offset(skip).limit(limit)
 
         # Consulta para obtener el total de registros
         count_query = select(func.count(UsuarioModel.id))
@@ -246,13 +235,11 @@ class UsuarioRepository:
         Optional[UsuarioModel]
             El usuario actualizado o None si no existe.
         """
-        from datetime import datetime
-        
         try:
             stmt = (
                 update(UsuarioModel)
                 .where(UsuarioModel.id == usuario_id)
-                .values(ultimo_acceso=datetime.utcnow())
+                .values(ultimo_acceso=datetime.now(timezone.utc))
             )
             await self.session.execute(stmt)
             await self.session.flush()

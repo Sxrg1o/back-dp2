@@ -50,6 +50,20 @@ def mock_mesa_repository():
 
 
 @pytest.fixture
+def mock_producto_opcion_repository():
+    """Fixture que proporciona un mock del repositorio de opciones de productos."""
+    repository = AsyncMock()
+    return repository
+
+
+@pytest.fixture
+def mock_pedido_opcion_repository():
+    """Fixture que proporciona un mock del repositorio de opciones de pedidos."""
+    repository = AsyncMock()
+    return repository
+
+
+@pytest.fixture
 def pedido_service(mock_repository, mock_mesa_repository):
     """
     Fixture que proporciona una instancia del servicio de pedidos con repositorios mockeados.
@@ -338,7 +352,7 @@ async def test_get_pedidos_success(
     # Assert
     assert result.total == 2
     assert len(result.items) == 2
-    mock_repository.get_all.assert_called_once_with(0, 10, None, None, None)
+    mock_repository.get_all.assert_called_once_with(0, 10, None, None, None, None)
 
 
 @pytest.mark.asyncio
@@ -804,5 +818,356 @@ async def test_create_pedido_completo_producto_not_available(
         await pedido_service_completo.create_pedido_completo(pedido_completo_data)
 
     assert "no está disponible" in str(excinfo.value)
+
+
+# ========================================
+# Tests para enviar_pedido_por_token
+# ========================================
+
+@pytest.fixture
+def pedido_service_con_sesion(
+    mock_repository,
+    mock_mesa_repository,
+    mock_producto_repository,
+    mock_producto_opcion_repository,
+    mock_pedido_producto_repository,
+    mock_pedido_opcion_repository,
+):
+    """Fixture para servicio con todos los repositorios mockeados incluyendo sesión."""
+    service = PedidoService(AsyncMock())
+    service.repository = mock_repository
+    service.mesa_repository = mock_mesa_repository
+    service.producto_repository = mock_producto_repository
+    service.producto_opcion_repository = mock_producto_opcion_repository
+    service.pedido_producto_repository = mock_pedido_producto_repository
+    service.pedido_opcion_repository = mock_pedido_opcion_repository
+    service.sesion_mesa_repository = AsyncMock()
+    service.session = AsyncMock()
+    service.session.flush = AsyncMock()
+    return service
+
+
+@pytest.mark.asyncio
+async def test_enviar_pedido_por_token_success(pedido_service_con_sesion):
+    """Test: Crear pedido por token exitosamente."""
+    from src.api.schemas.pedido_sesion_schema import PedidoEnviarRequest, PedidoItemSesion, OpcionProductoSesion
+    from src.models.mesas.sesion_mesa_model import SesionMesaModel
+    from src.core.enums.sesion_mesa_enums import EstadoSesionMesa
+
+    # Arrange
+    token = str(ULID())
+    id_mesa = str(ULID())
+    id_usuario = str(ULID())
+    id_producto = str(ULID())
+    id_opcion = str(ULID())
+
+    # Mock sesión activa
+    sesion = SesionMesaModel(
+        id=str(ULID()),
+        id_mesa=id_mesa,
+        id_usuario_creador=id_usuario,
+        token_sesion=token,
+        estado=EstadoSesionMesa.ACTIVA,
+        fecha_inicio=datetime.now(),
+    )
+    pedido_service_con_sesion.sesion_mesa_repository.get_by_token.return_value = sesion
+
+    # Mock mesa
+    mesa = MesaModel(id=id_mesa, numero="001", capacidad=4, id_zona=str(ULID()), activo=True)
+    pedido_service_con_sesion.mesa_repository.get_by_id.return_value = mesa
+
+    # Mock get_last_sequence_for_date_and_mesa
+    pedido_service_con_sesion.repository.get_last_sequence_for_date_and_mesa.return_value = 0
+
+    # Mock producto
+    from src.models.pedidos.producto_opcion_model import ProductoOpcionModel
+    producto = ProductoModel(
+        id=id_producto,
+        nombre="Hamburguesa",
+        precio_base=Decimal("50.00"),
+        disponible=True,
+        id_categoria=str(ULID()),
+    )
+    pedido_service_con_sesion.producto_repository.get_by_id.return_value = producto
+
+    # Mock opción
+    opcion = ProductoOpcionModel(
+        id=id_opcion,
+        nombre="Queso Extra",
+        precio_adicional=Decimal("10.00"),
+        id_producto=id_producto,
+        id_tipo_opcion=str(ULID()),
+    )
+    pedido_service_con_sesion.producto_opcion_repository.get_by_id.return_value = opcion
+
+    # Mock pedido creado
+    pedido_creado = PedidoModel(
+        id=str(ULID()),
+        id_mesa=id_mesa,
+        id_usuario=id_usuario,
+        id_sesion_mesa=sesion.id,
+        numero_pedido="20251111-M001-001",
+        estado=EstadoPedido.PENDIENTE,
+        subtotal=Decimal("120.00"),
+        impuestos=Decimal("0.00"),
+        descuentos=Decimal("0.00"),
+        total=Decimal("120.00"),
+        notas_cliente="Sin cebolla",
+        notas_cocina=None,
+        fecha_creacion=datetime.now(),
+    )
+    pedido_service_con_sesion.repository.create.return_value = pedido_creado
+
+    # Mock pedido_producto
+    pedido_producto = PedidoProductoModel(
+        id=str(ULID()),
+        id_pedido=pedido_creado.id,
+        id_producto=id_producto,
+        cantidad=2,
+        precio_unitario=Decimal("50.00"),
+        precio_opciones=Decimal("10.00"),
+        subtotal=Decimal("120.00"),
+    )
+    pedido_service_con_sesion.pedido_producto_repository.create.return_value = pedido_producto
+
+    # Mock pedido_opcion
+    from src.models.pedidos.pedido_opcion_model import PedidoOpcionModel
+    pedido_opcion = PedidoOpcionModel(
+        id=str(ULID()),
+        id_pedido_producto=pedido_producto.id,
+        id_producto_opcion=id_opcion,
+        precio_adicional=Decimal("10.00"),
+    )
+    pedido_service_con_sesion.pedido_opcion_repository.create.return_value = pedido_opcion
+
+    # Request data
+    request = PedidoEnviarRequest(
+        token_sesion=token,
+        items=[
+            PedidoItemSesion(
+                id_producto=id_producto,
+                cantidad=2,
+                opciones=[OpcionProductoSesion(id_producto_opcion=id_opcion)],
+                notas_personalizacion=None,
+            )
+        ],
+        notas_cliente="Sin cebolla",
+        notas_cocina=None,
+    )
+
+    # Act
+    result = await pedido_service_con_sesion.enviar_pedido_por_token(request)
+
+    # Assert
+    assert result.status == 201
+    assert result.message == "Pedido creado exitosamente"
+    assert result.pedido.numero_pedido == "20251111-M001-001"
+    assert result.pedido.total == Decimal("120.00")
+    assert len(result.pedido.productos) == 1
+    assert result.pedido.productos[0].cantidad == 2
+    assert result.pedido.productos[0].precio_unitario == Decimal("50.00")
+    assert result.pedido.productos[0].precio_opciones == Decimal("10.00")
+
+
+@pytest.mark.asyncio
+async def test_enviar_pedido_por_token_sesion_no_existe(pedido_service_con_sesion):
+    """Test: Rechazar pedido si token de sesión no existe."""
+    from src.api.schemas.pedido_sesion_schema import PedidoEnviarRequest, PedidoItemSesion
+
+    # Arrange
+    token = str(ULID())
+    pedido_service_con_sesion.sesion_mesa_repository.get_by_token.return_value = None
+
+    request = PedidoEnviarRequest(
+        token_sesion=token,
+        items=[
+            PedidoItemSesion(id_producto=str(ULID()), cantidad=1, opciones=[])
+        ],
+    )
+
+    # Act & Assert
+    with pytest.raises(PedidoValidationError) as excinfo:
+        await pedido_service_con_sesion.enviar_pedido_por_token(request)
+
+    assert "No se encontró una sesión con el token" in str(excinfo.value)
+
+
+@pytest.mark.asyncio
+async def test_enviar_pedido_por_token_sesion_no_activa(pedido_service_con_sesion):
+    """Test: Rechazar pedido si sesión no está activa."""
+    from src.api.schemas.pedido_sesion_schema import PedidoEnviarRequest, PedidoItemSesion
+    from src.models.mesas.sesion_mesa_model import SesionMesaModel
+    from src.core.enums.sesion_mesa_enums import EstadoSesionMesa
+
+    # Arrange
+    token = str(ULID())
+    sesion = SesionMesaModel(
+        id=str(ULID()),
+        id_mesa=str(ULID()),
+        id_usuario_creador=str(ULID()),
+        token_sesion=token,
+        estado=EstadoSesionMesa.FINALIZADA,  # ❌ No activa
+        fecha_inicio=datetime.now(),
+        fecha_fin=datetime.now(),
+    )
+    pedido_service_con_sesion.sesion_mesa_repository.get_by_token.return_value = sesion
+
+    request = PedidoEnviarRequest(
+        token_sesion=token,
+        items=[PedidoItemSesion(id_producto=str(ULID()), cantidad=1, opciones=[])],
+    )
+
+    # Act & Assert
+    with pytest.raises(PedidoValidationError) as excinfo:
+        await pedido_service_con_sesion.enviar_pedido_por_token(request)
+
+    assert "no está activa" in str(excinfo.value)
+
+
+@pytest.mark.asyncio
+async def test_enviar_pedido_por_token_producto_no_disponible(pedido_service_con_sesion):
+    """Test: Rechazar pedido si producto no está disponible."""
+    from src.api.schemas.pedido_sesion_schema import PedidoEnviarRequest, PedidoItemSesion
+    from src.models.mesas.sesion_mesa_model import SesionMesaModel
+    from src.core.enums.sesion_mesa_enums import EstadoSesionMesa
+
+    # Arrange
+    token = str(ULID())
+    id_mesa = str(ULID())
+    id_producto = str(ULID())
+
+    sesion = SesionMesaModel(
+        id=str(ULID()),
+        id_mesa=id_mesa,
+        id_usuario_creador=str(ULID()),
+        token_sesion=token,
+        estado=EstadoSesionMesa.ACTIVA,
+        fecha_inicio=datetime.now(),
+    )
+    pedido_service_con_sesion.sesion_mesa_repository.get_by_token.return_value = sesion
+
+    mesa = MesaModel(id=id_mesa, numero="001", capacidad=4, id_zona=str(ULID()), activo=True)
+    pedido_service_con_sesion.mesa_repository.get_by_id.return_value = mesa
+
+    # Producto NO disponible
+    producto = ProductoModel(
+        id=id_producto,
+        nombre="Pizza",
+        precio_base=Decimal("80.00"),
+        disponible=False,  # ❌ No disponible
+        id_categoria=str(ULID()),
+    )
+    pedido_service_con_sesion.producto_repository.get_by_id.return_value = producto
+
+    request = PedidoEnviarRequest(
+        token_sesion=token,
+        items=[PedidoItemSesion(id_producto=id_producto, cantidad=1, opciones=[])],
+    )
+
+    # Act & Assert
+    with pytest.raises(PedidoValidationError) as excinfo:
+        await pedido_service_con_sesion.enviar_pedido_por_token(request)
+
+    assert "no está disponible" in str(excinfo.value)
+
+
+# ========================================
+# Tests para obtener_historial_por_token
+# ========================================
+
+@pytest.mark.asyncio
+async def test_obtener_historial_por_token_success(pedido_service_con_sesion):
+    """Test: Obtener historial de pedidos por token exitosamente."""
+    from src.models.mesas.sesion_mesa_model import SesionMesaModel
+    from src.core.enums.sesion_mesa_enums import EstadoSesionMesa
+
+    # Arrange
+    token = str(ULID())
+    id_mesa = str(ULID())
+    id_sesion = str(ULID())
+
+    sesion = SesionMesaModel(
+        id=id_sesion,
+        id_mesa=id_mesa,
+        id_usuario_creador=str(ULID()),
+        token_sesion=token,
+        estado=EstadoSesionMesa.ACTIVA,
+        fecha_inicio=datetime.now(),
+    )
+    pedido_service_con_sesion.sesion_mesa_repository.get_by_token.return_value = sesion
+
+    # Mock pedidos con relaciones
+    pedido1 = PedidoModel(
+        id=str(ULID()),
+        id_mesa=id_mesa,
+        id_usuario=str(ULID()),
+        id_sesion_mesa=id_sesion,
+        numero_pedido="20251111-M001-001",
+        estado=EstadoPedido.PENDIENTE,
+        subtotal=Decimal("100.00"),
+        impuestos=Decimal("0.00"),
+        descuentos=Decimal("0.00"),
+        total=Decimal("100.00"),
+        fecha_creacion=datetime.now(),
+    )
+    pedido1.pedidos_productos = []
+
+    pedido_service_con_sesion.repository.get_all_detallado.return_value = ([pedido1], 1)
+
+    # Act
+    result = await pedido_service_con_sesion.obtener_historial_por_token(token)
+
+    # Assert
+    assert result.token_sesion == token
+    assert result.id_mesa == id_mesa
+    assert result.total_pedidos == 1
+    assert len(result.pedidos) == 1
+    assert result.pedidos[0].numero_pedido == "20251111-M001-001"
+    assert result.pedidos[0].total == Decimal("100.00")
+
+
+@pytest.mark.asyncio
+async def test_obtener_historial_por_token_sesion_no_existe(pedido_service_con_sesion):
+    """Test: Rechazar historial si token no existe."""
+    # Arrange
+    token = str(ULID())
+    pedido_service_con_sesion.sesion_mesa_repository.get_by_token.return_value = None
+
+    # Act & Assert
+    with pytest.raises(PedidoValidationError) as excinfo:
+        await pedido_service_con_sesion.obtener_historial_por_token(token)
+
+    assert "No se encontró una sesión con el token" in str(excinfo.value)
+
+
+@pytest.mark.asyncio
+async def test_obtener_historial_por_token_sin_pedidos(pedido_service_con_sesion):
+    """Test: Obtener historial vacío si no hay pedidos."""
+    from src.models.mesas.sesion_mesa_model import SesionMesaModel
+    from src.core.enums.sesion_mesa_enums import EstadoSesionMesa
+
+    # Arrange
+    token = str(ULID())
+    id_mesa = str(ULID())
+
+    sesion = SesionMesaModel(
+        id=str(ULID()),
+        id_mesa=id_mesa,
+        id_usuario_creador=str(ULID()),
+        token_sesion=token,
+        estado=EstadoSesionMesa.ACTIVA,
+        fecha_inicio=datetime.now(),
+    )
+    pedido_service_con_sesion.sesion_mesa_repository.get_by_token.return_value = sesion
+    pedido_service_con_sesion.repository.get_all_detallado.return_value = ([], 0)
+
+    # Act
+    result = await pedido_service_con_sesion.obtener_historial_por_token(token)
+
+    # Assert
+    assert result.token_sesion == token
+    assert result.id_mesa == id_mesa
+    assert result.total_pedidos == 0
+    assert len(result.pedidos) == 0
 
 
