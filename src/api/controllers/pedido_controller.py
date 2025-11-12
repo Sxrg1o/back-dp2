@@ -18,6 +18,11 @@ from src.api.schemas.pedido_schema import (
     PedidoCompletoResponse,
 )
 from src.api.schemas.pedido_detallado_schema import PedidoDetalladoList
+from src.api.schemas.pedido_sesion_schema import (
+    PedidoEnviarRequest,
+    PedidoEnviarResponse,
+    PedidoHistorialResponse,
+)
 from src.business_logic.exceptions.pedido_exceptions import (
     PedidoValidationError,
     PedidoNotFoundError,
@@ -424,6 +429,139 @@ async def delete_pedido(
         await pedido_service.delete_pedido(pedido_id)
     except PedidoNotFoundError as e:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error interno del servidor: {str(e)}",
+        )
+
+
+@router.post(
+    "/enviar",
+    response_model=PedidoEnviarResponse,
+    status_code=status.HTTP_201_CREATED,
+    summary="Crear pedido con token de sesión",
+    description="Crea un pedido usando el token de sesión de mesa compartida. "
+    "Los precios se obtienen automáticamente de la base de datos para mayor seguridad.",
+)
+async def enviar_pedido_por_token(
+    pedido_data: PedidoEnviarRequest,
+    session: AsyncSession = Depends(get_database_session),
+) -> PedidoEnviarResponse:
+    """
+    Crea un pedido usando el token de sesión de mesa compartida.
+
+    Este endpoint permite crear pedidos en sesiones compartidas donde múltiples
+    usuarios pueden ordenar usando el mismo token. Los precios se calculan
+    automáticamente desde la base de datos, evitando manipulación desde el frontend.
+
+    **Características:**
+    - Valida que la sesión existe y está activa
+    - Obtiene precios desde la BD (no se envían desde frontend)
+    - Asocia el pedido a la sesión compartida
+    - Utiliza campos notas_cliente y notas_cocina
+    - Crea pedido con id_sesion_mesa, id_mesa e id_usuario
+
+    Args:
+        pedido_data: Datos del pedido con token de sesión e items (sin precios).
+        session: Sesión de base de datos.
+
+    Returns:
+        Respuesta con el pedido creado y todos los cálculos de precios.
+
+    Raises:
+        HTTPException:
+            - 400: Si el token no existe, la sesión no está activa, o algún
+                   producto no existe o no está disponible.
+            - 409: Si hay un conflicto de integridad en la base de datos.
+            - 500: Si ocurre un error interno del servidor.
+
+    Example:
+        ```json
+        {
+            "token_sesion": "01HQZK9T8V3XQWJ9K64GG5AH9W",
+            "items": [
+                {
+                    "id_producto": "01HQZK9T8V3XQWJ9K64GG5AH9X",
+                    "cantidad": 2,
+                    "opciones": [
+                        {"id_producto_opcion": "01HQZK9T8V3XQWJ9K64GG5AH9Y"}
+                    ],
+                    "notas_personalizacion": "Sin cebolla"
+                }
+            ],
+            "notas_cliente": "Para llevar",
+            "notas_cocina": "Urgente"
+        }
+        ```
+    """
+    try:
+        pedido_service = PedidoService(session)
+        return await pedido_service.enviar_pedido_por_token(pedido_data)
+    except PedidoValidationError as e:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+    except PedidoConflictError as e:
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=str(e))
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error interno del servidor: {str(e)}",
+        )
+
+
+@router.get(
+    "/historial/{token_sesion}",
+    response_model=PedidoHistorialResponse,
+    status_code=status.HTTP_200_OK,
+    summary="Obtener historial de pedidos por token de sesión",
+    description="Lista todos los pedidos realizados en una sesión de mesa compartida.",
+)
+async def obtener_historial_por_token(
+    token_sesion: str,
+    session: AsyncSession = Depends(get_database_session),
+) -> PedidoHistorialResponse:
+    """
+    Obtiene el historial completo de pedidos para un token de sesión.
+
+    Lista todos los pedidos realizados en una sesión de mesa compartida,
+    con información detallada de productos, opciones y totales.
+
+    **Características:**
+    - Lista TODOS los pedidos de la sesión (sin paginación)
+    - Incluye información completa de productos y opciones
+    - Muestra metadatos de la sesión (mesa, total de pedidos)
+    - Funciona con sesiones activas o finalizadas
+
+    Args:
+        token_sesion: Token de sesión de mesa (ULID de 26 caracteres).
+        session: Sesión de base de datos.
+
+    Returns:
+        Respuesta con metadatos de la sesión y lista completa de pedidos.
+
+    Raises:
+        HTTPException:
+            - 400: Si el token no existe.
+            - 500: Si ocurre un error interno del servidor.
+
+    Example:
+        GET /pedidos/historial/01HQZK9T8V3XQWJ9K64GG5AH9W
+
+        Response:
+        ```json
+        {
+            "token_sesion": "01HQZK9T8V3XQWJ9K64GG5AH9W",
+            "id_mesa": "01HQZK9T8V3XQWJ9K64GG5AH9V",
+            "total_pedidos": 3,
+            "pedidos": [...]
+        }
+        ```
+    """
+    try:
+        pedido_service = PedidoService(session)
+        return await pedido_service.obtener_historial_por_token(token_sesion)
+    except PedidoValidationError as e:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,

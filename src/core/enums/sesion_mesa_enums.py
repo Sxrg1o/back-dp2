@@ -13,9 +13,15 @@ class EstadoSesionMesa(str, Enum):
     ----------
     ACTIVA : str
         La sesión está activa y se pueden crear pedidos.
+    INACTIVA : str
+        La sesión está inactiva temporalmente.
+    CERRADA : str
+        La sesión ha sido cerrada definitivamente, no se pueden crear más pedidos.
     FINALIZADA : str
-        La sesión ha sido finalizada, no se pueden crear más pedidos.
+        La sesión ha sido finalizada (sinónimo de CERRADA para compatibilidad).
     """
 
     ACTIVA = "activa"
+    INACTIVA = "inactiva"
+    CERRADA = "cerrada"
     FINALIZADA = "finalizada"

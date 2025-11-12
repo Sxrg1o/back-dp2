@@ -118,6 +118,7 @@ class SesionSummary(BaseModel):
     orden: int = Field(description="Jerarquía de la sesión.")
     estado: EstadoSesion = Field(description="Estado actual de la sesión.")
     fecha_creacion: Optional[datetime] = Field(description="Fecha de creación.")
+    fecha_modificacion: Optional[datetime] = Field(description="Fecha de última modificación.")
 
 
 class SesionList(BaseModel):

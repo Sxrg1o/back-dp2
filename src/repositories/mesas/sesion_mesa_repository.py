@@ -10,6 +10,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, update, func
 
 from src.models.mesas.sesion_mesa_model import SesionMesaModel
+from src.models.mesas.usuario_sesion_mesa_model import UsuarioSesionMesaModel
 from src.core.enums.sesion_mesa_enums import EstadoSesionMesa
 
 
@@ -119,11 +120,42 @@ class SesionMesaRepository:
         except SQLAlchemyError:
             raise
 
+    async def get_active_by_mesa(
+        self, id_mesa: str
+    ) -> Optional[SesionMesaModel]:
+        """
+        Obtiene una sesión activa para una mesa específica.
+
+        Parameters
+        ----------
+        id_mesa : str
+            El ID de la mesa.
+
+        Returns
+        -------
+        Optional[SesionMesaModel]
+            La sesión activa encontrada, o None si no existe.
+
+        Raises
+        ------
+        SQLAlchemyError
+            Si ocurre un error durante la operación en la base de datos.
+        """
+        try:
+            stmt = select(SesionMesaModel).where(
+                SesionMesaModel.id_mesa == id_mesa,
+                SesionMesaModel.estado == EstadoSesionMesa.ACTIVA,
+            )
+            result = await self.session.execute(stmt)
+            return result.scalar_one_or_none()
+        except SQLAlchemyError:
+            raise
+
     async def get_active_by_usuario_and_mesa(
         self, id_usuario: str, id_mesa: str
     ) -> Optional[SesionMesaModel]:
         """
-        Obtiene una sesión activa para un usuario en una mesa específica.
+        Obtiene una sesión activa para un usuario específico en una mesa.
 
         Parameters
         ----------
@@ -143,31 +175,40 @@ class SesionMesaRepository:
             Si ocurre un error durante la operación en la base de datos.
         """
         try:
-            stmt = select(SesionMesaModel).where(
-                SesionMesaModel.id_usuario == id_usuario,
-                SesionMesaModel.id_mesa == id_mesa,
-                SesionMesaModel.estado == EstadoSesionMesa.ACTIVA,
+            stmt = (
+                select(SesionMesaModel)
+                .join(
+                    UsuarioSesionMesaModel,
+                    SesionMesaModel.id == UsuarioSesionMesaModel.id_sesion_mesa,
+                )
+                .where(
+                    UsuarioSesionMesaModel.id_usuario == id_usuario,
+                    SesionMesaModel.id_mesa == id_mesa,
+                    SesionMesaModel.estado == EstadoSesionMesa.ACTIVA,
+                )
             )
             result = await self.session.execute(stmt)
             return result.scalar_one_or_none()
         except SQLAlchemyError:
             raise
 
-    async def get_active_sessions_by_usuario(
-        self, id_usuario: str
-    ) -> List[SesionMesaModel]:
+    async def add_usuario_to_sesion(
+        self, id_sesion_mesa: str, id_usuario: str
+    ) -> UsuarioSesionMesaModel:
         """
-        Obtiene todas las sesiones activas de un usuario.
+        Agrega un usuario a una sesión de mesa existente.
 
         Parameters
         ----------
+        id_sesion_mesa : str
+            El ID de la sesión de mesa.
         id_usuario : str
-            El ID del usuario.
+            El ID del usuario a agregar.
 
         Returns
         -------
-        List[SesionMesaModel]
-            Lista de sesiones activas del usuario.
+        UsuarioSesionMesaModel
+            La asociación creada.
 
         Raises
         ------
@@ -175,16 +216,86 @@ class SesionMesaRepository:
             Si ocurre un error durante la operación en la base de datos.
         """
         try:
-            stmt = (
-                select(SesionMesaModel)
-                .where(
-                    SesionMesaModel.id_usuario == id_usuario,
-                    SesionMesaModel.estado == EstadoSesionMesa.ACTIVA,
-                )
-                .order_by(SesionMesaModel.fecha_inicio.desc())
+            asociacion = UsuarioSesionMesaModel(
+                id_usuario=id_usuario,
+                id_sesion_mesa=id_sesion_mesa,
+                fecha_ingreso=datetime.now()
+            )
+            self.session.add(asociacion)
+            await self.session.flush()
+            await self.session.commit()
+            await self.session.refresh(asociacion)
+            return asociacion
+        except SQLAlchemyError:
+            await self.session.rollback()
+            raise
+
+    async def remove_usuario_from_sesion(
+        self, id_sesion_mesa: str, id_usuario: str
+    ) -> bool:
+        """
+        Elimina un usuario de una sesión de mesa.
+
+        Parameters
+        ----------
+        id_sesion_mesa : str
+            El ID de la sesión de mesa.
+        id_usuario : str
+            El ID del usuario a eliminar.
+
+        Returns
+        -------
+        bool
+            True si se eliminó el usuario, False si no existía.
+
+        Raises
+        ------
+        SQLAlchemyError
+            Si ocurre un error durante la operación en la base de datos.
+        """
+        try:
+            from sqlalchemy import delete
+            stmt = delete(UsuarioSesionMesaModel).where(
+                UsuarioSesionMesaModel.id_sesion_mesa == id_sesion_mesa,
+                UsuarioSesionMesaModel.id_usuario == id_usuario,
             )
             result = await self.session.execute(stmt)
-            return list(result.scalars().all())
+            await self.session.commit()
+            return result.rowcount > 0
+        except SQLAlchemyError:
+            await self.session.rollback()
+            raise
+
+    async def usuario_in_sesion(
+        self, id_sesion_mesa: str, id_usuario: str
+    ) -> bool:
+        """
+        Verifica si un usuario ya está en una sesión de mesa.
+
+        Parameters
+        ----------
+        id_sesion_mesa : str
+            El ID de la sesión de mesa.
+        id_usuario : str
+            El ID del usuario.
+
+        Returns
+        -------
+        bool
+            True si el usuario está en la sesión, False en caso contrario.
+
+        Raises
+        ------
+        SQLAlchemyError
+            Si ocurre un error durante la operación en la base de datos.
+        """
+        try:
+            stmt = select(UsuarioSesionMesaModel).where(
+                UsuarioSesionMesaModel.id_sesion_mesa == id_sesion_mesa,
+                UsuarioSesionMesaModel.id_usuario == id_usuario,
+            )
+            result = await self.session.execute(stmt)
+            return result.scalar_one_or_none() is not None
         except SQLAlchemyError:
             raise
 
@@ -271,8 +382,8 @@ class SesionMesaRepository:
         self,
         skip: int = 0,
         limit: int = 100,
-        id_usuario: Optional[str] = None,
         id_mesa: Optional[str] = None,
+        id_usuario: Optional[str] = None,
         estado: Optional[EstadoSesionMesa] = None,
     ) -> Tuple[List[SesionMesaModel], int]:
         """
@@ -284,10 +395,10 @@ class SesionMesaRepository:
             Número de registros a omitir (offset), por defecto 0.
         limit : int, optional
             Número máximo de registros a retornar, por defecto 100.
-        id_usuario : Optional[str], optional
-            Filtrar por ID de usuario.
         id_mesa : Optional[str], optional
             Filtrar por ID de mesa.
+        id_usuario : Optional[str], optional
+            Filtrar por ID de usuario (a través de la tabla intermedia).
         estado : Optional[EstadoSesionMesa], optional
             Filtrar por estado de la sesión.
 
@@ -305,9 +416,14 @@ class SesionMesaRepository:
             # Construir query base
             stmt = select(SesionMesaModel)
 
-            # Aplicar filtros opcionales
+            # Si se filtra por usuario, hacer join con la tabla intermedia
             if id_usuario:
-                stmt = stmt.where(SesionMesaModel.id_usuario == id_usuario)
+                stmt = stmt.join(
+                    UsuarioSesionMesaModel,
+                    SesionMesaModel.id == UsuarioSesionMesaModel.id_sesion_mesa,
+                ).where(UsuarioSesionMesaModel.id_usuario == id_usuario)
+
+            # Aplicar filtros opcionales
             if id_mesa:
                 stmt = stmt.where(SesionMesaModel.id_mesa == id_mesa)
             if estado:
@@ -331,4 +447,33 @@ class SesionMesaRepository:
 
             return sesiones, total
         except SQLAlchemyError:
+            raise
+
+    async def delete(self, sesion_id: str) -> bool:
+        """
+        Elimina una sesión de mesa de la base de datos.
+
+        Parameters
+        ----------
+        sesion_id : str
+            El ID de la sesión de mesa a eliminar.
+
+        Returns
+        -------
+        bool
+            True si se eliminó la sesión, False si no existía.
+
+        Raises
+        ------
+        SQLAlchemyError
+            Si ocurre un error durante la operación en la base de datos.
+        """
+        try:
+            from sqlalchemy import delete
+            stmt = delete(SesionMesaModel).where(SesionMesaModel.id == sesion_id)
+            result = await self.session.execute(stmt)
+            await self.session.commit()
+            return result.rowcount > 0
+        except SQLAlchemyError:
+            await self.session.rollback()
             raise

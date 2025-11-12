@@ -16,6 +16,7 @@ from src.api.schemas.sesion_mesa_schema import (
     SesionMesaCreate,
     SesionMesaResponse,
     SesionMesaSummary,
+    SesionMesaUpdate,
 )
 from src.business_logic.exceptions.sesion_mesa_exceptions import (
     SesionMesaNotFoundError,
@@ -110,7 +111,7 @@ class SesionMesaService:
         try:
             # Crear nueva sesión
             sesion = SesionMesaModel(
-                id_usuario=id_usuario,
+                id_usuario_creador=id_usuario,
                 id_mesa=id_mesa,
                 token_sesion=token_sesion,
                 estado=EstadoSesionMesa.ACTIVA,
@@ -286,3 +287,131 @@ class SesionMesaService:
             return sesion.estado == EstadoSesionMesa.ACTIVA
         except Exception:
             return False
+
+    async def update_sesion_mesa(
+        self, sesion_id: str, sesion_data: SesionMesaUpdate
+    ) -> SesionMesaResponse:
+        """
+        Actualiza una sesión de mesa existente.
+
+        Parameters
+        ----------
+        sesion_id : str
+            ID de la sesión a actualizar.
+        sesion_data : SesionMesaUpdate
+            Datos a actualizar.
+
+        Returns
+        -------
+        SesionMesaResponse
+            La sesión de mesa actualizada.
+
+        Raises
+        ------
+        SesionMesaNotFoundError
+            Si la sesión no existe.
+        SesionMesaValidationError
+            Si los datos no son válidos.
+        """
+        # Verificar que la sesión existe
+        sesion = await self.repository.get_by_id(sesion_id)
+        if not sesion:
+            raise SesionMesaNotFoundError(
+                f"No se encontró la sesión de mesa con ID '{sesion_id}'"
+            )
+
+        # Convertir el esquema de actualización a un diccionario,
+        # excluyendo valores None (campos no proporcionados para actualizar)
+        update_data = sesion_data.model_dump(exclude_none=True)
+
+        if not update_data:
+            # Si no hay datos para actualizar, simplemente retornar la sesión actual
+            return SesionMesaResponse.model_validate(sesion)
+
+        # Si se está cerrando la sesión, actualizar fecha_fin automáticamente
+        if "estado" in update_data:
+            if update_data["estado"] in (EstadoSesionMesa.CERRADA, EstadoSesionMesa.FINALIZADA):
+                from datetime import datetime
+                if "fecha_fin" not in update_data:
+                    update_data["fecha_fin"] = datetime.now()
+
+        # Actualizar la sesión
+        sesion_actualizada = await self.repository.update(sesion_id, update_data)
+        if not sesion_actualizada:
+            raise SesionMesaNotFoundError(
+                f"No se encontró la sesión de mesa con ID '{sesion_id}'"
+            )
+
+        return SesionMesaResponse.model_validate(sesion_actualizada)
+
+    async def cerrar_sesion(self, sesion_id: str) -> SesionMesaResponse:
+        """
+        Cierra una sesión de mesa (cambia el estado a CERRADO y actualiza fecha_fin).
+
+        Parameters
+        ----------
+        sesion_id : str
+            ID de la sesión a cerrar.
+
+        Returns
+        -------
+        SesionMesaResponse
+            La sesión de mesa cerrada.
+
+        Raises
+        ------
+        SesionMesaNotFoundError
+            Si la sesión no existe.
+        SesionMesaValidationError
+            Si la sesión ya está cerrada.
+        """
+        # Verificar que la sesión existe
+        sesion = await self.repository.get_by_id(sesion_id)
+        if not sesion:
+            raise SesionMesaNotFoundError(
+                f"No se encontró la sesión de mesa con ID '{sesion_id}'"
+            )
+
+        # Verificar que la sesión no esté ya cerrada
+        if sesion.estado in (EstadoSesionMesa.CERRADA, EstadoSesionMesa.FINALIZADA):
+            raise SesionMesaValidationError(
+                "La sesión de mesa ya está cerrada"
+            )
+
+        # Cerrar la sesión
+        from datetime import datetime
+        update_data = {
+            "estado": EstadoSesionMesa.CERRADA,
+            "fecha_fin": datetime.now()
+        }
+        sesion_cerrada = await self.repository.update(sesion_id, update_data)
+        if not sesion_cerrada:
+            raise SesionMesaNotFoundError(
+                f"No se encontró la sesión de mesa con ID '{sesion_id}'"
+            )
+
+        return SesionMesaResponse.model_validate(sesion_cerrada)
+
+    async def delete_sesion_mesa(self, sesion_id: str) -> None:
+        """
+        Elimina una sesión de mesa del sistema.
+
+        Parameters
+        ----------
+        sesion_id : str
+            ID de la sesión a eliminar.
+
+        Raises
+        ------
+        SesionMesaNotFoundError
+            Si la sesión no existe.
+        """
+        # Verificar que la sesión existe
+        sesion = await self.repository.get_by_id(sesion_id)
+        if not sesion:
+            raise SesionMesaNotFoundError(
+                f"No se encontró la sesión de mesa con ID '{sesion_id}'"
+            )
+
+        # Eliminar la sesión usando el repositorio
+        await self.repository.delete(sesion_id)

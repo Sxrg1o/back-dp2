@@ -6,9 +6,9 @@ usuarios con mesas, permitiendo trackear los pedidos realizados durante la visit
 """
 
 from typing import Any, Dict, Type, TypeVar, List, TYPE_CHECKING, Optional
-from datetime import datetime
+from datetime import datetime, timedelta
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from sqlalchemy import String, TIMESTAMP, Enum as SQLEnum, ForeignKey, CheckConstraint, Index, inspect
+from sqlalchemy import String, TIMESTAMP, Enum as SQLEnum, ForeignKey, CheckConstraint, Index, inspect, Integer
 from src.models.base_model import BaseModel
 from src.models.mixins.audit_mixin import AuditMixin
 from src.core.enums.sesion_mesa_enums import EstadoSesionMesa
@@ -17,6 +17,7 @@ if TYPE_CHECKING:
     from src.models.auth.usuario_model import UsuarioModel
     from src.models.mesas.mesa_model import MesaModel
     from src.models.pedidos.pedido_model import PedidoModel
+    from src.models.mesas.usuario_sesion_mesa_model import UsuarioSesionMesaModel
 
 # Definimos un TypeVar para el tipado genérico
 T = TypeVar("T", bound="SesionMesaModel")
@@ -25,26 +26,29 @@ T = TypeVar("T", bound="SesionMesaModel")
 class SesionMesaModel(BaseModel, AuditMixin):
     """Modelo para representar sesiones de mesa en el sistema.
 
-    Una sesión de mesa es una asociación temporal entre un usuario y una mesa
-    que se crea cuando el usuario se loguea/registra. Permite agrupar todos
-    los pedidos que el usuario realiza durante su visita a esa mesa.
+    Una sesión de mesa es una asociación temporal entre una mesa y múltiples usuarios
+    que se crea cuando el primer usuario se loguea/registra. Permite agrupar todos
+    los pedidos que los usuarios realizan durante su visita a esa mesa.
+    Varios usuarios pueden compartir la misma sesión y token.
 
     Attributes
     ----------
     id : str
         Identificador único ULID de la sesión (heredado de BaseModel).
-    id_usuario : str
-        Identificador ULID del usuario asociado a la sesión.
     id_mesa : str
         Identificador ULID de la mesa donde se realiza la sesión.
+    id_usuario_creador : str
+        Identificador ULID del usuario que creó la sesión.
     token_sesion : str
-        Token único generado para identificar la sesión.
+        Token único generado para identificar la sesión (compartido por todos los usuarios).
     estado : EstadoSesionMesa
         Estado actual de la sesión (activa, finalizada).
     fecha_inicio : datetime
         Fecha y hora de inicio de la sesión.
     fecha_fin : datetime, optional
         Fecha y hora de finalización de la sesión.
+    duracion_minutos : int
+        Duración de la sesión en minutos (por defecto 120 minutos = 2 horas).
     fecha_creacion : datetime
         Fecha y hora de creación del registro (heredado de AuditMixin).
     fecha_modificacion : datetime
@@ -58,18 +62,18 @@ class SesionMesaModel(BaseModel, AuditMixin):
     __tablename__ = "sesiones_mesas"
 
     # Foreign Keys
-    id_usuario: Mapped[str] = mapped_column(
-        String(36),
-        ForeignKey("usuarios.id", ondelete="RESTRICT"),
-        nullable=False,
-        comment="Usuario asociado a la sesión"
-    )
-
     id_mesa: Mapped[str] = mapped_column(
         String(36),
         ForeignKey("mesas.id", ondelete="RESTRICT"),
         nullable=False,
         comment="Mesa donde se realiza la sesión"
+    )
+
+    id_usuario_creador: Mapped[str] = mapped_column(
+        String(36),
+        ForeignKey("usuarios.id", ondelete="RESTRICT"),
+        nullable=False,
+        comment="Usuario que creó la sesión de mesa"
     )
 
     # Campos específicos del modelo de sesión mesa
@@ -101,24 +105,40 @@ class SesionMesaModel(BaseModel, AuditMixin):
         comment="Fecha y hora de finalización de la sesión"
     )
 
-    # Relaciones
-    usuario: Mapped["UsuarioModel"] = relationship(
-        "UsuarioModel",
-        lazy="selectin"
+    duracion_minutos: Mapped[int] = mapped_column(
+        Integer,
+        nullable=False,
+        default=120,
+        comment="Duración de la sesión en minutos (por defecto 120 minutos = 2 horas)"
     )
 
+    # Relaciones
     mesa: Mapped["MesaModel"] = relationship(
         "MesaModel",
         lazy="selectin"
     )
 
-    # Relación comentada temporalmente hasta que se active id_sesion_mesa en PedidoModel
-    # pedidos: Mapped[List["PedidoModel"]] = relationship(
-    #     "PedidoModel",
-    #     back_populates="sesion_mesa",
-    #     cascade="all",
-    #     lazy="select"
-    # )
+    usuario_creador: Mapped["UsuarioModel"] = relationship(
+        "UsuarioModel",
+        foreign_keys=[id_usuario_creador],
+        lazy="selectin"
+    )
+
+    # Relación many-to-many con usuarios a través de la tabla intermedia
+    usuarios_sesiones: Mapped[List["UsuarioSesionMesaModel"]] = relationship(
+        "UsuarioSesionMesaModel",
+        back_populates="sesion_mesa",
+        cascade="all, delete-orphan",
+        lazy="select"
+    )
+
+    # Relación con pedidos (sin cascade delete para preservar historial)
+    pedidos: Mapped[List["PedidoModel"]] = relationship(
+        "PedidoModel",
+        back_populates="sesion_mesa",
+        cascade="",  # Sin cascade: los pedidos son registros históricos
+        lazy="select"
+    )
 
     # Constraints e índices
     __table_args__ = (
@@ -126,8 +146,45 @@ class SesionMesaModel(BaseModel, AuditMixin):
             "fecha_fin IS NULL OR fecha_fin >= fecha_inicio",
             name="chk_sesion_mesa_fecha_fin_valida"
         ),
-        Index("idx_sesion_mesa_usuario_mesa", "id_usuario", "id_mesa"),
+        Index("idx_sesion_mesa_mesa", "id_mesa"),
     )
+
+    # Métodos de utilidad
+    def calcular_fecha_expiracion(self) -> datetime:
+        """
+        Calcula la fecha de expiración de la sesión basándose en fecha_inicio y duracion_minutos.
+
+        Returns
+        -------
+        datetime
+            Fecha y hora de expiración de la sesión.
+        """
+        return self.fecha_inicio + timedelta(minutes=self.duracion_minutos)
+
+    def esta_expirada(self) -> bool:
+        """
+        Verifica si la sesión ha expirado.
+
+        Returns
+        -------
+        bool
+            True si la sesión ha expirado, False en caso contrario.
+        """
+        if self.estado == EstadoSesionMesa.FINALIZADA:
+            return True
+
+        return datetime.now() > self.calcular_fecha_expiracion()
+
+    def es_valida(self) -> bool:
+        """
+        Verifica si la sesión es válida (activa y no expirada).
+
+        Returns
+        -------
+        bool
+            True si la sesión es válida, False en caso contrario.
+        """
+        return self.estado == EstadoSesionMesa.ACTIVA and not self.esta_expirada()
 
     # Métodos comunes para todos los modelos
     def to_dict(self) -> Dict[str, Any]:
@@ -181,4 +238,4 @@ class SesionMesaModel(BaseModel, AuditMixin):
                 setattr(self, key, value)
 
     def __repr__(self):
-        return f"<SesionMesa(id={self.id}, token={self.token_sesion}, usuario={self.id_usuario}, mesa={self.id_mesa}, estado={self.estado.value})>"
+        return f"<SesionMesa(id={self.id}, token={self.token_sesion}, mesa={self.id_mesa}, estado={self.estado.value})>"

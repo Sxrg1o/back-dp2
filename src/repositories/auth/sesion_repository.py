@@ -190,10 +190,10 @@ class SesionRepository:
             raise e
 
     async def get_all(
-        self, skip: int = 0, limit: int = 100
+        self, skip: int = 0, limit: int = 100, estado: Optional[EstadoSesion] = None
     ) -> Tuple[List[SesionModel], int]:
         """
-        Obtiene todas las sesiones con paginación.
+        Obtiene todas las sesiones con paginación y filtro opcional por estado.
 
         Parameters
         ----------
@@ -201,6 +201,8 @@ class SesionRepository:
             Número de registros a omitir (offset), por defecto 0.
         limit : int, optional
             Número máximo de registros a retornar, por defecto 100.
+        estado : Optional[EstadoSesion], optional
+            Estado para filtrar sesiones, por defecto None (sin filtro).
 
         Returns
         -------
@@ -214,15 +216,18 @@ class SesionRepository:
         """
         try:
             # Construir query con paginación
-            query = (
-                select(SesionModel)
-                .order_by(SesionModel.fecha_creacion.desc())
-                .offset(skip)
-                .limit(limit)
-            )
+            query = select(SesionModel)
+            
+            # Aplicar filtro de estado si se proporciona
+            if estado is not None:
+                query = query.where(SesionModel.estado == estado)
+            
+            query = query.order_by(SesionModel.fecha_creacion.desc()).offset(skip).limit(limit)
 
-            # Obtener total de registros
+            # Obtener total de registros con el mismo filtro
             count_query = select(func.count(SesionModel.id))
+            if estado is not None:
+                count_query = count_query.where(SesionModel.estado == estado)
 
             result = await self.session.execute(query)
             sesiones = list(result.scalars().all())

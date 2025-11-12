@@ -191,7 +191,8 @@ class PedidoRepository:
         limit: int = 100,
         estado: Optional[EstadoPedido] = None,
         id_mesa: Optional[str] = None,
-        id_usuario: Optional[str] = None
+        id_usuario: Optional[str] = None,
+        id_sesion_mesa: Optional[str] = None
     ) -> Tuple[List[PedidoModel], int]:
         """
         Obtiene una lista paginada de pedidos y el total de registros.
@@ -208,6 +209,8 @@ class PedidoRepository:
             Filtrar por ID de mesa.
         id_usuario : str, optional
             Filtrar por ID de usuario.
+        id_sesion_mesa : str, optional
+            Filtrar por ID de sesión de mesa.
 
         Returns
         -------
@@ -226,6 +229,8 @@ class PedidoRepository:
             filters.append(PedidoModel.id_mesa == id_mesa)
         if id_usuario is not None:
             filters.append(PedidoModel.id_usuario == id_usuario)
+        if id_sesion_mesa is not None:
+            filters.append(PedidoModel.id_sesion_mesa == id_sesion_mesa)
 
         if filters:
             query = query.where(and_(*filters))
@@ -304,7 +309,8 @@ class PedidoRepository:
         limit: int = 100,
         estado: Optional[EstadoPedido] = None,
         id_mesa: Optional[str] = None,
-        id_usuario: Optional[str] = None
+        id_usuario: Optional[str] = None,
+        id_sesion_mesa: Optional[str] = None
     ) -> Tuple[List[PedidoModel], int]:
         """
         Obtiene una lista paginada de pedidos con productos y opciones eager-loaded.
@@ -321,6 +327,8 @@ class PedidoRepository:
             Filtrar por ID de mesa.
         id_usuario : str, optional
             Filtrar por ID de usuario.
+        id_sesion_mesa : str, optional
+            Filtrar por ID de sesión de mesa.
 
         Returns
         -------
@@ -350,6 +358,8 @@ class PedidoRepository:
             filters.append(PedidoModel.id_mesa == id_mesa)
         if id_usuario is not None:
             filters.append(PedidoModel.id_usuario == id_usuario)
+        if id_sesion_mesa is not None:
+            filters.append(PedidoModel.id_sesion_mesa == id_sesion_mesa)
 
         if filters:
             query = query.where(and_(*filters))
