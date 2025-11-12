@@ -7,7 +7,7 @@ services:
       dockerfile: Dockerfile
     container_name: back-dp2
     ports:
-      - "8000:8000"
+      - "8888:8000"
     environment:
       # Variables de entorno desde .env
       - DATABASE_URL=${DATABASE_URL:-sqlite+aiosqlite:///./app.db}

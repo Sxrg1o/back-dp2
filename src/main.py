@@ -180,6 +180,7 @@ def register_routers(app: FastAPI) -> None:
         ("src.api.controllers.local_controller", "Locales"),
         ("src.api.controllers.zona_controller", "Zonas"),
         ("src.api.controllers.sesion_controller", "Sesiones"),
+        ("src.api.controllers.sesion_mesa_controller", "Sesiones de Mesa"),
         ("src.api.controllers.categoria_controller", "Categorías"),
         ("src.api.controllers.alergeno_controller", "Alérgenos"),
         ("src.api.controllers.producto_controller", "Productos"),
