@@ -151,6 +151,47 @@ class SesionMesaRepository:
         except SQLAlchemyError:
             raise
 
+    async def get_active_by_usuario_and_mesa(
+        self, id_usuario: str, id_mesa: str
+    ) -> Optional[SesionMesaModel]:
+        """
+        Obtiene una sesión activa para un usuario específico en una mesa.
+
+        Parameters
+        ----------
+        id_usuario : str
+            El ID del usuario.
+        id_mesa : str
+            El ID de la mesa.
+
+        Returns
+        -------
+        Optional[SesionMesaModel]
+            La sesión activa encontrada, o None si no existe.
+
+        Raises
+        ------
+        SQLAlchemyError
+            Si ocurre un error durante la operación en la base de datos.
+        """
+        try:
+            stmt = (
+                select(SesionMesaModel)
+                .join(
+                    UsuarioSesionMesaModel,
+                    SesionMesaModel.id == UsuarioSesionMesaModel.id_sesion_mesa,
+                )
+                .where(
+                    UsuarioSesionMesaModel.id_usuario == id_usuario,
+                    SesionMesaModel.id_mesa == id_mesa,
+                    SesionMesaModel.estado == EstadoSesionMesa.ACTIVA,
+                )
+            )
+            result = await self.session.execute(stmt)
+            return result.scalar_one_or_none()
+        except SQLAlchemyError:
+            raise
+
     async def add_usuario_to_sesion(
         self, id_sesion_mesa: str, id_usuario: str
     ) -> UsuarioSesionMesaModel:
@@ -342,6 +383,7 @@ class SesionMesaRepository:
         skip: int = 0,
         limit: int = 100,
         id_mesa: Optional[str] = None,
+        id_usuario: Optional[str] = None,
         estado: Optional[EstadoSesionMesa] = None,
     ) -> Tuple[List[SesionMesaModel], int]:
         """
@@ -355,6 +397,8 @@ class SesionMesaRepository:
             Número máximo de registros a retornar, por defecto 100.
         id_mesa : Optional[str], optional
             Filtrar por ID de mesa.
+        id_usuario : Optional[str], optional
+            Filtrar por ID de usuario (a través de la tabla intermedia).
         estado : Optional[EstadoSesionMesa], optional
             Filtrar por estado de la sesión.
 
@@ -371,6 +415,13 @@ class SesionMesaRepository:
         try:
             # Construir query base
             stmt = select(SesionMesaModel)
+
+            # Si se filtra por usuario, hacer join con la tabla intermedia
+            if id_usuario:
+                stmt = stmt.join(
+                    UsuarioSesionMesaModel,
+                    SesionMesaModel.id == UsuarioSesionMesaModel.id_sesion_mesa,
+                ).where(UsuarioSesionMesaModel.id_usuario == id_usuario)
 
             # Aplicar filtros opcionales
             if id_mesa:
@@ -396,4 +447,33 @@ class SesionMesaRepository:
 
             return sesiones, total
         except SQLAlchemyError:
+            raise
+
+    async def delete(self, sesion_id: str) -> bool:
+        """
+        Elimina una sesión de mesa de la base de datos.
+
+        Parameters
+        ----------
+        sesion_id : str
+            El ID de la sesión de mesa a eliminar.
+
+        Returns
+        -------
+        bool
+            True si se eliminó la sesión, False si no existía.
+
+        Raises
+        ------
+        SQLAlchemyError
+            Si ocurre un error durante la operación en la base de datos.
+        """
+        try:
+            from sqlalchemy import delete
+            stmt = delete(SesionMesaModel).where(SesionMesaModel.id == sesion_id)
+            result = await self.session.execute(stmt)
+            await self.session.commit()
+            return result.rowcount > 0
+        except SQLAlchemyError:
+            await self.session.rollback()
             raise
