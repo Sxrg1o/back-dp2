@@ -2,6 +2,7 @@
 Servicio para la gestión de sesiones en el sistema.
 """
 
+from typing import Optional
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.exc import IntegrityError
 
@@ -229,9 +230,11 @@ class SesionService:
         result = await self.repository.delete(sesion_id)
         return result
 
-    async def get_sesiones(self, skip: int = 0, limit: int = 100) -> SesionList:
+    async def get_sesiones(
+        self, skip: int = 0, limit: int = 100, estado: Optional[EstadoSesion] = None
+    ) -> SesionList:
         """
-        Obtiene una lista paginada de sesiones.
+        Obtiene una lista paginada de sesiones con filtro opcional por estado.
 
         Parameters
         ----------
@@ -239,6 +242,8 @@ class SesionService:
             Número de registros a omitir (offset), por defecto 0.
         limit : int, optional
             Número máximo de registros a retornar, por defecto 100.
+        estado : Optional[EstadoSesion], optional
+            Estado para filtrar sesiones, por defecto None (sin filtro).
 
         Returns
         -------
@@ -254,7 +259,7 @@ class SesionService:
             raise SesionValidationError("El parámetro 'limit' debe ser mayor a cero")
 
         # Obtener sesiones desde el repositorio
-        sesiones, total = await self.repository.get_all(skip, limit)
+        sesiones, total = await self.repository.get_all(skip, limit, estado)
 
         # Convertir modelos a esquemas de resumen
         sesion_summaries = [SesionSummary.model_validate(sesion) for sesion in sesiones]
