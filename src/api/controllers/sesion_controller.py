@@ -4,6 +4,7 @@ Controlador para gestionar las operaciones CRUD de sesiones.
 Provee endpoints REST para crear, leer, actualizar y eliminar sesiones.
 """
 
+from typing import Optional
 from fastapi import APIRouter, Depends, HTTPException, status, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -126,15 +127,16 @@ async def get_sesion(
     response_model=SesionList,
     status_code=status.HTTP_200_OK,
     summary="Listar sesiones",
-    description="Obtiene una lista paginada de sesiones.",
+    description="Obtiene una lista paginada de sesiones con filtros opcionales.",
 )
 async def list_sesiones(
     skip: int = Query(0, ge=0, description="Número de registros a omitir"),
     limit: int = Query(100, ge=1, le=1000, description="Número de registros a retornar"),
+    estado: Optional[EstadoSesion] = Query(None, description="Filtrar por estado de la sesión"),
     session: AsyncSession = Depends(get_database_session),
 ) -> SesionList:
     """
-    Lista todas las sesiones con paginación.
+    Lista todas las sesiones con paginación y filtro opcional por estado.
 
     Parameters
     ----------
@@ -142,6 +144,8 @@ async def list_sesiones(
         Número de registros a omitir (offset).
     limit : int
         Número máximo de registros a retornar.
+    estado : Optional[EstadoSesion]
+        Estado para filtrar sesiones (opcional).
     session : AsyncSession
         Sesión de base de datos proporcionada por FastAPI.
 
@@ -158,7 +162,7 @@ async def list_sesiones(
     """
     try:
         service = SesionService(session)
-        return await service.get_sesiones(skip=skip, limit=limit)
+        return await service.get_sesiones(skip=skip, limit=limit, estado=estado)
     except SesionValidationError as e:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
     except Exception as e:
