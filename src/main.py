@@ -175,6 +175,7 @@ def register_routers(app: FastAPI) -> None:
     # Estructura de controladores a cargar: (módulo, tag)
     controllers = [
         ("src.api.controllers.login_controller", "Login"),  # Nuevo controlador de login simplificado
+        ("src.api.controllers.admin_sesiones_controller", "Admin - Sesiones"),  # Controlador admin de sesiones
         ("src.api.controllers.auth_controller", "Autenticación"),
         ("src.api.controllers.rol_controller", "Roles"),
         ("src.api.controllers.local_controller", "Locales"),
