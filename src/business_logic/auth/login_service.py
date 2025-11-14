@@ -133,7 +133,12 @@ class LoginService:
         else:
             # Existe sesión activa: verificar si está expirada
             if sesion_mesa.esta_expirada():
-                # Si está expirada, crear una nueva sesión
+                # Si está expirada, PRIMERO finalizarla y LUEGO crear una nueva sesión
+                try:
+                    await self.sesion_mesa_repository.finalizar_sesion(sesion_mesa.id)
+                except Exception:
+                    pass  # Continuar aunque falle la finalización
+                
                 token_sesion = str(ULID())
                 sesion_mesa = SesionMesaModel(
                     id_mesa=id_mesa,
