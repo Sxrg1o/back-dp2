@@ -140,3 +140,6 @@ logs/
 
 
 .claude
+
+# Private configuration files
+.commit-rules
