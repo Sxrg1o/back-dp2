@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Script de pruebas para HU-C07: Añadir extras disponibles
-# Autor: Equipo QA
+# Autor: Kevin Antonio Navarro Carrera
 # Fecha: 2025-10-09
 
 # Colores para output
