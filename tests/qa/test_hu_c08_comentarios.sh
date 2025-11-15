@@ -62,26 +62,40 @@ skip_test() {
 echo "=== Preparación: Obtener IDs necesarios ==="
 echo ""
 
-# Obtener token de autenticación
+# Obtener token de autenticación (esto ya setea USER_ID automáticamente)
 get_auth_token || exit 1
 
-# Obtener ID de usuario del token
-echo -n "Obteniendo ID de usuario... "
-USER_RESPONSE=$(curl_auth -s "$API_BASE/api/v1/auth/me")
-USER_ID=$(echo "$USER_RESPONSE" | python3 -c "import sys, json; data = json.load(sys.stdin); print(data.get('id', ''))" 2>/dev/null || echo "")
-
+# Verificar que tenemos USER_ID (ya seteado por get_auth_token)
 if [ -z "$USER_ID" ]; then
     echo -e "${RED}✗ No se pudo obtener ID de usuario${NC}"
     exit 1
 fi
 echo -e "${GREEN}✓${NC} User ID: $USER_ID"
 
-# Usar IDs de entorno o defaults actualizados (Nov 2025)
-MESA_ID="${MESA_ID:-01K9DQN2AF18TTFFYZMC25H725}"
-PRODUCTO_ID="${PRODUCTO_ID:-01K9DQ413S2APNZB9S3QJFZ56B}"
-PRECIO="${PRECIO:-35.00}"
+# Obtener ID de mesa dinámicamente del entorno de pruebas
+echo -n "Obteniendo ID de mesa... " >&2
+MESA_RESPONSE=$(curl -s "$API_BASE/api/v1/mesas?limit=1")
+MESA_ID=$(echo "$MESA_RESPONSE" | python3 -c "import sys, json; data = json.load(sys.stdin); print(data['items'][0]['id'] if data.get('items') and len(data['items']) > 0 else '')" 2>/dev/null)
 
+if [ -z "$MESA_ID" ]; then
+    echo -e "${RED}✗ No se pudo obtener mesa del entorno de pruebas${NC}"
+    exit 1
+fi
 echo -e "${GREEN}✓${NC} Mesa ID: $MESA_ID"
+
+# Obtener ID de producto dinámicamente del entorno de pruebas
+echo -n "Obteniendo ID de producto... " >&2
+PRODUCTO_RESPONSE=$(curl -s "$API_BASE/api/v1/productos/cards?limit=1")
+PRODUCTO_DATA=$(echo "$PRODUCTO_RESPONSE" | python3 -c "import sys, json; items = json.load(sys.stdin).get('items', []); print(items[0]['id'] + '|' + str(items[0]['precio_base']) if items else '')" 2>/dev/null)
+
+if [ -z "$PRODUCTO_DATA" ]; then
+    echo -e "${RED}✗ No se pudo obtener producto del entorno de pruebas${NC}"
+    exit 1
+fi
+
+PRODUCTO_ID=$(echo "$PRODUCTO_DATA" | cut -d'|' -f1)
+PRECIO=$(echo "$PRODUCTO_DATA" | cut -d'|' -f2)
+
 echo -e "${GREEN}✓${NC} Producto ID: $PRODUCTO_ID"
 echo -e "${GREEN}✓${NC} Precio: S/$PRECIO"
 
@@ -348,23 +362,66 @@ fi
 
 # TC-008: Recuperar pedido y verificar comentarios
 echo -n "TC-008: GET pedido muestra comentarios guardados... "
-if [ -n "$PEDIDO_ID" ]; then
-    RESPONSE=$(curl_auth -s "${API_BASE}/api/v1/pedidos/${PEDIDO_ID}")
-    HTTP_CODE=$(curl_auth -s -o /dev/null -w "%{http_code}" "${API_BASE}/api/v1/pedidos/${PEDIDO_ID}")
+
+# Crear pedido específico para este test
+EXPECTED_NOTA="Test TC-008: verificar recuperación"
+PAYLOAD=$(cat <<EOF
+{
+    "id_mesa": "$MESA_ID",
+    "id_usuario": "$USER_ID",
+    "items": [
+        {
+            "id_producto": "$PRODUCTO_ID",
+            "cantidad": 1,
+            "precio_unitario": $PRECIO,
+            "opciones": [],
+            "notas_personalizacion": "$EXPECTED_NOTA"
+        }
+    ],
+    "notas_cliente": "Cliente test",
+    "notas_cocina": "Cocina test"
+}
+EOF
+)
+
+CREATE_RESPONSE=$(curl_auth -s -X POST "${API_BASE}/api/v1/pedidos/completo" \
+    -H "Content-Type: application/json" \
+    -d "$PAYLOAD")
+
+TC008_PEDIDO_ID=$(echo "$CREATE_RESPONSE" | python3 -c "import sys, json; print(json.load(sys.stdin).get('id', ''))" 2>/dev/null || echo "")
+
+if [ -n "$TC008_PEDIDO_ID" ]; then
+    # Usar endpoint correcto para obtener items con comentarios
+    RESPONSE=$(curl_auth -s "${API_BASE}/api/v1/pedidos-productos/pedido/${TC008_PEDIDO_ID}/items")
+    HTTP_CODE=$(curl_auth -s -o /dev/null -w "%{http_code}" "${API_BASE}/api/v1/pedidos-productos/pedido/${TC008_PEDIDO_ID}/items")
 
     if [ "$HTTP_CODE" = "200" ]; then
-        NOTA=$(echo "$RESPONSE" | python3 -c "import sys, json; data = json.load(sys.stdin); print(data.get('items', [{}])[0].get('notas_personalizacion', ''))" 2>/dev/null || echo "")
+        # Buscar notas_personalizacion en los items
+        NOTA=$(echo "$RESPONSE" | python3 -c "
+import sys, json
+try:
+    data = json.load(sys.stdin)
+    # data puede ser array de items o {items: [...]}
+    items = data if isinstance(data, list) else data.get('items', [])
+    for item in items:
+        nota = item.get('notas_personalizacion', '')
+        if nota:
+            print(nota)
+            break
+except:
+    pass
+" 2>/dev/null || echo "")
 
-        if [ -n "$NOTA" ]; then
+        if [ "$NOTA" = "$EXPECTED_NOTA" ]; then
             pass_test
         else
-            fail_test "Comentario no aparece en GET"
+            fail_test "Backend no retorna notas_personalizacion en GET"
         fi
     else
         fail_test "HTTP $HTTP_CODE"
     fi
 else
-    skip_test "No hay pedido creado"
+    skip_test "No se pudo crear pedido para test"
 fi
 
 # TC-009: Todos los tipos de comentarios juntos
