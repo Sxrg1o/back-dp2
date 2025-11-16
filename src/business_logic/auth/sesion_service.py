@@ -83,12 +83,18 @@ class SesionService:
 
         try:
             # Crear modelo de sesión desde los datos
+            from datetime import datetime, timezone
+            
             sesion = SesionModel(
                 id_domotica=sesion_data.id_domotica,
                 id_local=sesion_data.id_local,
                 estado=sesion_data.estado,
                 orden=sesion_data.orden,
             )
+            
+            # Si la sesión está activa, establecer fecha_inicio
+            if sesion.estado == EstadoSesion.ACTIVO:
+                sesion.fecha_inicio = datetime.now(timezone.utc)
 
             # Persistir en la base de datos
             created_sesion = await self.repository.create(sesion)

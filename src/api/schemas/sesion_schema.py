@@ -96,6 +96,12 @@ class SesionResponse(SesionBase):
     model_config: ClassVar[ConfigDict] = ConfigDict(from_attributes=True)
 
     id: str = Field(description="Identificador único de la sesión (ULID).")
+    fecha_inicio: Optional[datetime] = Field(
+        default=None, description="Fecha y hora de inicio de la sesión."
+    )
+    fecha_fin: Optional[datetime] = Field(
+        default=None, description="Fecha y hora de fin de la sesión."
+    )
     fecha_creacion: Optional[datetime] = Field(
         default=None, description="Fecha y hora de creación del registro."
     )

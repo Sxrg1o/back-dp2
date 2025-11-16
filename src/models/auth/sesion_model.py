@@ -5,9 +5,10 @@ Este módulo define el modelo de datos para las sesiones de sincronización
 entre el sistema Domotica y los locales.
 """
 
-from sqlalchemy import String, Enum as SQLEnum, ForeignKey, Index
+from sqlalchemy import String, Enum as SQLEnum, ForeignKey, Index, DateTime
 from typing import Any, Dict, Type, TypeVar, TYPE_CHECKING, Optional
 from sqlalchemy.orm import Mapped, mapped_column, relationship
+from datetime import datetime
 from src.models.mixins.audit_mixin import AuditMixin
 from src.models.base_model import BaseModel
 from src.core.enums.sesion_enums import EstadoSesion
@@ -63,6 +64,18 @@ class SesionModel(BaseModel, AuditMixin):
     )
     estado: Mapped[EstadoSesion] = mapped_column(
         SQLEnum(EstadoSesion), nullable=False, default=EstadoSesion.ACTIVO, index=True, comment="Estado actual de la sesión"
+    )
+    fecha_inicio: Mapped[Optional[datetime]] = mapped_column(
+        DateTime(timezone=True),
+        nullable=True,
+        default=None,
+        comment="Fecha y hora de inicio de la sesión"
+    )
+    fecha_fin: Mapped[Optional[datetime]] = mapped_column(
+        DateTime(timezone=True),
+        nullable=True,
+        default=None,
+        comment="Fecha y hora de fin de la sesión"
     )
 
     # Relación con Local
