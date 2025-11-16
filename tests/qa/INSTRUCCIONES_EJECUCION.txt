@@ -1,0 +1,239 @@
+================================================================================
+  INSTRUCCIONES PARA EJECUTAR TESTS QA EN AMBIENTE LOCAL
+================================================================================
+
+Fecha: 2025-11-09
+Tester: Kevin Antonio Navarro Carrera
+Proyecto: DP2 - Backend Pedidos
+
+================================================================================
+  PREREQUISITOS
+================================================================================
+
+1. Python 3.9 o superior
+2. bash shell (Git Bash en Windows, o WSL)
+3. curl instalado
+4. Estar en el entorno virtual del proyecto
+
+================================================================================
+  PASO 1: PREPARAR EL ENTORNO
+================================================================================
+
+A. Navega a la carpeta del proyecto:
+   cd e:\PROYECTOS\DP2\V7\back-dp2
+
+B. Activa el entorno virtual:
+   
+   EN WINDOWS (PowerShell):
+   .\venv\Scripts\Activate.ps1
+   
+   EN WINDOWS (Command Prompt):
+   venv\Scripts\activate.bat
+   
+   EN LINUX/MAC:
+   source venv/bin/activate
+
+C. Instala las dependencias (si es primera vez):
+   
+   EN WINDOWS:
+   pip install -r requirements-windows.txt
+   
+   EN LINUX/MAC:
+   pip install -r requirements.txt
+
+================================================================================
+  PASO 2: INICIAR EL SERVIDOR (TERMINAL 1)
+================================================================================
+
+Con el entorno virtual ACTIVADO, ejecuta:
+
+python -m uvicorn src.main:app --reload --host 0.0.0.0 --port 8000
+
+Verifica que el servidor esté corriendo visitando:
+http://localhost:8000/docs
+
+================================================================================
+  PASO 3: EJECUTAR LOS TESTS (TERMINAL 2)
+================================================================================
+
+Opción A: Con Python (RECOMENDADO - Funciona en todos los S.O.)
+---
+python tests/qa/run_tests_local.py
+
+Opciones adicionales:
+python tests/qa/run_tests_local.py --port 8001    # Otro puerto
+python tests/qa/run_tests_local.py --verbose       # Ver respuestas
+python tests/qa/run_tests_local.py --port 8001 --verbose
+
+
+Opción B: Con Bash (Linux/Mac/WSL/Git Bash)
+---
+bash tests/qa/test_cu05_validaciones_errores.sh
+
+O con opciones:
+API_URL=http://localhost:8001 bash tests/qa/test_cu05_validaciones_errores.sh
+VERBOSE=true bash tests/qa/test_cu05_validaciones_errores.sh
+
+
+Opción C: Con Batch (Windows)
+---
+tests\qa\run_tests_local.bat
+
+O con puerto personalizado:
+tests\qa\run_tests_local.bat 8001
+
+================================================================================
+  RESULTADO ESPERADO
+================================================================================
+
+El script ejecutará 11 tests y mostrará un resumen como este:
+
+    ==========================================
+      Resumen de Tests
+    ==========================================
+    Total:  11
+    Pasados: 11
+    Fallidos: 0
+    Éxito: 100%
+
+    ✓ Todos los tests pasaron
+
+================================================================================
+  ARCHIVOS DEL SUITE DE TESTS
+================================================================================
+
+📁 tests/qa/
+├── test_cu05_validaciones_errores.sh    ← Script principal de tests
+├── run_tests_local.py                   ← Ejecutor Python (recomendado)
+├── run_tests_local.bat                  ← Ejecutor Windows
+├── README_LOCAL.md                      ← Documentación completa
+├── QUICK_START.md                       ← Guía rápida
+└── INSTRUCCIONES_EJECUCION.txt          ← Este archivo
+
+================================================================================
+  SOLUCIÓN DE PROBLEMAS COMUNES
+================================================================================
+
+PROBLEMA: "API no disponible en http://localhost:8000"
+SOLUCIÓN: Asegúrate de que:
+  1. El servidor está corriendo en Terminal 1
+  2. Espera 2-3 segundos después de iniciar el servidor
+  3. Verifica que no hay otros procesos usando el puerto 8000
+
+PROBLEMA: "No se encontró mesa/producto válido"
+SOLUCIÓN: Carga datos de prueba:
+  python scripts/seed_cevicheria_data.py
+
+PROBLEMA: "curl: command not found"
+SOLUCIÓN: 
+  - Instala Git for Windows (incluye curl)
+  - O usa la opción Python: python tests/qa/run_tests_local.py
+
+PROBLEMA: "bash: command not found" (en Windows)
+SOLUCIÓN:
+  - Instala Git Bash (https://git-scm.com/download/win)
+  - O usa la opción Python: python tests/qa/run_tests_local.py
+  - O usa el batch: tests\qa\run_tests_local.bat
+
+PROBLEMA: "Permission denied" (en Linux/Mac)
+SOLUCIÓN: Hazlo ejecutable:
+  chmod +x tests/qa/test_cu05_validaciones_errores.sh
+
+================================================================================
+  MAPEO DE CÓDIGOS HTTP EN LOS TESTS
+================================================================================
+
+TC-1  Mesa inexistente              → 400 Bad Request
+TC-2  Mesa vacía                    → 422 Unprocessable Entity
+TC-3  Producto inexistente          → 400 Bad Request
+TC-4  Cantidad = 0                  → 422 Unprocessable Entity
+TC-5  Cantidad negativa             → 422 Unprocessable Entity
+TC-6  Precio = 0                    → 422 Unprocessable Entity
+TC-7  Precio negativo               → 422 Unprocessable Entity
+TC-8  Items vacío                   → 422 Unprocessable Entity
+TC-9  GET pedido inexistente        → 404 Not Found
+TC-10 PATCH pedido inexistente      → 404 Not Found
+TC-11 DELETE pedido inexistente     → 404 Not Found
+
+================================================================================
+  PASOS PARA CARGAR DATOS DE PRUEBA (OPCIONAL)
+================================================================================
+
+Si los tests fallan porque no hay mesas o productos:
+
+1. Con el servidor ejecutándose, en otra terminal ejecuta:
+   python scripts/seed_cevicheria_data.py
+
+2. O sincroniza datos desde una fuente externa:
+   python scripts/sincronizar_datos.py
+
+3. Verifica que los datos se cargaron:
+   curl http://localhost:8000/api/v1/mesas?limit=1
+   curl http://localhost:8000/api/v1/productos?limit=1
+
+================================================================================
+  VERIFICACIÓN DE CONFIGURACIÓN
+================================================================================
+
+Antes de ejecutar los tests, verifica:
+
+✓ Entorno virtual activado
+✓ Servidor corriendo en http://localhost:8000
+✓ Python 3.9+ instalado
+✓ Dependencias instaladas (pip install -r requirements.txt)
+✓ Permisos de ejecución en scripts de test
+✓ curl disponible en PATH
+✓ bash disponible en PATH (o usa Python alternativa)
+
+================================================================================
+  PARÁMETROS DE CONFIGURACIÓN
+================================================================================
+
+Variable de entorno API_URL:
+  Define la URL de la API a probar
+  Default: http://localhost:8000
+  Ejemplo: API_URL=http://localhost:8001
+
+Variable de entorno VERBOSE:
+  Muestra respuestas completas de los tests
+  Default: false
+  Ejemplo: VERBOSE=true
+
+================================================================================
+  NOTAS IMPORTANTES
+================================================================================
+
+1. Los tests requieren acceso a una base de datos válida
+2. Si la BD está vacía, carga datos con: python scripts/seed_cevicheria_data.py
+3. Los tests son idempotentes (puedes ejecutarlos varias veces)
+4. El script bash es portable a Linux/Mac/WSL
+5. Para Windows puro, usa el script Python o el batch
+6. Los tests no modifican la BD (solo consultan y crean pruebas)
+
+================================================================================
+  DOCUMENTACIÓN ADICIONAL
+================================================================================
+
+Para más detalles, lee:
+- README_LOCAL.md      → Documentación completa del suite
+- QUICK_START.md       → Guía rápida para comenzar
+- test_cu05_validaciones_errores.sh → Script con comentarios
+
+================================================================================
+  CONTACTO Y SOPORTE
+================================================================================
+
+Desarrollador de Tests: Kevin Antonio Navarro Carrera
+Rama: qa
+Commit: 94a59e0 (o posterior)
+Fecha de creación: 2025-11-05
+Última actualización: 2025-11-09
+
+Para reportar problemas:
+- Verifica primero la sección "SOLUCIÓN DE PROBLEMAS COMUNES"
+- Incluye el output completo del test
+- Especifica tu SO y versión de Python
+
+================================================================================
+FIN DE INSTRUCCIONES
+================================================================================

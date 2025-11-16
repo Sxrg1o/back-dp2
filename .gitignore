@@ -138,8 +138,6 @@ logs/
 *.tmp
 *.temp
 
-# QA Tests (local only)
-tests/qa/
-run_tests.py
+ 
 
 .claude

@@ -1,0 +1,179 @@
+================================================================================
+  CÓMO EJECUTAR LOS TESTS - GUÍA PASO A PASO
+================================================================================
+
+IMPORTANTE: Necesitas 2 TERMINALES abiertas simultáneamente
+
+================================================================================
+  TERMINAL 1: INICIA EL SERVIDOR
+================================================================================
+
+1. Abre PowerShell en la carpeta back-dp2
+
+2. Activa el entorno virtual:
+   .\venv\Scripts\Activate.ps1
+
+3. Inicia el servidor:
+   python -m uvicorn src.main:app --reload
+
+   Deberías ver algo como:
+   ✓ Uvicorn running on http://127.0.0.1:8000
+
+MANTÉN ESTA TERMINAL ABIERTA CON EL SERVIDOR CORRIENDO
+
+================================================================================
+  TERMINAL 2: EJECUTA LOS TESTS
+================================================================================
+
+Abre OTRA terminal PowerShell en la carpeta back-dp2
+
+OPCIÓN A: CON PYTHON (RECOMENDADO - Más confiable)
+===================================================
+
+Ejecuta:
+  python tests/qa/run_tests_local.py
+
+Con opciones:
+  python tests/qa/run_tests_local.py --port 8001     # Otro puerto
+  python tests/qa/run_tests_local.py --verbose        # Ver respuestas
+
+
+OPCIÓN B: CON EL SCRIPT BATCH (Más simple en Windows)
+=====================================================
+
+Ejecuta:
+  .\tests\qa\run_tests_local.bat
+
+Con puerto personalizado:
+  .\tests\qa\run_tests_local.bat 8001
+
+
+OPCIÓN C: CON BASH DIRECTAMENTE (Si tienes Git Bash)
+==================================================
+
+Ejecuta:
+  bash tests/qa/test_cu05_validaciones_errores.sh
+
+Con variables de entorno:
+  $env:API_URL="http://localhost:8001"; bash tests/qa/test_cu05_validaciones_errores.sh
+
+================================================================================
+  RESULTADO ESPERADO
+================================================================================
+
+Los tests ejecutarán y mostrarán un resumen como:
+
+  ==========================================
+    Resumen de Tests
+  ==========================================
+  Total:  11
+  Pasados: 11
+  Fallidos: 0
+  Éxito: 100%
+
+  ✓ Todos los tests pasaron
+
+================================================================================
+  ERRORES COMUNES Y SOLUCIONES
+================================================================================
+
+ERROR: "API no disponible en http://localhost:8000"
+SOLUCIÓN:
+  - Asegúrate de que el servidor está corriendo en TERMINAL 1
+  - Espera 2-3 segundos después de iniciar el servidor
+  - Verifica que no haya otro proceso usando el puerto 8000
+
+ERROR: "curl: command not found"
+SOLUCIÓN:
+  - Opción 1: Usa Python en su lugar: python tests/qa/run_tests_local.py
+  - Opción 2: Instala Git Bash (https://git-scm.com/download/win)
+  - Opción 3: Usa WSL (Windows Subsystem for Linux)
+
+ERROR: "python: No such file or directory"
+SOLUCIÓN:
+  - Activa el entorno virtual: .\venv\Scripts\Activate.ps1
+  - O usa: python.exe en lugar de python
+
+ERROR: "No se encontró mesa/producto válido"
+SOLUCIÓN:
+  - La BD está vacía. Ejecuta en TERMINAL 2:
+    python scripts/seed_cevicheria_data.py
+  - Espera a que termine y luego ejecuta los tests
+
+ERROR: "Permission denied" (en WSL/Git Bash)
+SOLUCIÓN:
+  - Hazlo ejecutable:
+    chmod +x tests/qa/test_cu05_validaciones_errores.sh
+  - O usa: bash tests/qa/test_cu05_validaciones_errores.sh
+
+================================================================================
+  DIAGRAMA DE FLUJO
+================================================================================
+
+┌─────────────────────────────────────────────────────────────┐
+│ SETUP INICIAL                                               │
+├─────────────────────────────────────────────────────────────┤
+│ 1. cd e:\PROYECTOS\DP2\V7\back-dp2                          │
+│ 2. .\venv\Scripts\Activate.ps1                              │
+│ 3. pip install -r requirements.txt (primera vez)            │
+└─────────────────────────────────────────────────────────────┘
+                          ↓
+┌─────────────────────┬───────────────────────────────────────┐
+│ TERMINAL 1          │ TERMINAL 2                            │
+├─────────────────────┼───────────────────────────────────────┤
+│ python -m uvicorn   │ ESPERA A QUE TERMINAL 1 ESTÉ LISTA    │
+│ src.main:app        │         ↓                             │
+│ --reload            │ python tests/qa/run_tests_local.py    │
+│                     │         ↓                             │
+│ [CORRIENDO]         │ [TESTS EJECUTÁNDOSE]                  │
+│                     │         ↓                             │
+│                     │ [RESULTADOS]                          │
+└─────────────────────┴───────────────────────────────────────┘
+
+================================================================================
+  VERIFICACIÓN PREVIA
+================================================================================
+
+Antes de ejecutar los tests, verifica:
+
+✓ Entorno virtual activado:
+  (venv) debería aparecer en el prompt
+
+✓ Servidor corriendo:
+  Abre http://localhost:8000/docs en tu navegador
+  Si ves Swagger UI, está corriendo correctamente
+
+✓ Dependencias instaladas:
+  pip install -r requirements.txt
+
+✓ Script bash disponible:
+  bash --version
+
+================================================================================
+  PUERTOS ALTERNATIVOS
+================================================================================
+
+Si quieres usar un puerto diferente al 8000:
+
+TERMINAL 1:
+  python -m uvicorn src.main:app --reload --port 8001
+
+TERMINAL 2:
+  python tests/qa/run_tests_local.py --port 8001
+
+O con bash:
+  $env:API_URL="http://localhost:8001"; bash tests/qa/test_cu05_validaciones_errores.sh
+
+================================================================================
+  NOTAS FINALES
+================================================================================
+
+- Los tests son idempotentes: puedes ejecutarlos múltiples veces
+- No modifican la BD, solo hacen consultas
+- Toma aproximadamente 10-30 segundos completar todos los tests
+- Si necesitas cargar datos de prueba: python scripts/seed_cevicheria_data.py
+- Para documentación completa: lee README_LOCAL.md
+
+================================================================================
+FIN DEL MANUAL
+================================================================================
